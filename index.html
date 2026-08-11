@@ -114,6 +114,28 @@
   .foot td{padding:6px 0;border-top:1px solid #1C3450;color:#C3D4E2;}
   .foot td:last-child{text-align:right;font-family:'JetBrains Mono',monospace;color:#fff;font-weight:700;}
 
+  .pr{background:var(--card);border-radius:3px;border-left:5px solid var(--line);
+    padding:12px 13px;margin-bottom:7px;}
+  .pr.pr-empty{border-left-color:#D5E0E8;}
+  .pr .pn{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;line-height:1.15;}
+  .pr .pe{font-size:12.5px;color:#B4C4D2;margin-top:3px;}
+  .pr .ph{margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .pr .ph div{display:flex;justify-content:space-between;gap:12px;
+    padding:5px 0;border-top:1px solid #EDF2F6;color:var(--steel);}
+  .pr .ph div:first-child{border-top:0;}
+  .pr .ph div b{color:var(--deep);text-align:right;}
+  .pr .ph div.old b{color:#8FA3B4;font-weight:400;}
+  .pr .gr{margin-top:10px;background:#F6F9FB;border-radius:3px;padding:8px 9px 6px;}
+  .pr .gr svg{width:100%;height:64px;display:block;}
+  .pr .grl{display:flex;justify-content:space-between;align-items:baseline;
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--steel);margin-top:5px;}
+  .pr .grl .up{color:#2E8B57;font-weight:700;}
+  .pr .grl .flat{color:var(--steel);}
+  .pr .grl .dn{color:var(--center);font-weight:700;}
+  .pdel{margin-top:9px;background:none;border:0;padding:0;cursor:pointer;
+    font-family:'Barlow',sans-serif;font-size:12px;color:var(--center);
+    text-decoration:underline;text-underline-offset:2px;}
+
   .err{margin:12px 18px;padding:11px 13px;background:#FBE9E7;
     border-left:4px solid var(--center);font-size:13px;}
   .loading{padding:40px 18px;text-align:center;color:var(--steel);font-size:14px;}
@@ -297,7 +319,120 @@ function exHtml(c,n){
     </div>`;
 }
 
+function boardHtml(){
+  return `
+    <div class="board">
+      <div class="board-top">Tréningový plán</div>
+      <div class="tabs">
+        <button class="tab ${aktivny==='A'?'on':''}" onclick="prepniTab('A')">Tréning A<span>Utorok</span></button>
+        <button class="tab ${aktivny==='B'?'on':''}" onclick="prepniTab('B')">Tréning B<span>Štvrtok</span></button>
+        <button class="tab ${aktivny==='P'?'on':''}" onclick="prepniTab('P')">Zápisy<span>História váh</span></button>
+      </div>
+    </div>`;
+}
+
+function vsetkyCviky(T){
+  const out=[]; T.bloky.forEach(b=>b.cviky.forEach(c=>out.push(c))); return out;
+}
+
+async function zmazPosledny(id){
+  const z=log[id]||[];
+  if(!z.length) return;
+  if(!confirm('Zmazať posledný zápis „'+z[0].v+'"?')) return;
+  z.shift();
+  if(!z.length) delete log[id]; else log[id]=z;
+  await uloz(); render();
+}
+
+function parseZapis(t){
+  const s=String(t);
+  let m=s.match(/(\d+(?:[.,]\d+)?)\s*kg/i);
+  let idx, w;
+  if(m){ w=parseFloat(m[1].replace(',','.')); idx=m.index+m[0].length; }
+  else{
+    m=s.match(/(\d+(?:[.,]\d+)?)/);
+    if(!m) return {w:null,reps:[],objem:null};
+    w=parseFloat(m[1].replace(',','.')); idx=m.index+m[0].length;
+  }
+  const reps=(s.slice(idx).match(/\d+/g)||[]).map(Number).filter(x=>x>0&&x<100);
+  const objem=reps.length?Math.round(w*reps.reduce((a,b)=>a+b,0)):null;
+  return {w,reps,objem};
+}
+
+function grafHtml(zaznamy){
+  const b=[...zaznamy].reverse().map(x=>({d:x.d,...parseZapis(x.v)})).filter(x=>x.w!==null);
+  if(b.length<2) return '';
+  const W=520,H=64,P=9;
+  const vals=b.map(x=>x.w);
+  const mn=Math.min(...vals), mx=Math.max(...vals), rng=(mx-mn)||1;
+  const pts=b.map((x,i)=>[
+    P+(i/(b.length-1))*(W-P*2),
+    P+(1-(x.w-mn)/rng)*(H-P*2)
+  ]);
+  const linia=pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' ');
+  const plocha=linia+' L '+pts[pts.length-1][0].toFixed(1)+' '+H+' L '+pts[0][0].toFixed(1)+' '+H+' Z';
+  const kruhy=pts.map((q,i)=>
+    `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${i===pts.length-1?4:3}"
+      fill="${i===pts.length-1?'#C8102E':'#1F5FBF'}"/>`).join('');
+  const d=+(b[b.length-1].w-b[0].w).toFixed(1);
+  const trend = d>0 ? `<span class="up">+${d} kg</span>`
+             : d<0 ? `<span class="dn">${d} kg</span>`
+                   : `<span class="flat">bez zmeny</span>`;
+  const o1=b[0].objem, o2=b[b.length-1].objem;
+  const obj = (o1&&o2) ? ` · objem ${o1} → ${o2} kg` : '';
+  return `<div class="gr">
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Vývoj váhy">
+      <path d="${plocha}" fill="#1F5FBF" opacity="0.10"/>
+      <path d="${linia}" fill="none" stroke="#1F5FBF" stroke-width="2.5" stroke-linejoin="round"/>
+      ${kruhy}
+    </svg>
+    <div class="grl"><span>${b[0].d} · ${b[0].w} kg → ${b[b.length-1].w} kg${obj}</span>${trend}</div>
+  </div>`;
+}
+
+function renderProgres(){
+  const sekcia=(T,nazov)=>{
+    const items=vsetkyCviky(T).map(c=>{
+      const z=log[c.id]||[];
+      if(!z.length){
+        return `<div class="pr pr-empty"><div class="pn">${c.n}</div>
+          <div class="pe">Zatiaľ bez zápisu</div></div>`;
+      }
+      const riadky=z.map((x,j)=>
+        `<div class="${j?'old':''}"><span>${x.d}</span><b>${x.v}</b></div>`).join('');
+      return `<div class="pr">
+        <div class="pn">${c.n}</div>
+        ${grafHtml(z)}
+        <div class="ph">${riadky}</div>
+        <button class="pdel" onclick="zmazPosledny('${c.id}')">Zmazať posledný zápis</button>
+      </div>`;
+    }).join('');
+    return `<div class="blk"><div class="blk-lbl"><h2>${nazov}</h2></div>${items}</div>`;
+  };
+
+  const spolu=Object.keys(log).reduce((a,k)=>a+(log[k]||[]).length,0);
+
+  document.getElementById('app').innerHTML=boardHtml()+
+    `<div class="head">
+       <h1>Zápisy váh</h1>
+       <div class="sub">Posledných šesť tréningov pri každom cviku, najnovší hore.
+       <b>Ak čísla rastú, program funguje.</b></div>
+       <div class="facts">
+         <div><div class="k">Zápisov spolu</div><div class="v">${spolu}</div></div>
+       </div>
+     </div>`+
+    sekcia(A,'Tréning A · utorok')+
+    sekcia(B,'Tréning B · štvrtok')+
+    `<div class="foot">
+       <h3>Ako to čítať</h3>
+       <p>Zapisuj v tvare <b>váha · opakovania</b>, napríklad <b>60 kg · 8,7,6,6</b>. Formát si drž rovnaký, inak sa to bude ťažko porovnávať.</p>
+       <p>Keď dáš horný počet opakovaní vo všetkých sériách, pridaj 2,5 kg na veľkých cvikoch a 1 kg na malých.</p>
+       <p><b>Graf ukazuje váhu v čase</b>, posledný bod je červený. Pod ním je aj <b>objem</b> — váha vynásobená všetkými opakovaniami. Objem je citlivejší ukazovateľ: rastie aj vtedy, keď váha stojí a ty pridávaš opakovania.</p>
+     </div>`;
+}
+
 function render(){
+  if(aktivny==='P'){renderProgres();return;}
   const T=aktivny==='A'?A:B;
   let n=0;
   const bloky=T.bloky.map(b=>{
@@ -310,15 +445,7 @@ function render(){
     return `<div class="blk">${head}${cviky}</div>`;
   }).join('');
 
-  document.getElementById('app').innerHTML=`
-    <div class="board">
-      <div class="board-top">Tréningový plán</div>
-      <div class="tabs">
-        <button class="tab ${aktivny==='A'?'on':''}" onclick="prepniTab('A')">Tréning A<span>Utorok</span></button>
-        <button class="tab ${aktivny==='B'?'on':''}" onclick="prepniTab('B')">Tréning B<span>Štvrtok 16:15</span></button>
-      </div>
-    </div>
-
+  document.getElementById('app').innerHTML=boardHtml()+`
     <div class="head">
       <h1>${T.h1}</h1>
       <div class="sub">${T.sub}</div>
