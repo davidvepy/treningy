@@ -132,6 +132,20 @@
   .pr .grl .up{color:#2E8B57;font-weight:700;}
   .pr .grl .flat{color:var(--steel);}
   .pr .grl .dn{color:var(--center);font-weight:700;}
+  .io{margin:22px 18px 0;background:var(--card);border-left:5px solid var(--deep);
+    border-radius:3px;padding:14px;}
+  .io h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;
+    text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px;}
+  .io p{margin:0 0 12px;font-size:13px;line-height:1.5;color:var(--steel);}
+  .io-row{display:flex;gap:8px;}
+  .io-btn{flex:1;background:var(--deep);color:#fff;border:0;cursor:pointer;
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;
+    text-transform:uppercase;letter-spacing:.05em;padding:13px 8px;border-radius:2px;}
+  .io-btn.alt{background:#fff;color:var(--deep);border:2px solid var(--deep);}
+  .io-btn:active{opacity:.85;}
+  .io-msg{margin-top:11px;font-size:13px;line-height:1.5;padding:10px 12px;border-radius:2px;}
+  .io-msg.ok{background:#EAF4EE;color:#1F5C3B;border-left:4px solid #2E8B57;}
+  .io-msg.bad{background:#FBE9E7;color:#8A2E22;border-left:4px solid var(--center);}
   .pdel{margin-top:9px;background:none;border:0;padding:0;cursor:pointer;
     font-family:'Barlow',sans-serif;font-size:12px;color:var(--center);
     text-decoration:underline;text-underline-offset:2px;}
@@ -390,6 +404,136 @@ function grafHtml(zaznamy){
   </div>`;
 }
 
+/* ---------- EXPORT / IMPORT ---------- */
+
+function metaCviku(id){
+  for(const [kluc,T] of [['A',A],['B',B]]){
+    for(const b of T.bloky){
+      for(const c of b.cviky){
+        if(c.id===id) return {typ:kluc==='A'?'Tréning A':'Tréning B', den:kluc==='A'?'utorok':'štvrtok', cvik:c.n, skupina:b.n};
+      }
+    }
+  }
+  return {typ:'neznámy', den:'', cvik:id, skupina:''};
+}
+
+function isoDatum(d){
+  // d je v tvare "14.8." -> doplní rok podľa dnešného dátumu
+  const m=String(d).match(/(\d+)\.\s*(\d+)\./);
+  if(!m) return null;
+  const den=+m[1], mes=+m[2];
+  const dnes=new Date();
+  let rok=dnes.getFullYear();
+  // ak by dátum vyšiel do budúcnosti o viac ako mesiac, ide o minulý rok
+  const kandidat=new Date(rok,mes-1,den);
+  if(kandidat-dnes>31*24*3600*1000) rok--;
+  return rok+'-'+String(mes).padStart(2,'0')+'-'+String(den).padStart(2,'0');
+}
+
+function zostavJson(){
+  const zaznamy=[];
+  Object.keys(log).forEach(id=>{
+    const meta=metaCviku(id);
+    (log[id]||[]).forEach(x=>{
+      const p=parseZapis(x.v);
+      zaznamy.push({
+        datum: isoDatum(x.d),
+        datumZobrazenie: x.d,
+        typAktivity: meta.typ,
+        den: meta.den,
+        skupina: meta.skupina,
+        cvikId: id,
+        cvik: meta.cvik,
+        vaha: p.w,
+        jednotka: 'kg',
+        opakovania: p.reps,
+        serie: p.reps.length,
+        objem: p.objem,
+        poznamka: '',
+        surovyZapis: x.v
+      });
+    });
+  });
+  zaznamy.sort((a,b)=>String(b.datum||'').localeCompare(String(a.datum||'')));
+  return {
+    verzia: 1,
+    aplikacia: 'Tréningy A/B',
+    exportovane: new Date().toISOString(),
+    pocetZaznamov: zaznamy.length,
+    zaznamy: zaznamy
+  };
+}
+
+function exportuj(){
+  try{
+    const data=zostavJson();
+    if(!data.pocetZaznamov){ ioSprava('Nemáš zatiaľ žiadne zápisy na export.','bad'); return; }
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='treningy.json';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},300);
+    ioSprava('Hotovo. Uložených '+data.pocetZaznamov+' záznamov do treningy.json.','ok');
+  }catch(e){
+    ioSprava('Export zlyhal: '+e.message,'bad');
+  }
+}
+
+function spustImport(){
+  const inp=document.getElementById('importFile');
+  if(inp) inp.click();
+}
+
+async function nacitajSubor(ev){
+  const f=ev.target.files && ev.target.files[0];
+  if(!f) return;
+  try{
+    const txt=await f.text();
+    const data=JSON.parse(txt);
+    const zaznamy=Array.isArray(data)?data:(data.zaznamy||[]);
+    if(!zaznamy.length){ ioSprava('V súbore nie sú žiadne záznamy.','bad'); return; }
+
+    let pridane=0, preskocene=0, neznameCviky=0;
+    zaznamy.forEach(z=>{
+      const id=z.cvikId;
+      if(!id){ neznameCviky++; return; }
+      const d=z.datumZobrazenie || (z.datum ? (()=>{const[,m,dd]=z.datum.split('-');return (+dd)+'.'+(+m)+'.';})() : null);
+      const v=z.surovyZapis || (z.vaha!=null ? z.vaha+' kg · '+(z.opakovania||[]).join(',') : null);
+      if(!d || !v){ preskocene++; return; }
+      if(!log[id]) log[id]=[];
+      const duplikat=log[id].some(x=>x.d===d && x.v===v);
+      if(duplikat){ preskocene++; return; }
+      log[id].push({d:d, v:v});
+      pridane++;
+    });
+
+    // zoradiť podľa dátumu zostupne a orezať na 6
+    Object.keys(log).forEach(id=>{
+      log[id].sort((a,b)=>String(isoDatum(b.d)||'').localeCompare(String(isoDatum(a.d)||'')));
+      log[id]=log[id].slice(0,6);
+    });
+
+    await uloz();
+    let msg='Doplnených '+pridane+' záznamov.';
+    if(preskocene) msg+=' Preskočených '+preskocene+' (duplikáty alebo neúplné).';
+    if(neznameCviky) msg+=' '+neznameCviky+' bez rozpoznaného cviku.';
+    render();
+    setTimeout(()=>ioSprava(msg,'ok'),50);
+  }catch(e){
+    ioSprava('Súbor sa nepodarilo načítať. Skontroluj, či ide o treningy.json.','bad');
+  }finally{
+    ev.target.value='';
+  }
+}
+
+function ioSprava(text,typ){
+  const el=document.getElementById('ioMsg');
+  if(!el) return;
+  el.className='io-msg '+(typ||'ok');
+  el.textContent=text;
+}
+
 function renderProgres(){
   const sekcia=(T,nazov)=>{
     const items=vsetkyCviky(T).map(c=>{
@@ -420,6 +564,16 @@ function renderProgres(){
        <div class="facts">
          <div><div class="k">Zápisov spolu</div><div class="v">${spolu}</div></div>
        </div>
+     </div>`+
+    `<div class="io">
+       <h3>Záloha zápisov</h3>
+       <p>Export uloží všetky zápisy do súboru <b>treningy.json</b>. Import ich doplní späť — existujúce sa neprepíšu, duplikáty sa preskočia.</p>
+       <div class="io-row">
+         <button class="io-btn" onclick="exportuj()">Export</button>
+         <button class="io-btn alt" onclick="spustImport()">Import</button>
+       </div>
+       <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="nacitajSubor(event)">
+       <div id="ioMsg"></div>
      </div>`+
     sekcia(A,'Tréning A · utorok')+
     sekcia(B,'Tréning B · štvrtok')+
