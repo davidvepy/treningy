@@ -21,10 +21,12 @@
   .board{background:var(--deep);color:#fff;padding:16px 18px 0;}
   .board-top{font-family:'JetBrains Mono',monospace;font-size:10.5px;
     letter-spacing:.15em;text-transform:uppercase;color:#8FA9C4;}
-  .tabs{display:flex;margin-top:12px;}
-  .tab{flex:1;background:none;border:0;color:#5F7E9E;cursor:pointer;
-    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;
-    text-transform:uppercase;letter-spacing:.01em;padding:10px 1px 11px;
+  .tabs{display:flex;margin-top:12px;overflow-x:auto;scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{flex:0 0 auto;min-width:62px;background:none;border:0;color:#5F7E9E;cursor:pointer;
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;
+    text-transform:uppercase;letter-spacing:.02em;padding:10px 9px 11px;
     border-bottom:4px solid #1C3450;transition:color .18s,border-color .18s;}
   .tab.on{color:#fff;border-bottom-color:var(--center);}
   .tab span{display:block;font-family:'Barlow',sans-serif;font-weight:500;
@@ -85,6 +87,82 @@
   .fld .k{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.13em;
     text-transform:uppercase;color:var(--steel);margin-bottom:3px;}
   .fld .v{font-size:14px;line-height:1.55;color:#2A4056;}
+  .zoz{padding:0 2px;}
+  .zr{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    padding:11px 4px;border-bottom:1px solid #E7EDF3;}
+  .zr:last-child{border-bottom:0;}
+  .zn{font-family:'Barlow',sans-serif;font-size:14.5px;color:#22384E;flex:1;line-height:1.25;}
+  .zv{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;
+    color:#0F2438;text-align:right;white-space:nowrap;}
+  .zv em{display:block;font-family:'Barlow',sans-serif;font-weight:400;font-style:normal;
+    font-size:11px;color:#7B99B8;margin-top:1px;}
+  .zr-empty .zn{color:#8FA6BB;}
+  .zr-empty .zv{color:#C3D0DB;font-size:15px;}
+
+  /* --- Dnes --- */
+  .dr{display:flex;align-items:center;gap:11px;padding:13px 6px;border-bottom:1px solid #E7EDF3;}
+  .dr:last-child{border-bottom:0;}
+  .dr.klik{cursor:pointer;}
+  .dr.dnes{background:#EAF4EE;margin:0 -6px;padding-left:12px;padding-right:12px;border-radius:3px;}
+  .dd{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;
+    text-transform:uppercase;letter-spacing:.04em;color:#5F7E9E;width:82px;flex:0 0 82px;line-height:1.15;}
+  .dr.dnes .dd{color:#2E7D52;}
+  .dd span{display:block;font-family:'Barlow',sans-serif;font-weight:600;font-size:10px;
+    letter-spacing:.06em;color:#2E7D52;text-transform:uppercase;}
+  .dt{flex:1;}
+  .dt b{display:block;font-family:'Barlow',sans-serif;font-weight:600;font-size:15px;color:#12293E;}
+  .dt i{display:block;font-style:normal;font-size:12.5px;color:#6C8AA6;margin-top:1px;line-height:1.35;}
+
+  .tel{padding:4px 6px 10px;}
+  .tel > div{display:flex;justify-content:space-between;align-items:baseline;
+    padding:9px 0;border-bottom:1px solid #E7EDF3;}
+  .tel > div:last-child{border-bottom:0;}
+  .tel .k{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;
+    text-transform:uppercase;letter-spacing:.05em;color:#5F7E9E;}
+  .tel .v{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:#0F2438;}
+  .tel .v em{font-style:normal;font-family:'Barlow',sans-serif;font-weight:600;font-size:12px;margin-left:7px;}
+  .tel.prazdne{padding:14px 6px;color:#7B99B8;font-size:13.5px;}
+  .telform{display:flex;gap:7px;padding:4px 6px 10px;}
+  .telform input{flex:1;min-width:0;border:1px solid #CBD8E3;border-radius:3px;padding:11px 10px;
+    font-family:'Barlow',sans-serif;font-size:15px;color:#12293E;background:#fff;}
+  .telform button{flex:0 0 auto;background:#12293E;color:#fff;border:0;border-radius:3px;
+    padding:11px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;
+    text-transform:uppercase;letter-spacing:.05em;cursor:pointer;}
+  .tprazd{padding:12px 6px;color:#7B99B8;font-size:13px;}
+
+  /* --- odporucanie a nahrady --- */
+  .fld.next .k .az{background:#2E7D52;color:#fff;font-size:9.5px;padding:1px 5px;border-radius:2px;margin-left:5px;letter-spacing:.06em;}
+  .fld.next .k .rz{background:#B26A00;color:#fff;font-size:9.5px;padding:1px 5px;border-radius:2px;margin-left:5px;letter-spacing:.06em;}
+  .prw{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;}
+  .prw input{flex:1;min-width:130px;border:1px solid #BFD4C6;border-radius:3px;padding:8px 9px;
+    font-family:'Barlow',sans-serif;font-size:13.5px;background:#fff;color:#12293E;}
+  .prw button{background:#2E7D52;color:#fff;border:0;border-radius:3px;padding:8px 12px;
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13.5px;
+    text-transform:uppercase;letter-spacing:.04em;cursor:pointer;}
+  .prw button.alt{background:none;color:#2E7D52;border:1px solid #9CC5AE;}
+  .fld.swap{background:#F2F6FA;padding:9px 11px;border-radius:2px;}
+  .fld.swap .k{color:#4A6B87;}
+  .sw{margin-bottom:6px;font-size:13.5px;line-height:1.45;}
+  .sw:last-child{margin-bottom:0;}
+
+  /* --- log riadok 2 a casovac --- */
+  .log-row2{display:flex;gap:6px;margin-top:7px;}
+  .log-row2 input{flex:1;min-width:0;border:1px solid #CBD8E3;border-radius:3px;padding:9px 10px;
+    font-family:'Barlow',sans-serif;font-size:13.5px;background:#fff;color:#12293E;}
+  .tbtn{flex:0 0 auto;background:#fff;border:1px solid #12293E;color:#12293E;border-radius:3px;
+    padding:9px 12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;
+    letter-spacing:.03em;cursor:pointer;white-space:nowrap;}
+  .pzn{display:block;font-style:normal;font-size:12px;color:#7B99B8;margin-top:1px;}
+  .casbar{position:fixed;left:0;right:0;bottom:0;z-index:99;background:#12293E;color:#fff;
+    display:flex;align-items:center;gap:11px;padding:13px 16px;
+    box-shadow:0 -3px 14px rgba(0,0,0,.22);}
+  .casbar.hotovo{background:#2E7D52;}
+  .casbar .ct{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:26px;
+    letter-spacing:.02em;min-width:62px;}
+  .casbar .cl{flex:1;font-family:'Barlow',sans-serif;font-size:12.5px;color:#B9CDDF;}
+  .casbar button{background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:3px;
+    padding:8px 13px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;
+    text-transform:uppercase;letter-spacing:.05em;cursor:pointer;}
   .fld.next{background:#EAF4EE;padding:9px 11px;border-radius:2px;}
   .fld.next .k{color:#2E7D52;}
   .fld.next .v{color:#1F5C3B;font-weight:600;}
@@ -173,40 +251,40 @@ const A={
   rozcvicka:'<ul><li>Bicykel 3 min voľne</li><li>Face pulls, 2 × 15 veľmi ľahko</li><li>Prvá séria tlakov s prázdnou osou</li></ul><p>Kratšia rozcvička je možná preto, že prvý cvik má rozbehovú sériu v sebe.</p>',
   bloky:[
     {n:'Ťažké tlaky', cas:'19 min', cviky:[
-      {id:'a1', n:'Tlaky na rovnej lavičke', alt:'Veľká činka · bench press', sets:'4 × 6–8 · pauza 2,5 min', key:true,
+      {id:'a1', n:'Tlaky na rovnej lavičke', alt:'Veľká činka · bench press', sets:'4 × 6–8 · pauza 2,5 min', ser:4, mn:6, mx:8, krok:2.5, prio:'v', pauza:150, nah:[{n:'Tlaky na šikmej s činkou',poz:'Ak je rovná lavica obsadená. Sklon 15°, váhu ber o 5 kg nižšiu.'},{n:'Tlaky jednoručkami na rovnej',poz:'Iný cvik, iné čísla. Zapíš ako variant, nech graf neklame.'}], key:true,
        ako:'Lopatky stiahni k sebe a dole, chodidlá pevne na zemi. Činku spúšťaj k spodnej časti hrudníka, nie ku krku. Hore vytlač bez blokovania lakťov.',
        preco:'Základný stavebný cvik na prsia. Najviac váhy, najväčší podnet, preto je prvý.',
-       chyba:'Odtrhávať zadok z lavičky alebo odrážať činku od hrudníka. Ak to potrebuješ, je priťažká.', dalej:'Ďalej <b>55 kg</b>, cieľ 4 × 6. Ak posledná séria nedá 6, vráť sa na 52,5 a pridaj jednu sériu.'},
-      {id:'a2', n:'Tlaky na šikmej lavičke', alt:'Jednoručky · sklon 30°', sets:'3 × 8–10 · pauza 2 min', key:true,
+       chyba:'Odtrhávať zadok z lavičky alebo odrážať činku od hrudníka. Ak to potrebuješ, je priťažká.'},
+      {id:'a2', n:'Tlaky na šikmej — jednoručky', alt:'Sklon 30° · váha na JEDNU ruku', sets:'3 × 8–10 · pauza 2 min', ser:3, mn:8, mx:10, krok:2.5, prio:'v', pauza:120, nah:[{n:'Tlaky na šikmej s činkou',poz:'Váha nie je porovnateľná s jednoručkami. Vždy označ variant.'}], key:true,
        ako:'Lavička na 30 stupňov. Jednoručky na úrovni hrudníka, vytlač hore. Na konci ich nedávaj k sebe, drž nad hrudníkom.',
        preco:'Horná časť hrudníka. Toto robí ten vypnutý hrudník, ktorý chceš.',
-       chyba:'Príliš strmá lavička. Nad 45 stupňov už robíš ramená, nie prsia.', dalej:'Drž <b>20 kg</b>, kým nedáš 3 × 10. Až potom 22,5 kg.'}
+       chyba:'Príliš strmá lavička. Nad 45 stupňov už robíš ramená, nie prsia.'}
     ]},
     {ss:true, n:'Superset 1', cas:'10 min', pozn:'4 kolá · po dvojici pauza 75 s', cviky:[
-      {id:'a3', n:'Upažovanie s jednoručkami', alt:'Lateral raise · v stoji', sets:'4 × 12–15', key:true,
+      {id:'a3', n:'Upažovanie s jednoručkami', alt:'Lateral raise · v stoji', sets:'4 × 12–15', ser:4, mn:12, mx:15, krok:2.5, prio:'o', pauza:75, nah:[{n:'Upažovanie na kladke',poz:'Rovnaká práca, plynulejšie napätie. Váha bude nižšia.'}], key:true,
        ako:'Jednoručky pri bokoch, dvíhaj do strán po výšku ramien. <b>Ťaháš lakťami, nie rukami</b> — predstav si šnúrky priviazané na lakťoch, za ktoré ťa niekto ťahá do strán.',
        preco:'Najdôležitejší cvik pre šírku ramien v celom programe. Bočná hlava deltu je jediný sval, ktorý ti opticky rozšíri ramená.',
-       chyba:'Priťažké jednoručky a hojdanie telom. Ak sa hojdáš, uber váhu. Tu vyhráva technika, nie kilá.', dalej:'Drž <b>10 kg</b>, cieľ 4 × 14. Sem kilá nepridávaj, delty rastú z opakovaní.'},
-      {id:'a4', n:'Triceps na kladke s lanom', alt:'Rope pushdown', sets:'4 × 10–12',
+       chyba:'Priťažké jednoručky a hojdanie telom. Ak sa hojdáš, uber váhu. Tu vyhráva technika, nie kilá.'},
+      {id:'a4', n:'Triceps na kladke s lanom', alt:'Rope pushdown', sets:'4 × 10–12', ser:4, mn:10, mx:12, krok:2.5, prio:'v', pauza:75, nah:[{n:'Sťahovanie kladky rovnou tyčou',poz:'Ak je lano obsadené. Menší rozsah v hornej fáze.'}],
        ako:'Stoj pred hornou kladkou, <b>lakte prilepené k bokom</b>. Tlač lano dole a v dolnej polohe ho jemne rozťahuj do strán.',
        preco:'Triceps tvorí dve tretiny objemu ruky. Väčšie ruky sa robia tricepsom, nie bicepsom.',
-       chyba:'Odlepovať lakte od tela. Vtedy prácu preberá rameno.', dalej:'Drž <b>20 kg</b>, kým nedáš 4 × 12.'}
+       chyba:'Odlepovať lakte od tela. Vtedy prácu preberá rameno.'}
     ]},
     {ss:true, n:'Superset 2', cas:'8 min', pozn:'3 kolá · po dvojici pauza 60 s', cviky:[
-      {id:'a5', n:'Rozpažovanie na kladkách', alt:'Peck deck alebo kabelový fly', sets:'3 × 12–15',
+      {id:'a5', n:'Rozpažovanie na kladkách', alt:'Peck deck alebo kabelový fly', sets:'3 × 12–15', ser:3, mn:12, mx:15, krok:2.5, prio:'v', pauza:60, nah:[{n:'Pectoral machine',poz:'Iná váha aj dráha. Vždy označ variant, inak graf ukáže falošný skok.'}],
        ako:'Lakte mierne pokrčené a v jednej polohe. Ťaháš ruky oblúkom pred seba, ako keby si niekoho objímal. Na konci stlač hrudník.',
        preco:'Dotvaruje prsia a naťahuje ich v spodnej polohe. Tu nejde o váhu, ale o pocit ťahu.',
-       chyba:'Ohýbať a naťahovať lakte. Potom z toho je tlak, nie rozpažovanie.', dalej:'<b>10 kg</b> podľa pocitu ťahu. Drž 3 série, nie 4.'},
-      {id:'a6', n:'Francúzsky tlak nad hlavu', alt:'Jednoručka obojručne · overhead extension', sets:'3 × 10–12',
+       chyba:'Ohýbať a naťahovať lakte. Potom z toho je tlak, nie rozpažovanie.'},
+      {id:'a6', n:'Francúzsky tlak nad hlavu', alt:'Jednoručka obojručne · overhead extension', sets:'3 × 10–12', ser:3, mn:10, mx:12, krok:2.5, prio:'v', pauza:60, nah:[{n:'Triceps nad hlavu na kladke',poz:'Rovnaká hlava tricepsu, plynulejšie napätie.'}],
        ako:'V sede, jednu ťažkú jednoručku drž oboma rukami nad hlavou. Spúšťaj za hlavu ohybom v lakťoch, lakte smerujú dopredu a nehýbu sa.',
        preco:'<b>Dlhá hlava tricepsu</b> — tá tvorí objem ruky zospodu a bez cviku nad hlavou ju nezasiahneš.',
-       chyba:'Roztvárať lakte do strán. Drž ich pri hlave.', dalej:'<b>25 kg</b>, ale <b>prehoď poradie v supersete</b> — najprv francúzsky tlak, potom rozpažovanie.'}
+       chyba:'Roztvárať lakte do strán. Drž ich pri hlave.'}
     ]},
     {n:'Stehná', cas:'7 min', cviky:[
-      {id:'a7', n:'Leg Press', alt:'Tlak nohami na stroji', sets:'3 × 10–12 · pauza 90 s',
+      {id:'a7', n:'Leg Press', alt:'Tlak nohami na stroji', sets:'3 × 10–12 · pauza 90 s', ser:3, mn:10, mx:12, krok:10, prio:'v', pauza:90, nah:[{n:'Hack drep',poz:'Väčší nárok na driek. Pri citlivých krížoch radšej nie.'}],
        ako:'Chrbát celý opretý, nohy na platni na šírku ramien. Spusti, kým nie sú kolená v 90 stupňoch, vytlač späť. <b>Kolená na konci nenaťahuj dobiela.</b>',
        preco:'Stehná a zadok. Bezpečná náhrada drepu, keďže máš chrbát opretý a vysadenú panvu.',
-       chyba:'Púšťať tak hlboko, že sa spodok chrbta odlepí od sedadla. Tam prestaň.', dalej:'Pridaj na <b>60 kg</b>. 40 je pod tvojou úrovňou aj na udržanie.'}
+       chyba:'Púšťať tak hlboko, že sa spodok chrbta odlepí od sedadla. Tam prestaň.'}
     ]}
   ]
 };
@@ -218,40 +296,40 @@ const B={
   rozcvicka:'<ul><li>Bicykel 3 min voľne</li><li>Face pulls, 2 × 15 ľahko</li><li>Sťahovanie kladky ľahko, 15 opakovaní</li></ul><p>Po zápase je telo stuhnuté — rozcvičku dnes nepreskakuj.</p>',
   bloky:[
     {n:'Ťažké ťahy', cas:'19 min', cviky:[
-      {id:'b1', n:'Sťahovanie hornej kladky', alt:'Široký nadhmat · lat pulldown', sets:'4 × 8–10 · pauza 2,5 min', key:true,
+      {id:'b1', n:'Sťahovanie hornej kladky', alt:'Široký nadhmat · lat pulldown', sets:'4 × 8–10 · pauza 2,5 min', ser:4, mn:8, mx:10, krok:2.5, prio:'v', pauza:150, nah:[{n:'Príťah na kladke v sede',poz:'Iná rovina ťahu, hrúbka namiesto šírky. Označ variant.'},{n:'Zhyby s dopomocou',poz:'Ak je kladka obsadená.'}], key:true,
        ako:'Chyť hrazdu širšie ako ramená. <b>Najprv stiahni lopatky dole</b>, až potom ťahaj k hornej časti hrudníka. Hrudník vypnutý, mierny záklon trupu.',
        preco:'Šírka chrbta. Toto robí V-tvar, ktorý pri úzkom páse tvorí celú siluetu.',
-       chyba:'Ťahať len rukami. Pohyb začína lopatkami, nie bicepsom. Ak dáš nad 8 čistých zhybov, rob radšej zhyby.', dalej:'Ďalej <b>63 kg</b>, 4 × 8.'},
-      {id:'b2', n:'Príťahy v predklone', alt:'Veľká činka alebo T-Bar Row', sets:'4 × 8–10 · pauza 2 min', key:true,
+       chyba:'Ťahať len rukami. Pohyb začína lopatkami, nie bicepsom. Ak dáš nad 8 čistých zhybov, rob radšej zhyby.'},
+      {id:'b2', n:'Príťahy v predklone', alt:'Veľká činka alebo T-Bar Row', sets:'4 × 8–10 · pauza 2 min', ser:4, mn:8, mx:10, krok:2.5, prio:'v', pauza:120, nah:[{n:'Príťah v predklone s činkou',poz:'Väčší nárok na driek. Pri citlivých krížoch radšej jednoručku.'}], key:true,
        ako:'Predklon asi 45 stupňov, chrbát rovný, kolená mierne pokrčené. Ťahaj činku <b>k pupku, nie k hrudníku</b>. Lakte idú dozadu popri tele.',
        preco:'Hrúbka chrbta. To je to, čo robí chrbát mohutným zboku.',
-       chyba:'Guliť chrbát alebo sa narovnávať pri každom opakovaní. Trup drž pevný celú sériu.', dalej:'Ďalej <b>25 kg</b> jednoručne, 4 × 8.'}
+       chyba:'Guliť chrbát alebo sa narovnávať pri každom opakovaní. Trup drž pevný celú sériu.'}
     ]},
     {ss:true, n:'Superset 1', cas:'10 min', pozn:'4 kolá · po dvojici pauza 75 s', cviky:[
-      {id:'b3', n:'Reverzné rozpažovanie', alt:'Peck deck naopak alebo v predklone', sets:'4 × 15', key:true,
+      {id:'b3', n:'Reverzné rozpažovanie', alt:'Peck deck naopak alebo v predklone', sets:'4 × 15', ser:4, mn:15, mx:18, krok:2.5, prio:'o', pauza:75, nah:[{n:'Face pull na kladke',poz:'Rovnaká partia, lepšia kontrola. Váha bude iná.'}], key:true,
        ako:'Sadni si k peck decku čelom a roztváraj ruky dozadu. Ak ho nemáš, predklon s ľahkými jednoručkami a dvíhaj do strán a dozadu.',
        preco:'<b>Zadné deltoidy robia rameno okrúhlym z profilu.</b> Bez nich vyzerá rameno sploštene, aj keď máš bočnú hlavu.',
-       chyba:'Priťažká váha a švihanie. Toto je ľahký cvik s vysokým počtom opakovaní.', dalej:'<b>7 kg</b>, 4 × 15. Tu vyhráva rozsah, nie váha.'},
-      {id:'b4', n:'Biceps kladivovým úchopom', alt:'Hammer curl · v sede', sets:'4 × 10–12',
+       chyba:'Priťažká váha a švihanie. Toto je ľahký cvik s vysokým počtom opakovaní.'},
+      {id:'b4', n:'Biceps kladivovým úchopom', alt:'Hammer curl · v sede', sets:'4 × 10–12', ser:4, mn:10, mx:12, krok:2.5, prio:'v', pauza:75, nah:[{n:'Biceps na kladke, neutrálny úchop',poz:'Plynulejšie napätie.'}],
        ako:'Sad si na lavičku s operadlom, <b>dlane smerujú k sebe</b> ako keby si držal kladivo. Dvíhaj k ramenám, dole púšťaj pomaly.',
        preco:'Biceps a predlaktie naraz. Kladivový úchop robí rameno hrubšie zboku než klasický biceps.',
-       chyba:'Hojdať telom. Sed to väčšinou vyrieši sám.', dalej:'Ďalej <b>20 kg</b>, 4 × 10.'}
+       chyba:'Hojdať telom. Sed to väčšinou vyrieši sám.'}
     ]},
     {ss:true, n:'Superset 2', cas:'8 min', pozn:'3 kolá · po dvojici pauza 60 s', cviky:[
-      {id:'b5', n:'Sťahovanie kladky vystretými rukami', alt:'Straight-arm pulldown', sets:'3 × 12–15',
+      {id:'b5', n:'Sťahovanie kladky vystretými rukami', alt:'Straight-arm pulldown', sets:'3 × 12–15', ser:3, mn:12, mx:15, krok:2.5, prio:'v', pauza:60, nah:[{n:'Pullover s jednoručkou',poz:'Ak je kladka obsadená. Ťažšie sa dávkuje.'}],
        ako:'Ruky vystreté s mierne pokrčenými lakťami, ktoré sa nehýbu. Ťahaj tyč oblúkom zhora až k stehnám.',
        preco:'Široký sval chrbta a <b>serratus</b> — tie „prsty" po bokoch rebier, ktoré robia atletický vzhľad.',
-       chyba:'Ohýbať lakte. Potom z toho je triceps, nie chrbát.', dalej:'Drž <b>20 kg</b>, aby sa dalo porovnávať.'},
-      {id:'b6', n:'Biceps na kazateľskej lavici', alt:'Preacher curl', sets:'3 × 10–12',
+       chyba:'Ohýbať lakte. Potom z toho je triceps, nie chrbát.'},
+      {id:'b6', n:'Biceps na kazateľskej lavici', alt:'Preacher curl', sets:'3 × 10–12', ser:3, mn:10, mx:12, krok:2.5, prio:'v', pauza:60, nah:[{n:'Biceps s jednoručkami v sede',poz:'Ak je kazateľská obsadená.'}],
        ako:'Ramená polož na šikmú opierku, ruky visia dole. Dvíhaj činku k sebe. <b>Dole nepúšťaj do úplného vystretia</b>, nechaj lakeť mierne pokrčený.',
        preco:'Opierka fixuje ramená, takže sa nedá švihať a biceps dostane všetko.',
-       chyba:'Dvíhať zadok z lavičky pri posledných opakovaniach.', dalej:'<b>25 kg</b>, 3 × 10.'}
+       chyba:'Dvíhať zadok z lavičky pri posledných opakovaniach.'}
     ]},
     {n:'Stehná a zadok', cas:'7 min', cviky:[
-      {id:'b7', n:'Rumunský mŕtvy ťah', alt:'RDL · s popruhmi', sets:'3 × 10 · pauza 90 s',
+      {id:'b7', n:'Rumunský mŕtvy ťah', alt:'RDL · s popruhmi', sets:'3 × 10 · pauza 90 s', ser:3, mn:10, mx:10, krok:5, prio:'v', pauza:90, nah:[{n:'Hip thrust',poz:'Zadok bez zaťaženia drieku. Dobrá voľba, ak sa kríže ozvú.'}],
        ako:'Kolená len mierne pokrčené. Zadok tlač dozadu, chrbát rovný, činka kĺže popri stehnách dole. Keď ucítiš silný ťah v zadných stehnách, vráť sa hore.',
        preco:'Zadná strana stehien a zadok. Zároveň <b>rovná tú vysadenú panvu</b>, čo ti opticky uberie pár centimetrov brucha.',
-       chyba:'Guliť chrbát. Ohýbaš sa v bedrách, nie v chrbtici. <b>Popruhy sú tu preto, aby váhu nedržal trapéz.</b>', dalej:'<b>Znížená váha o 20 %</b> kvôli krížom, ešte tri týždne. Hore zastav v neutrále, žiadny záklon.'}
+       chyba:'Guliť chrbát. Ohýbaš sa v bedrách, nie v chrbtici. <b>Popruhy sú tu preto, aby váhu nedržal trapéz.</b>'}
     ]}
   ]
 };
@@ -308,59 +386,54 @@ const C={
   rozcvicka:'<ul><li>Bicykel 3 min voľne</li><li>Face pulls, 2 × 15 veľmi ľahko</li><li>Krúženie ramenami, 10 × dopredu a dozadu</li></ul><p>Po piatkovom behu sú lýtka a bedrá stuhnuté. Rozcvičku dnes neskracuj.</p>',
   bloky:[
     {n:'Tlak nad hlavu', cas:'9 min', cviky:[
-      {id:'c1', n:'Tlaky nad hlavu v sede', alt:'Jednoručky · shoulder press', sets:'3 × 8–10 · pauza 2 min', key:true,
+      {id:'c1', n:'Tlaky nad hlavu v sede', alt:'Jednoručky · shoulder press', sets:'3 × 8–10 · pauza 2 min', ser:3, mn:8, mx:10, krok:2.5, prio:'v', pauza:120, nah:[{n:'Tlaky nad hlavu na stroji',poz:'Ak nie sú voľné jednoručky. Iná váha, označ variant.'}], key:true,
        ako:'Operadlo takmer kolmo, chrbát celý opretý. Jednoručky od úrovne uší tlač hore. <b>Rebrá drž dole</b> — ak sa prehneš v drieku, tlačíš chrbticou, nie ramenami.',
        preco:'Predná a bočná hlava deltu naraz. V utorok robíš tlaky vodorovne, tu ich robíš zvislo — iný uhol, iný podnet.',
-       chyba:'Prehnúť sa v drieku, aby si dotlačil poslednú sériu. <b>Pri tvojej vysadenej panve je to presne ten pohyb, ktorý ťa bolí.</b> Radšej uber váhu.',
-       dalej:'Drž <b>17,5 kg</b>, cieľ 3 × 10. Rozcvičnú sériu môžeš nechať na 15 kg.'}
+       chyba:'Prehnúť sa v drieku, aby si dotlačil poslednú sériu. <b>Pri tvojej vysadenej panve je to presne ten pohyb, ktorý ťa bolí.</b> Radšej uber váhu.'}
     ]},
     {ss:true, n:'Superset 1', cas:'9 min', pozn:'3 kolá · po dvojici pauza 75 s', cviky:[
-      {id:'c2', n:'Upažovanie na kladke', alt:'Jednou rukou · cable lateral raise', sets:'3 × 15 na stranu', key:true,
+      {id:'c2', n:'Upažovanie na kladke', alt:'Jednou rukou · cable lateral raise', sets:'3 × 15 na stranu', ser:3, mn:15, mx:18, krok:2.5, prio:'o', pauza:75, nah:[{n:'Upažovanie s jednoručkami',poz:'Rovnaká práca. Váha bude vyššia, označ variant.'}], key:true,
        ako:'Stoj bokom k spodnej kladke, rukoväť chyť vzdialenejšou rukou pred telom. Ťahaj do strany po výšku ramena. <b>Kladka drží napätie aj v dolnej polohe</b>, na rozdiel od jednoručiek.',
        preco:'Druhá dávka pre bočné delty v týždni. Toto je tvoja najvyššia estetická priorita a raz týždenne na ňu nestačí.',
-       chyba:'Ťahať telom. Druhou rukou sa chyť stojana, tým si to zafixuješ.',
-       dalej:'Drž <b>5 kg</b>, cieľ 3 × 18. Až potom skús 7,5 kg na 15. Kilá sem nepatria.'},
-      {id:'c3', n:'Príťah na kladke v sede', alt:'Neutrálny úchop · seated row', sets:'3 × 10–12',
+       chyba:'Ťahať telom. Druhou rukou sa chyť stojana, tým si to zafixuješ.'},
+      {id:'c3', n:'Príťah na kladke v sede', alt:'Neutrálny úchop · seated row', sets:'3 × 10–12', ser:3, mn:10, mx:12, krok:5, prio:'v', pauza:75, nah:[{n:'Príťah na T-tyči',poz:'Väčší nárok na driek.'}],
        ako:'Chrbát rovný, hrudník von. <b>Najprv stiahni lopatky k sebe</b>, až potom ťahaj rukoväť k bruchu. Späť púšťaj pomaly a nechaj lopatky rozísť.',
        preco:'Hrúbka chrbta, druhá dávka v týždni. Zároveň ťahá ramená dozadu, čo ti opticky vyrovná postoj.',
-       chyba:'Zaklonením celého trupu si pomáhať pri ťahu. Trup drž na mieste.',
-       dalej:'Drž <b>60 kg</b>, cieľ 3 × 12 vo všetkých sériách. Potom 65 kg.'}
+       chyba:'Zaklonením celého trupu si pomáhať pri ťahu. Trup drž na mieste.'}
     ]},
     {ss:true, n:'Superset 2', cas:'8 min', pozn:'3 kolá · po dvojici pauza 60 s', cviky:[
-      {id:'c4', n:'Rozpažovanie na kladkách', alt:'Cable fly · spodné kladky smerom hore', sets:'3 × 12–15',
+      {id:'c4', n:'Rozpažovanie na kladkách', alt:'Cable fly · spodné kladky smerom hore', sets:'3 × 12–15', ser:3, mn:12, mx:15, krok:2.5, prio:'v', pauza:60, nah:[{n:'Pectoral machine',poz:'Iná váha aj dráha. VŽDY označ variant.'}],
        ako:'Kladky nastav nízko a ťahaj rukoväte oblúkom <b>šikmo hore a pred seba</b>, ako keby si niekoho objímal zospodu. Lakte mierne pokrčené a v jednej polohe celý čas. Na konci stlač hrudník a chvíľu podrž.',
        preco:'Prsia druhýkrát v týždni bez akejkoľvek záťaže na chrbticu. <b>Spodný uhol berie hornú časť hrudníka</b>, ktorá je pri tvojej estetike dôležitejšia než stredná.',
-       chyba:'Ohýbať a naťahovať lakte. Potom z toho je tlak, nie rozpažovanie. Tu nejde o váhu, ale o pocit ťahu na začiatku pohybu.',
-       dalej:'<b>15 kg</b> na stroji sedí presne — posledné dve opakovania majú byť ťažké, ale čisté. Až potom 17,5 kg.'},
-      {id:'c5', n:'Biceps kladivovým úchopom', alt:'Hammer curl · v stoji', sets:'3 × 12',
+       chyba:'Ohýbať a naťahovať lakte. Potom z toho je tlak, nie rozpažovanie. Tu nejde o váhu, ale o pocit ťahu na začiatku pohybu.'},
+      {id:'c5', n:'Biceps kladivovým úchopom', alt:'Hammer curl · v stoji', sets:'3 × 12', ser:3, mn:12, mx:12, krok:2.5, prio:'v', pauza:60, nah:[{n:'Biceps na kladke, neutrálny úchop',poz:'Plynulejšie napätie.'}],
        ako:'Dlane smerujú k sebe, lakte pri tele. Dvíhaj k ramenám, dole púšťaj pomaly na dva razy.',
        preco:'Druhá dávka pre biceps a predlaktie. Ruky sú tvoja priorita a raz týždenne je málo.',
-       chyba:'Hojdať telom. Ak sa hojdáš, je to o 2 kg priťažké.',
-       dalej:'Drž <b>17,5 kg</b>, kým nedáš 3 × 12. Posledná séria pokojne do zlyhania.'}
+       chyba:'Hojdať telom. Ak sa hojdáš, je to o 2 kg priťažké.'}
     ]},
     {ss:true, n:'Superset 3', cas:'10 min', pozn:'3 kolá · po dvojici pauza 60 s', cviky:[
-      {id:'c7', n:'Face pull na kladke', alt:'Zadné delty · lano vo výške tváre', sets:'3 × 15–20', key:true,
+      {id:'c7', n:'Face pull na kladke', alt:'Zadné delty · lano vo výške tváre', sets:'3 × 15–20', ser:3, mn:15, mx:20, krok:2.5, prio:'o', pauza:60, nah:[{n:'Reverzné rozpažovanie s jednoručkami',poz:'Ak je kladka obsadená. Horšia kontrola.'}], key:true,
        ako:'Lano vo výške tváre, kladka nastavená na úroveň hlavy. Ťahaj lano <b>k čelu a lakte roztiahni do strán</b>, na konci vytoč palce dozadu. Nie k brade, nie k hrudi.',
        preco:'<b>Jediná dávka pre zadné delty v týždni bola vo štvrtok — teraz sú dve.</b> Zadné delty ťahajú ramená dozadu, čo ti priamo vyrovná ten predsunutý postoj z fotiek. Estetika ramien nie je len o bočných deltách.',
-       chyba:'Ťahať s príliš veľkou váhou a zapojiť trapéz. Ak cítiš ťah hore v krku a nie vzadu na ramene, uber váhu na polovicu.',
-       dalej:'Začni na <b>10 kg</b>, 3 × 15. Sem patrí ľahká váha a veľa opakovaní.'},
-      {id:'c8', n:'Triceps nad hlavu na kladke', alt:'Lano · overhead extension', sets:'3 × 12',
+       chyba:'Ťahať s príliš veľkou váhou a zapojiť trapéz. Ak cítiš ťah hore v krku a nie vzadu na ramene, uber váhu na polovicu.'},
+      {id:'c8', n:'Triceps nad hlavu na kladke', alt:'Lano · overhead extension', sets:'3 × 12', ser:3, mn:12, mx:12, krok:2.5, prio:'v', pauza:60, nah:[{n:'Francúzsky tlak s EZ tyčou',poz:'Rovnaká hlava tricepsu.'}],
        ako:'Chrbtom ku kladke, lano nad hlavou, lakte pri ušiach a <b>zafixované</b>. Naťahuj len predlaktie, hore stlač triceps a chvíľu podrž.',
        preco:'Triceps mal doteraz len jednu poriadnu dávku v utorok. Poloha nad hlavou berie <b>dlhú hlavu tricepsu</b>, ktorá tvorí objem ramena zospodu a v utorkovom francúzskom tlaku ju dostávaš unavenú.',
-       chyba:'Rozťahovať lakte do strán. Vtedy prácu preberajú ramená. Lakte drž úzko a nehýb nimi.',
-       dalej:'Začni na <b>15 kg</b>, 3 × 12. Tu ide o kontrolu, nie o kilá.'}
+       chyba:'Rozťahovať lakte do strán. Vtedy prácu preberajú ramená. Lakte drž úzko a nehýb nimi.'}
     ]},
     {n:'Nohy a panva', cas:'6 min', cviky:[
-      {id:'c6', n:'Bulharský drep', alt:'Jednonožný drep · zadná noha na lavičke', sets:'2 × 10 na nohu · pauza 60 s', key:true,
+      {id:'c6', n:'Bulharský drep', alt:'Jednonožný drep · zadná noha na lavičke', sets:'2 × 10 na nohu · pauza 60 s', ser:3, mn:10, mx:10, krok:4, prio:'v', pauza:60, nah:[{n:'Výpady na mieste',poz:'Podobný nárok na panvu. Použi, ak nie je lavička.'},{n:'Leg press — NIE JE náhrada',poz:'Bulharský drep je tu kvôli panve, nie stehnám. Leg press flexor bedra nenaťahuje a nerieši rozdiel medzi nohami. Radšej urob 2×10 vlastnou váhou doma.'}], key:true,
        ako:'Zadné priehlavie na lavičke, predná noha asi krok pred ňou. Klesaj kolmo dole, predné koleno nad chodidlom. <b>Zadok zadnej nohy drž stiahnutý a panvu podsunutú</b> celý čas.',
        preco:'Jediný nohový cvik navyše, a je tu kvôli panve, nie kvôli stehnám. <b>Naťahuje flexor bedra zadnej nohy pod záťažou</b> — presne to, čo pri anteverzii potrebuješ. Zároveň rieši rozdiel medzi ľavou a pravou nohou z hokeja.',
-       chyba:'Nechať panvu vyklopiť dopredu a prehnúť sa v drieku. Vtedy z toho je zaťažený driek, nie stehno. Rob to najprv <b>len s vlastnou váhou</b>.',
-       dalej:'Ešte <b>jeden týždeň vlastnou váhou</b>, 3 × 10 na nohu. Potom jednoručky 2 × 8 kg.'}
+       chyba:'Nechať panvu vyklopiť dopredu a prehnúť sa v drieku. Vtedy z toho je zaťažený driek, nie stehno. Rob to najprv <b>len s vlastnou váhou</b>.'}
     ]}
   ]
 };
 
-let log={}, aktivny='A', otvorene={};
+let log={}, aktivny='D', otvorene={};
+let prepis={}, telo=[];
+const PREPIS_KLUC=KEY+'-prepis';
+const TELO_KLUC=KEY+'-telo';
 
 /* Funguje aj v Claude, aj ako samostatná stranka na GitHub Pages. */
 const ULOZISKO={
@@ -400,6 +473,21 @@ const SEED_C={
   c5:'17,5 kg · 12,12,11',
   c6:'vlastná váha · 10,10,10 na nohu'
 };
+const CIST_KLUC=KEY+'-cistenie-a2';
+async function vycistiA2(){
+  const hotovo=await ULOZISKO.get(CIST_KLUC);
+  if(hotovo) return false;
+  let zmena=false;
+  if(log['a2'] && log['a2'].length){
+    const pred=log['a2'].length;
+    log['a2']=log['a2'].filter(x=>x.d!=='11.8.');
+    if(log['a2'].length!==pred) zmena=true;
+  }
+  await ULOZISKO.set('1',CIST_KLUC);
+  if(zmena) await uloz();
+  return zmena;
+}
+
 async function doplnSeed(){
   let pridane=0;
   const davky=[[SEED_KLUC,SEED,'18.8.'],[SEED_C_KLUC,SEED_C,'22.8.']];
@@ -420,9 +508,13 @@ async function doplnSeed(){
 async function nacitaj(){
   const v=await ULOZISKO.get();
   if(v){try{log=JSON.parse(v);}catch(e){}}
+  const pv=await ULOZISKO.get(PREPIS_KLUC);
+  if(pv){try{prepis=JSON.parse(pv)||{};}catch(e){}}
+  const tv=await ULOZISKO.get(TELO_KLUC);
+  if(tv){try{telo=JSON.parse(tv)||[];}catch(e){}}
   try{await doplnSeed();}catch(e){}
-  const d=new Date().getDay();
-  aktivny=(d===4||d===5)?'B':'A';
+  try{await vycistiA2();}catch(e){}
+  aktivny='D';
   render();
 }
 async function uloz(){
@@ -438,11 +530,15 @@ function prepniTab(t){aktivny=t;otvorene={};render();window.scrollTo(0,0);}
 function prepniCvik(id){otvorene[id]=!otvorene[id];render();}
 async function zapis(id){
   const el=document.getElementById('in-'+id);
+  const pe=document.getElementById('pz-'+id);
   const v=(el.value||'').trim();
-  if(!v){chyba('Napíš, čo si dal. Napríklad: 30 kg 10,10,9,8');return;}
+  const pz=pe?(pe.value||'').trim():'';
+  if(!v){chyba('Napíš, čo si dal. Napríklad: 55 kg · 6,6,6,6');return;}
   const d=new Date();
   if(!log[id])log[id]=[];
-  log[id].unshift({d:d.getDate()+'.'+(d.getMonth()+1)+'.',v:v});
+  const zaz={d:d.getDate()+'.'+(d.getMonth()+1)+'.',v:v};
+  if(pz) zaz.p=pz;
+  log[id].unshift(zaz);
   log[id]=log[id].slice(0,6);
   await uloz();render();
 }
@@ -450,10 +546,35 @@ async function zapis(id){
 function exHtml(c,n){
   const z=log[c.id]||[];
   const hist=z.length
-    ? `<div class="last">${z.map((x,j)=>j===0
-        ?`<div><b>Naposledy</b> · ${x.d} · ${x.v}</div>`
-        :`<div class="old">${x.d} · ${x.v}</div>`).join('')}</div>`
+    ? `<div class="last">${z.map((x,j)=>{
+        const pz=x.p?` <em class="pzn">${x.p}</em>`:'';
+        return j===0
+          ?`<div><b>Naposledy</b> · ${x.d} · ${x.v}${pz}</div>`
+          :`<div class="old">${x.d} · ${x.v}${pz}</div>`;
+      }).join('')}
+      <button class="pdel" onclick="zmazPosledny('${c.id}')">Zmazať posledný zápis</button></div>`
     : `<div class="last">Zatiaľ bez zápisu.</div>`;
+
+  const odp = c.nolog?null:odporucanie(c);
+  const odpHtml = odp ? `
+    <div class="fld next">
+      <div class="k">Dnes cvič ${odp.rucne?'<span class="rz">ručne</span>':'<span class="az">auto</span>'}</div>
+      <div class="v">${odp.text}</div>
+      <div class="prw">
+        <input id="pr-${c.id}" type="text" placeholder="Vlastné odporúčanie…" value="${odp.rucne?String(prepis[c.id]).replace(/"/g,'&quot;'):''}">
+        <button onclick="ulozPrepis('${c.id}')">Ulož</button>
+        ${odp.rucne?`<button class="alt" onclick="zrusPrepis('${c.id}')">Späť na auto</button>`:''}
+      </div>
+    </div>` : '';
+
+  const nahHtml = (c.nah&&c.nah.length) ? `
+    <div class="fld swap">
+      <div class="k">Ak je obsadené</div>
+      <div class="v">${c.nah.map(x=>`<div class="sw"><b>${x.n}</b> — ${x.poz}</div>`).join('')}</div>
+    </div>` : '';
+
+  const cas = c.pauza ? `<button class="tbtn" onclick="event.stopPropagation();spustCasovac('${c.id}',${c.pauza})">⏱ ${c.pauza>=60?Math.round(c.pauza/60*10)/10+' min':c.pauza+' s'}</button>` : '';
+
   return `
     <div class="ex ${c.key?'key':''} ${otvorene[c.id]?'open':''}">
       <div class="ex-head" onclick="prepniCvik('${c.id}')">
@@ -466,15 +587,21 @@ function exHtml(c,n){
         ${CHEV}
       </div>
       <div class="ex-body">
+        ${odpHtml}
         <div class="fld"><div class="k">Ako</div><div class="v">${c.ako}</div></div>
         <div class="fld"><div class="k">Načo</div><div class="v">${c.preco}</div></div>
         <div class="fld mist"><div class="k">Pozor</div><div class="v">${c.chyba}</div></div>
-        ${c.dalej?`<div class="fld next"><div class="k">Ďalej</div><div class="v">${c.dalej}</div></div>`:''}
+        ${nahHtml}
         ${c.nolog?'':`<div class="log">
           <div class="log-row">
-            <input id="in-${c.id}" type="text" placeholder="30 kg · 10,10,9,8">
+            <input id="in-${c.id}" type="text" placeholder="55 kg · 6,6,6,6">
             <button onclick="zapis('${c.id}')">Zapíš</button>
           </div>
+          <div class="log-row2">
+            <input id="pz-${c.id}" type="text" placeholder="Poznámka alebo náhradný cvik (nepovinné)">
+            ${cas}
+          </div>
+          ${grafHtml(z)}
           ${hist}
         </div>`}
       </div>
@@ -486,11 +613,13 @@ function boardHtml(){
     <div class="board">
       <div class="board-top">Tréningový plán</div>
       <div class="tabs">
+        <button class="tab ${aktivny==='D'?'on':''}" onclick="prepniTab('D')">Dnes<span>Plán</span></button>
         <button class="tab ${aktivny==='A'?'on':''}" onclick="prepniTab('A')">A<span>Utorok</span></button>
         <button class="tab ${aktivny==='B'?'on':''}" onclick="prepniTab('B')">B<span>Štvrtok</span></button>
         <button class="tab ${aktivny==='C'?'on':''}" onclick="prepniTab('C')">C<span>Sobota</span></button>
-        <button class="tab ${aktivny==='M'?'on':''}" onclick="prepniTab('M')">Mobil.<span>Denne</span></button>
-        <button class="tab ${aktivny==='P'?'on':''}" onclick="prepniTab('P')">Zápisy<span>História</span></button>
+        <button class="tab ${aktivny==='M'?'on':''}" onclick="prepniTab('M')">Mobilita<span>Denne</span></button>
+        <button class="tab ${aktivny==='T'?'on':''}" onclick="prepniTab('T')">Telo<span>Váha, pás</span></button>
+        <button class="tab ${aktivny==='P'?'on':''}" onclick="prepniTab('P')">Zápisy<span>Váhy</span></button>
       </div>
     </div>`;
 }
@@ -509,7 +638,7 @@ async function zmazPosledny(id){
 }
 
 function parseZapis(t){
-  const s=String(t);
+  const s=String(t).split('(')[0];
   let m=s.match(/(\d+(?:[.,]\d+)?)\s*kg/i);
   let idx, w;
   if(m){ w=parseFloat(m[1].replace(',','.')); idx=m.index+m[0].length; }
@@ -552,6 +681,105 @@ function grafHtml(zaznamy){
     </svg>
     <div class="grl"><span>${b[0].d} · ${b[0].w} kg → ${b[b.length-1].w} kg${obj}</span>${trend}</div>
   </div>`;
+}
+
+/* ---------- AUTOMATICKÉ ODPORÚČANIE VÁHY ---------- */
+
+function poslednyZapis(id){
+  const z=log[id]||[];
+  return z.length?z[0]:null;
+}
+
+function odporucanie(c){
+  if(c.nolog) return null;
+  if(prepis[c.id]) return {text:prepis[c.id], rucne:true};
+  const p=poslednyZapis(c.id);
+  if(!p) return {text:'Prvý tréning — začni tak, aby posledné opakovanie bolo ťažké, ale čisté.', rucne:false};
+  const d=parseZapis(p.v);
+  if(d.w===null || !d.reps || !d.reps.length)
+    return {text:'Zápis sa nedá prečítať. Použi tvar <b>váha · opakovania</b>, napríklad 55 kg · 6,6,6,6.', rucne:false};
+
+  const w=d.w, reps=d.reps;
+  const min=Math.min(...reps), pocet=reps.length;
+  const vsetkyNaMax = reps.every(r=>r>=c.mx);
+  const vsetkyNaMin = reps.every(r=>r>=c.mn);
+  const dost = pocet>=c.ser;
+  const kg = x=>(Math.round(x*10)/10).toString().replace('.',',');
+
+  if(vsetkyNaMax && dost){
+    if(c.prio==='o' && c.mx<c.mn+6){
+      return {text:`Zvýš cieľ na <b>${c.mx+3} opakovaní</b> pri ${kg(w)} kg. Kilá sem pridávaj až potom.`, rucne:false};
+    }
+    return {text:`Choď na <b>${kg(w+c.krok)} kg</b>, cieľ ${c.ser} × ${c.mn}.`, rucne:false};
+  }
+  if(vsetkyNaMin && dost){
+    return {text:`Drž <b>${kg(w)} kg</b>, cieľ ${c.ser} × ${c.mx} vo všetkých sériách. Až potom pridaj ${kg(c.krok)} kg.`, rucne:false};
+  }
+  if(!dost){
+    return {text:`Drž <b>${kg(w)} kg</b> a dokonči ${c.ser} série. Naposledy si urobil ${pocet}.`, rucne:false};
+  }
+  const chyba = c.mn-min;
+  if(chyba>=3){
+    return {text:`Posledné série spadli na ${min}. Zníž na <b>${kg(Math.max(c.krok,w-c.krok))} kg</b> a rob ${c.ser} × ${c.mn} čisto.`, rucne:false};
+  }
+  return {text:`Drž <b>${kg(w)} kg</b>, cieľ ${c.ser} × ${c.mn} vo všetkých sériách. Predĺž pauzu, ak posledné série padajú.`, rucne:false};
+}
+
+async function ulozPrepis(id){
+  const el=document.getElementById('pr-'+id);
+  if(!el) return;
+  const v=el.value.trim();
+  if(v) prepis[id]=v; else delete prepis[id];
+  await ULOZISKO.set(JSON.stringify(prepis), PREPIS_KLUC);
+  render();
+}
+
+async function zrusPrepis(id){
+  delete prepis[id];
+  await ULOZISKO.set(JSON.stringify(prepis), PREPIS_KLUC);
+  render();
+}
+
+/* ---------- ČASOVAČ PAUZY ---------- */
+
+let casovac={id:null, zostava:0, tik:null};
+
+function spustCasovac(id, sek){
+  zastavCasovac();
+  casovac.id=id; casovac.zostava=sek;
+  vykresliCasovac();
+  casovac.tik=setInterval(()=>{
+    casovac.zostava--;
+    if(casovac.zostava<=0){
+      vykresliCasovac(true);
+      clearInterval(casovac.tik); casovac.tik=null;
+      try{ if(navigator.vibrate) navigator.vibrate([200,100,200]); }catch(e){}
+      setTimeout(()=>{ zastavCasovac(); }, 4000);
+    } else vykresliCasovac();
+  },1000);
+}
+
+function zastavCasovac(){
+  if(casovac.tik) clearInterval(casovac.tik);
+  casovac={id:null, zostava:0, tik:null};
+  const b=document.getElementById('cas-bar');
+  if(b) b.remove();
+}
+
+function vykresliCasovac(hotovo){
+  let b=document.getElementById('cas-bar');
+  if(!b){
+    b=document.createElement('div');
+    b.id='cas-bar'; b.className='casbar';
+    document.body.appendChild(b);
+  }
+  const m=Math.floor(casovac.zostava/60), sek=casovac.zostava%60;
+  b.className='casbar'+(hotovo?' hotovo':'');
+  b.innerHTML = hotovo
+    ? `<span class="ct">Pauza hotová — ideš</span><button onclick="zastavCasovac()">Zavrieť</button>`
+    : `<span class="ct">${m}:${String(Math.max(sek,0)).padStart(2,'0')}</span>
+       <span class="cl">pauza medzi sériami</span>
+       <button onclick="zastavCasovac()">Stop</button>`;
 }
 
 /* ---------- EXPORT / IMPORT ---------- */
@@ -599,7 +827,7 @@ function zostavJson(){
         opakovania: p.reps,
         serie: p.reps.length,
         objem: p.objem,
-        poznamka: '',
+        poznamka: x.p||'',
         surovyZapis: x.v
       });
     });
@@ -607,10 +835,11 @@ function zostavJson(){
   zaznamy.sort((a,b)=>String(b.datum||'').localeCompare(String(a.datum||'')));
   return {
     verzia: 1,
-    aplikacia: 'Tréningy A/B',
+    aplikacia: 'Tréningy A/B/C',
     exportovane: new Date().toISOString(),
     pocetZaznamov: zaznamy.length,
-    zaznamy: zaznamy
+    zaznamy: zaznamy,
+    telo: telo
   };
 }
 
@@ -654,7 +883,9 @@ async function nacitajSubor(ev){
       if(!log[id]) log[id]=[];
       const duplikat=log[id].some(x=>x.d===d && x.v===v);
       if(duplikat){ preskocene++; return; }
-      log[id].push({d:d, v:v});
+      const zaz={d:d, v:v};
+      if(z.poznamka) zaz.p=z.poznamka;
+      log[id].push(zaz);
       pridane++;
     });
 
@@ -664,8 +895,21 @@ async function nacitajSubor(ev){
       log[id]=log[id].slice(0,6);
     });
 
+    let teloPridane=0;
+    if(Array.isArray(data.telo)){
+      data.telo.forEach(t=>{
+        if(t&&t.d&&t.w!=null&&t.p!=null&&!telo.some(x=>x.d===t.d)){ telo.push(t); teloPridane++; }
+      });
+      if(teloPridane){
+        telo.sort((a,b)=>String(isoDatum(b.d)||'').localeCompare(String(isoDatum(a.d)||'')));
+        telo=telo.slice(0,26);
+        await ULOZISKO.set(JSON.stringify(telo), TELO_KLUC);
+      }
+    }
+
     await uloz();
     let msg='Doplnených '+pridane+' záznamov.';
+    if(teloPridane) msg+=' Plus '+teloPridane+' meraní tela.';
     if(preskocene) msg+=' Preskočených '+preskocene+' (duplikáty alebo neúplné).';
     if(neznameCviky) msg+=' '+neznameCviky+' bez rozpoznaného cviku.';
     render();
@@ -689,32 +933,27 @@ function renderProgres(){
     const items=vsetkyCviky(T).map(c=>{
       const z=log[c.id]||[];
       if(!z.length){
-        return `<div class="pr pr-empty"><div class="pn">${c.n}</div>
-          <div class="pe">Zatiaľ bez zápisu</div></div>`;
+        return `<div class="zr zr-empty"><span class="zn">${c.n}</span><span class="zv">&mdash;</span></div>`;
       }
-      const riadky=z.map((x,j)=>
-        `<div class="${j?'old':''}"><span>${x.d}</span><b>${x.v}</b></div>`).join('');
-      return `<div class="pr">
-        <div class="pn">${c.n}</div>
-        ${grafHtml(z)}
-        <div class="ph">${riadky}</div>
-        <button class="pdel" onclick="zmazPosledny('${c.id}')">Zmazať posledný zápis</button>
-      </div>`;
+      const p=z[0];
+      return `<div class="zr"><span class="zn">${c.n}</span><span class="zv">${p.v}<em>${p.d}</em></span></div>`;
     }).join('');
-    return `<div class="blk"><div class="blk-lbl"><h2>${nazov}</h2></div>${items}</div>`;
+    return `<div class="blk"><div class="blk-lbl"><h2>${nazov}</h2></div><div class="zoz">${items}</div></div>`;
   };
 
   const spolu=Object.keys(log).reduce((a,k)=>a+(log[k]||[]).length,0);
 
   document.getElementById('app').innerHTML=boardHtml()+
     `<div class="head">
-       <h1>Zápisy váh</h1>
-       <div class="sub">Posledných šesť tréningov pri každom cviku, najnovší hore.
-       <b>Ak čísla rastú, program funguje.</b></div>
+       <h1>Posledné váhy</h1>
+       <div class="sub">Pri každom cviku posledný zápis. <b>Graf a celú históriu nájdeš po rozkliknutí cviku v tréningu.</b></div>
        <div class="facts">
          <div><div class="k">Zápisov spolu</div><div class="v">${spolu}</div></div>
        </div>
      </div>`+
+    sekcia(A,'Tréning A · utorok')+
+    sekcia(B,'Tréning B · štvrtok')+
+    sekcia(C,'Tréning C · sobota')+
     `<div class="io">
        <h3>Záloha zápisov</h3>
        <p>Export uloží všetky zápisy do súboru <b>treningy.json</b>. Import ich doplní späť — existujúce sa neprepíšu, duplikáty sa preskočia.</p>
@@ -724,17 +963,130 @@ function renderProgres(){
        </div>
        <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="nacitajSubor(event)">
        <div id="ioMsg"></div>
-     </div>`+
-    sekcia(A,'Tréning A · utorok')+
-    sekcia(B,'Tréning B · štvrtok')+
-    sekcia(C,'Tréning C · sobota')+
-    `<div class="foot">
-       <h3>Ako to čítať</h3>
-       <p>Zapisuj v tvare <b>váha · opakovania</b>, napríklad <b>60 kg · 8,7,6,6</b>. Formát si drž rovnaký, inak sa to bude ťažko porovnávať.</p>
-       <p>Keď dáš horný počet opakovaní vo všetkých sériách, pridaj 2,5 kg na veľkých cvikoch a 1 kg na malých.</p>
-       <p><b>Graf ukazuje váhu v čase</b>, posledný bod je červený. Pod ním je aj <b>objem</b> — váha vynásobená všetkými opakovaniami. Objem je citlivejší ukazovateľ: rastie aj vtedy, keď váha stojí a ty pridávaš opakovania.</p>
      </div>`;
 }
+
+const TYZDEN=[
+  {d:1,n:'Pondelok', t:'Z2 beh',        s:'30–40 min · tep 139–151 · kadencia 176', tab:null, ikona:'run'},
+  {d:2,n:'Utorok',   t:'Tréning A',     s:'Prsia, ramená, triceps, nohy',            tab:'A',  ikona:'gym'},
+  {d:3,n:'Streda',   t:'Z2 beh',        s:'30–40 min · ráno, kým nie je horúco',     tab:null, ikona:'run'},
+  {d:4,n:'Štvrtok',  t:'Tréning B',     s:'Chrbát, biceps, zadné delty, nohy',       tab:'B',  ikona:'gym'},
+  {d:5,n:'Piatok',   t:'Hokej 18:45',   s:'Jedlo po hokeji o 20:45 — výnimka z okna',tab:null, ikona:'puk'},
+  {d:6,n:'Sobota',   t:'Tréning C',     s:'Ramená, hrudník, chrbát, ruky · flexibilné', tab:'C', ikona:'gym'},
+  {d:0,n:'Nedeľa',   t:'Voľno',         s:'Mobilita, prechádzka, váženie a pás',     tab:'M',  ikona:'rest'}
+];
+
+function renderDnes(){
+  const dnesDen=new Date().getDay();
+  const riadky=TYZDEN.map(x=>{
+    const je=x.d===dnesDen;
+    const klik=x.tab?`onclick="prepniTab('${x.tab}')"`:'';
+    return `<div class="dr ${je?'dnes':''} ${x.tab?'klik':''}" ${klik}>
+      <div class="dd">${x.n}${je?'<span>dnes</span>':''}</div>
+      <div class="dt"><b>${x.t}</b><i>${x.s}</i></div>
+      ${x.tab?CHEV:''}
+    </div>`;
+  }).join('');
+
+  const t=telo.length?telo[0]:null;
+  const tPred=telo.length>1?telo[1]:null;
+  const rozdiel=(a,b,j)=>{
+    if(a==null||b==null) return '';
+    const d=Math.round((a-b)*10)/10;
+    if(d===0) return `<em class="flat">bez zmeny</em>`;
+    return d<0?`<em class="dn">${d} ${j}</em>`:`<em class="up">+${d} ${j}</em>`;
+  };
+  const teloHtml = t ? `
+    <div class="tel">
+      <div><span class="k">Váha</span><span class="v">${t.w} kg ${rozdiel(t.w,tPred&&tPred.w,'kg')}</span></div>
+      <div><span class="k">Pás</span><span class="v">${t.p} cm ${rozdiel(t.p,tPred&&tPred.p,'cm')}</span></div>
+      <div><span class="k">Pás/výška</span><span class="v">${(t.p/183).toFixed(3)}</span></div>
+    </div>` : `<div class="tel prazdne">Zatiaľ bez merania. Zapíš ho v záložke Telo.</div>`;
+
+  document.getElementById('app').innerHTML=boardHtml()+`
+    <div class="head">
+      <h1>Týždenný plán</h1>
+      <div class="sub">Šesť tréningových dní, nedeľa voľno. <b>Ak ranné čísla vyzerajú zle, deň sa dá presunúť — plán nie je príkaz.</b></div>
+    </div>
+    <div class="blk"><div class="blk-lbl"><h2>Týždeň</h2></div>${riadky}</div>
+    <div class="blk"><div class="blk-lbl"><h2>Posledné meranie</h2><span class="t">${t?t.d:'—'}</span></div>${teloHtml}</div>
+    <div class="foot">
+      <h3>Ciele</h3>
+      <table>
+        <tr><td>Váha</td><td>90 kg pri 13–14 % tuku</td></tr>
+        <tr><td>Pás</td><td>medzicieľ 94 cm · cieľ 86–88 cm</td></tr>
+        <tr><td>Bielkoviny</td><td>160 g denne, minimum 150 g</td></tr>
+        <tr><td>Okno</td><td>10:00–20:00 · piatok výnimka po hokeji</td></tr>
+      </table>
+    </div>`;
+}
+
+function renderTelo(){
+  const b=[...telo].reverse();
+  const graf=(kluc,farba,jed)=>{
+    const body=b.filter(x=>x[kluc]!=null);
+    if(body.length<2) return '<div class="tprazd">Aspoň dve merania a objaví sa graf.</div>';
+    const W=520,H=70,P=10;
+    const vals=body.map(x=>x[kluc]);
+    const mn=Math.min(...vals), mx=Math.max(...vals), rng=(mx-mn)||1;
+    const pts=body.map((x,i)=>[P+(i/(body.length-1))*(W-P*2), P+(1-(x[kluc]-mn)/rng)*(H-P*2)]);
+    const linia=pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' ');
+    const kruhy=pts.map((q,i)=>`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${i===pts.length-1?4:3}" fill="${i===pts.length-1?'#C8102E':farba}"/>`).join('');
+    const d=Math.round((vals[vals.length-1]-vals[0])*10)/10;
+    const tr=d<0?`<span class="dn">${d} ${jed}</span>`:d>0?`<span class="up">+${d} ${jed}</span>`:`<span class="flat">bez zmeny</span>`;
+    return `<div class="gr">
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${linia}" fill="none" stroke="${farba}" stroke-width="2.5" stroke-linejoin="round"/>${kruhy}</svg>
+      <div class="grl"><span>${body[0].d} · ${vals[0]} → ${vals[vals.length-1]} ${jed}</span>${tr}</div>
+    </div>`;
+  };
+
+  const zoznam=telo.length?telo.map((x,i)=>
+    `<div class="zr"><span class="zn">${x.d}</span><span class="zv">${x.w} kg · ${x.p} cm${i===0?'<button class="pdel" onclick="zmazTelo()">Zmazať</button>':''}</span></div>`
+  ).join(''):'<div class="zr zr-empty"><span class="zn">Zatiaľ bez merania</span><span class="zv">&mdash;</span></div>';
+
+  document.getElementById('app').innerHTML=boardHtml()+`
+    <div class="head">
+      <h1>Váha a pás</h1>
+      <div class="sub">Meraj <b>raz týždenne v nedeľu ráno</b>, po WC, pred pitím, nahý. Pás cez pupok vodorovne, na konci normálneho výdychu.
+      <b>Pri rekompozícii hovorí pás viac než váha.</b></div>
+    </div>
+    <div class="blk"><div class="blk-lbl"><h2>Nové meranie</h2></div>
+      <div class="telform">
+        <input id="t-w" type="number" step="0.1" inputmode="decimal" placeholder="Váha kg">
+        <input id="t-p" type="number" step="0.5" inputmode="decimal" placeholder="Pás cm">
+        <button onclick="zapisTelo()">Zapíš</button>
+      </div>
+    </div>
+    <div class="blk"><div class="blk-lbl"><h2>Váha</h2></div>${graf('w','#1F5FBF','kg')}</div>
+    <div class="blk"><div class="blk-lbl"><h2>Pás</h2></div>${graf('p','#2E7D52','cm')}</div>
+    <div class="blk"><div class="blk-lbl"><h2>Všetky merania</h2></div><div class="zoz">${zoznam}</div></div>
+    <div class="foot">
+      <h3>Ako to čítať</h3>
+      <p>Denné výkyvy váhy 1 až 2 kg sú voda, glykogén a obsah čriev, nie tuk. <b>Jedno číslo nie je trend</b>, zmysel to dáva po štyroch týždňoch.</p>
+      <p>Ak váha stojí a pás klesá, je to <b>presne ten výsledok, ktorý chceš</b> — svaly pribúdajú, tuk ubúda.</p>
+      <p>Cieľový pomer pás/výška je <b>0,47</b>, čo je pri 183 cm zhruba 86 cm.</p>
+    </div>`;
+}
+
+async function zapisTelo(){
+  const w=parseFloat((document.getElementById('t-w').value||'').replace(',','.'));
+  const pas=parseFloat((document.getElementById('t-p').value||'').replace(',','.'));
+  if(!w||!pas){chyba('Vyplň váhu aj pás.');return;}
+  const d=new Date();
+  telo.unshift({d:d.getDate()+'.'+(d.getMonth()+1)+'.', w:Math.round(w*10)/10, p:Math.round(pas*10)/10});
+  telo=telo.slice(0,26);
+  await ULOZISKO.set(JSON.stringify(telo), TELO_KLUC);
+  render();
+}
+
+async function zmazTelo(){
+  if(!telo.length) return;
+  if(!confirm('Zmazať meranie z '+telo[0].d+'?')) return;
+  telo.shift();
+  await ULOZISKO.set(JSON.stringify(telo), TELO_KLUC);
+  render();
+}
+
 
 function renderMobilita(){
   let n=0;
@@ -790,6 +1142,9 @@ function renderMobilita(){
 }
 
 function render(){
+  zastavCasovac();
+  if(aktivny==='D'){renderDnes();return;}
+  if(aktivny==='T'){renderTelo();return;}
   if(aktivny==='P'){renderProgres();return;}
   if(aktivny==='M'){renderMobilita();return;}
   const T=aktivny==='A'?A:(aktivny==='C'?C:B);
