@@ -261,8 +261,12 @@
 <body>
 <div class="wrap"><div id="app"><div class="loading">Načítavam…</div></div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const KEY='david-treningy-v3';
+const SUPABASE_URL='https://nragtrsgbvrnmbwlowoi.supabase.co';
+const SUPABASE_KEY='sb_publishable_Y9GtqKdB0pD-KQItwiu4Mw_ANXeA1Da';
+let db=null, cloudUser=null;
 const CHEV='<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>';
 
 const A={
@@ -641,7 +645,7 @@ async function doplnSeed(){
     Object.keys(data).forEach(id=>{
       if(!log[id]) log[id]=[];
       const duplikat=log[id].some(x=>x.d===datum && x.v===data[id]);
-      if(!duplikat){ log[id].unshift({d:datum, v:data[id]}); log[id]=log[id].slice(0,6); pridane++; }
+      if(!duplikat){ log[id].unshift({d:datum, v:data[id]});  pridane++; }
     });
     await ULOZISKO.set('1',kluc);
   }
@@ -649,17 +653,249 @@ async function doplnSeed(){
   return pridane>0;
 }
 
+
+const LEGACY_META={
+  a2:{cvik:'Tlaky na šikmej, jednoručky · Incline Dumbbell Press',typ:'Starší plán A'},
+  a3:{cvik:'Upažovanie s jednoručkami · Dumbbell Lateral Raise',typ:'Starší plán A'},
+  a5:{cvik:'Rozpažovanie na kladkách · Cable Fly',typ:'Starší plán A'},
+  a6:{cvik:'Francúzsky tlak nad hlavu · Overhead Triceps Extension',typ:'Starší plán A'},
+  b1:{cvik:'Sťahovanie hornej kladky · Lat Pulldown',typ:'Starší plán B'},
+  b2:{cvik:'Príťahy jednoručky v predklone · One-Arm Dumbbell Row',typ:'Starší plán B'},
+  b3:{cvik:'Reverzné rozpažovanie · Reverse Fly',typ:'Starší plán B'},
+  b4:{cvik:'Kladivový biceps · Hammer Curl',typ:'Starší plán B'},
+  b5:{cvik:'Sťahovanie kladky vystretými rukami · Straight-Arm Pulldown',typ:'Starší plán B'},
+  b6:{cvik:'Biceps na kazateľskej lavici · Preacher Curl',typ:'Starší plán B'},
+  b7:{cvik:'Rumunský mŕtvy ťah · Romanian Deadlift',typ:'Starší plán B'},
+  c1:{cvik:'Tlaky nad hlavu v sede · Seated Dumbbell Shoulder Press',typ:'Starší plán C'},
+  c2:{cvik:'Upažovanie na kladke · Cable Lateral Raise',typ:'Starší plán C'},
+  c3:{cvik:'Príťah na kladke v sede · Seated Cable Row',typ:'Starší plán C'},
+  c4:{cvik:'Rozpažovanie / pectoral · Chest Fly',typ:'Starší plán C'},
+  c5:{cvik:'Kladivový biceps · Hammer Curl',typ:'Starší plán C'},
+  c6:{cvik:'Bulharský drep · Bulgarian Split Squat',typ:'Starší plán C'},
+  c7:{cvik:'Face Pull',typ:'Starší plán C'},
+  c8:{cvik:'Triceps nad hlavu na kladke · Cable Overhead Triceps Extension',typ:'Starší plán C'}
+};
+
+function prettyIso(iso){
+  const m=String(iso||'').match(/(\d{4})-(\d{2})-(\d{2})/);
+  return m ? (+m[3])+'.'+(+m[2])+'.'+m[1] : iso;
+}
+function todayIso(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function metaAny(id){
+  const m=metaCviku(id);
+  if(m.typ!=='neznámy') return m;
+  return LEGACY_META[id] || {typ:'Archív',den:'',cvik:id,skupina:''};
+}
+async function cloudFetchAll(table, orderCol){
+  let out=[], from=0, step=1000;
+  while(true){
+    let q=db.from(table).select('*').range(from,from+step-1);
+    if(orderCol) q=q.order(orderCol,{ascending:false});
+    const {data,error}=await q;
+    if(error) throw error;
+    out=out.concat(data||[]);
+    if(!data || data.length<step) break;
+    from+=step;
+  }
+  return out;
+}
+async function cloudLoad(){
+  const rows=await cloudFetchAll('workout_logs','performed_on');
+  log={};
+  rows
+    .sort((a,b)=>(String(b.performed_on)+String(b.created_at)).localeCompare(String(a.performed_on)+String(a.created_at)))
+    .forEach(r=>{
+      if(!log[r.exercise_id]) log[r.exercise_id]=[];
+      log[r.exercise_id].push({
+        d:prettyIso(r.performed_on),
+        v:r.raw_entry,
+        p:r.note||'',
+        _cloud_id:r.id,
+        _iso:r.performed_on
+      });
+    });
+
+  const tm=await cloudFetchAll('body_measurements','measured_on');
+  telo=tm.map(r=>({
+    d:prettyIso(r.measured_on),
+    w:Number(r.weight_kg),
+    p:Number(r.waist_cm),
+    _cloud_id:r.id,
+    _iso:r.measured_on
+  }));
+
+  const {data:setRows,error:setErr}=await db.from('user_settings').select('*');
+  if(setErr) throw setErr;
+  const manual=(setRows||[]).find(x=>x.setting_key==='manual_overrides');
+  prepis=manual && manual.setting_value ? manual.setting_value : {};
+
+  await ULOZISKO.set(JSON.stringify(log));
+  await ULOZISKO.set(JSON.stringify(telo),TELO_KLUC);
+  await ULOZISKO.set(JSON.stringify(prepis),PREPIS_KLUC);
+}
+async function cloudUploadLocal(){
+  const existing=await cloudFetchAll('workout_logs','performed_on');
+  const seen=new Set(existing.map(r=>r.exercise_id+'|'+r.performed_on+'|'+r.raw_entry));
+  const payload=[];
+  Object.keys(log).forEach(id=>{
+    const meta=metaAny(id);
+    (log[id]||[]).forEach(x=>{
+      let iso=x._iso || isoDatum(x.d);
+      if(!iso) return;
+      const k=id+'|'+iso+'|'+x.v;
+      if(seen.has(k)) return;
+      const p=parseZapis(x.v);
+      payload.push({
+        user_id:cloudUser.id,
+        exercise_id:id,
+        exercise_name:meta.cvik,
+        performed_on:iso,
+        weight_kg:p.w,
+        reps:p.reps||[],
+        raw_entry:x.v,
+        note:x.p||''
+      });
+      seen.add(k);
+    });
+  });
+  if(payload.length){
+    for(let i=0;i<payload.length;i+=500){
+      const {error}=await db.from('workout_logs').insert(payload.slice(i,i+500));
+      if(error) throw error;
+    }
+  }
+
+  const bodyPayload=[];
+  (telo||[]).forEach(x=>{
+    let iso=x._iso || isoDatum(x.d);
+    // User corrected the baseline: 92 kg / 98 cm was measured on 30 Aug 2026.
+    if(iso==='2026-08-31' && Number(x.w)===92 && Number(x.p)===98) iso='2026-08-30';
+    if(!iso) return;
+    bodyPayload.push({
+      user_id:cloudUser.id,
+      measured_on:iso,
+      weight_kg:Number(x.w),
+      waist_cm:Number(x.p)
+    });
+  });
+  // Ensure the corrected baseline exists even if the old local file cannot be read.
+  if(!bodyPayload.some(x=>x.measured_on==='2026-08-30')){
+    bodyPayload.push({user_id:cloudUser.id,measured_on:'2026-08-30',weight_kg:92,waist_cm:98});
+  }
+  if(bodyPayload.length){
+    const {error}=await db.from('body_measurements')
+      .upsert(bodyPayload,{onConflict:'user_id,measured_on'});
+    if(error) throw error;
+  }
+
+  const {error:setErr}=await db.from('user_settings').upsert({
+    user_id:cloudUser.id,
+    setting_key:'manual_overrides',
+    setting_value:prepis||{}
+  },{onConflict:'user_id,setting_key'});
+  if(setErr) throw setErr;
+}
+async function prepareCloud(){
+  const {data:mark,error}=await db.from('user_settings')
+    .select('setting_value')
+    .eq('setting_key','local_migration_v1')
+    .maybeSingle();
+  if(error) throw error;
+  if(!mark){
+    await cloudUploadLocal();
+    const {error:e2}=await db.from('user_settings').upsert({
+      user_id:cloudUser.id,
+      setting_key:'local_migration_v1',
+      setting_value:{done:true,at:new Date().toISOString()}
+    },{onConflict:'user_id,setting_key'});
+    if(e2) throw e2;
+  }
+  await cloudLoad();
+
+  // Safety: make sure the corrected 30 Aug baseline exists in cloud.
+  if(!telo.some(x=>x._iso==='2026-08-30')){
+    const {error}=await db.from('body_measurements').upsert({
+      user_id:cloudUser.id, measured_on:'2026-08-30', weight_kg:92, waist_cm:98
+    },{onConflict:'user_id,measured_on'});
+    if(error) throw error;
+    await cloudLoad();
+  }
+}
+function renderLogin(msg=''){
+  document.getElementById('app').innerHTML=`
+    <div class="board"><div class="board-top">Tréningy · cloud</div></div>
+    <div class="head">
+      <h1>Prihlásenie</h1>
+      <div class="sub">Dáta budú uložené v Supabase a synchronizované medzi zariadeniami.</div>
+    </div>
+    <div class="blk">
+      <div class="pr">
+        <div class="pn">Tvoj účet</div>
+        <div class="pe">Pri prvom použití sa zaregistruj. Potom sa rovnakým e-mailom prihlásiš na Macu aj iPhone.</div>
+        <div style="display:grid;gap:8px;margin-top:12px">
+          <input id="auth-email" type="email" placeholder="E-mail" style="padding:12px;border:1px solid #CBD8E3;border-radius:3px;font-size:16px">
+          <input id="auth-pass" type="password" placeholder="Heslo, min. 6 znakov" style="padding:12px;border:1px solid #CBD8E3;border-radius:3px;font-size:16px">
+          <button class="io-btn" onclick="prihlas()">Prihlásiť</button>
+          <button class="io-btn alt" onclick="registruj()">Prvýkrát · vytvoriť účet</button>
+        </div>
+        ${msg?`<div class="io-msg ok" style="margin-top:10px">${msg}</div>`:''}
+      </div>
+    </div>`;
+}
+async function prihlas(){
+  const email=(document.getElementById('auth-email').value||'').trim();
+  const password=document.getElementById('auth-pass').value||'';
+  if(!email||!password){renderLogin('Vyplň e-mail aj heslo.');return;}
+  const {data,error}=await db.auth.signInWithPassword({email,password});
+  if(error){renderLogin('Prihlásenie zlyhalo: '+error.message);return;}
+  cloudUser=data.user;
+  try{await prepareCloud(); aktivny='D'; render();}
+  catch(e){renderLogin('Cloud chyba: '+e.message);}
+}
+async function registruj(){
+  const email=(document.getElementById('auth-email').value||'').trim();
+  const password=document.getElementById('auth-pass').value||'';
+  if(!email||password.length<6){renderLogin('Zadaj platný e-mail a heslo s aspoň 6 znakmi.');return;}
+  const {data,error}=await db.auth.signUp({email,password});
+  if(error){renderLogin('Registrácia zlyhala: '+error.message);return;}
+  if(data.session){
+    cloudUser=data.user;
+    try{await prepareCloud(); aktivny='D'; render();}catch(e){renderLogin('Cloud chyba: '+e.message);}
+  } else {
+    renderLogin('Účet je vytvorený. Ak Supabase pošle potvrdzovací e-mail, potvrď ho a potom sa tu prihlás.');
+  }
+}
+async function odhlas(){
+  await db.auth.signOut();
+  cloudUser=null;
+  renderLogin('Odhlásené.');
+}
+
 async function nacitaj(){
+  // Najprv načítaj lokálnu cache, aby sa dala pri prvom login-e migrovať do cloudu.
   const v=await ULOZISKO.get();
-  if(v){try{log=JSON.parse(v);}catch(e){}}
+  if(v){try{log=JSON.parse(v)||{};}catch(e){}}
   const pv=await ULOZISKO.get(PREPIS_KLUC);
   if(pv){try{prepis=JSON.parse(pv)||{};}catch(e){}}
   const tv=await ULOZISKO.get(TELO_KLUC);
   if(tv){try{telo=JSON.parse(tv)||[];}catch(e){}}
   try{await doplnSeed();}catch(e){}
   try{await vycistiA2();}catch(e){}
-  aktivny='D';
-  render();
+
+  db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  const {data:{session}}=await db.auth.getSession();
+  if(!session){renderLogin();return;}
+  cloudUser=session.user;
+  try{
+    await prepareCloud();
+    aktivny='D';
+    render();
+  }catch(e){
+    renderLogin('Cloud sa nepodarilo načítať: '+e.message);
+  }
 }
 async function uloz(){
   const ok=await ULOZISKO.set(JSON.stringify(log));
@@ -678,13 +914,21 @@ async function zapis(id){
   const v=(el.value||'').trim();
   const pz=pe?(pe.value||'').trim():'';
   if(!v){chyba('Napíš, čo si dal. Napríklad: 55 kg · 6,6,6,6');return;}
-  const d=new Date();
-  if(!log[id])log[id]=[];
-  const zaz={d:d.getDate()+'.'+(d.getMonth()+1)+'.',v:v};
-  if(pz) zaz.p=pz;
-  log[id].unshift(zaz);
-  log[id]=log[id].slice(0,6);
-  await uloz();render();
+  const p=parseZapis(v);
+  const meta=metaAny(id);
+  const {error}=await db.from('workout_logs').insert({
+    user_id:cloudUser.id,
+    exercise_id:id,
+    exercise_name:meta.cvik,
+    performed_on:todayIso(),
+    weight_kg:p.w,
+    reps:p.reps||[],
+    raw_entry:v,
+    note:pz
+  });
+  if(error){chyba('Cloud zápis zlyhal: '+error.message);return;}
+  await cloudLoad();
+  render();
 }
 
 function trend(id){
@@ -703,7 +947,13 @@ function exHtml(c,n){
     ? `<div class="last">${z.slice(0,2).map((x,j)=>
         j===0?`<b>Naposledy</b> ${x.d} · ${x.v}`:`<span class="old">${x.d} · ${x.v}</span>`
       ).join(' &nbsp;·&nbsp; ')}
-      <button class="pdel" onclick="zmazPosledny('${c.id}')">zmazať</button></div>`
+      <button class="pdel" onclick="zmazPosledny('${c.id}')">zmazať</button>
+      ${otvorene[c.id]?`${grafHtml(z)}
+        <details style="margin-top:8px">
+          <summary style="cursor:pointer;font-family:'Barlow',sans-serif;font-weight:600;color:#1F5FBF">Celá história · ${z.length} zápisov</summary>
+          <div class="zoz" style="margin-top:6px">${z.map(x=>`<div class="zr"><span class="zn">${x.d}${x.p?`<em class="pzn">${x.p}</em>`:''}</span><span class="zv">${x.v}</span></div>`).join('')}</div>
+        </details>`:''}
+      </div>`
     : '';
 
   const odp = c.nolog?null:odporucanie(c);
@@ -765,7 +1015,10 @@ function exHtml(c,n){
 function boardHtml(){
   return `
     <div class="board">
-      <div class="board-top">Tréningový plán</div>
+      <div class="board-top">Tréningový plán
+        <span style="float:right;color:#B9CDDF">☁ cloud ${cloudUser?`· ${cloudUser.email||''}`:''}
+        ${cloudUser?`<button onclick="odhlas()" style="background:none;border:0;color:#B9CDDF;font:inherit;cursor:pointer;padding:0 0 0 6px">odhlásiť</button>`:''}</span>
+      </div>
       <div class="tabs">
         <button class="tab ${aktivny==='D'?'on':''}" onclick="prepniTab('D')">Dnes<span>Plán</span></button>
         <button class="tab ${aktivny==='A'?'on':''}" onclick="prepniTab('A')">A<span>Utorok</span></button>
@@ -773,7 +1026,7 @@ function boardHtml(){
         <button class="tab ${aktivny==='C'?'on':''}" onclick="prepniTab('C')">C<span>Sobota</span></button>
         <button class="tab ${aktivny==='M'?'on':''}" onclick="prepniTab('M')">Mobilita<span>Denne</span></button>
         <button class="tab ${aktivny==='T'?'on':''}" onclick="prepniTab('T')">Telo<span>Váha, pás</span></button>
-        <button class="tab ${aktivny==='P'?'on':''}" onclick="prepniTab('P')">Zápisy<span>Váhy</span></button>
+        <button class="tab ${aktivny==='P'?'on':''}" onclick="prepniTab('P')">Progres<span>História</span></button>
       </div>
     </div>`;
 }
@@ -786,9 +1039,16 @@ async function zmazPosledny(id){
   const z=log[id]||[];
   if(!z.length) return;
   if(!confirm('Zmazať posledný zápis „'+z[0].v+'"?')) return;
-  z.shift();
-  if(!z.length) delete log[id]; else log[id]=z;
-  await uloz(); render();
+  if(z[0]._cloud_id){
+    const {error}=await db.from('workout_logs').delete().eq('id',z[0]._cloud_id);
+    if(error){chyba('Mazanie z cloudu zlyhalo: '+error.message);return;}
+    await cloudLoad();
+  }else{
+    z.shift();
+    if(!z.length) delete log[id]; else log[id]=z;
+    await uloz();
+  }
+  render();
 }
 
 function parseZapis(t){
@@ -885,12 +1145,20 @@ async function ulozPrepis(id){
   const v=el.value.trim();
   if(v) prepis[id]=v; else delete prepis[id];
   await ULOZISKO.set(JSON.stringify(prepis), PREPIS_KLUC);
+  const {error}=await db.from('user_settings').upsert({
+    user_id:cloudUser.id,setting_key:'manual_overrides',setting_value:prepis
+  },{onConflict:'user_id,setting_key'});
+  if(error){chyba('Cloud nastavenie zlyhalo: '+error.message);return;}
   render();
 }
 
 async function zrusPrepis(id){
   delete prepis[id];
   await ULOZISKO.set(JSON.stringify(prepis), PREPIS_KLUC);
+  const {error}=await db.from('user_settings').upsert({
+    user_id:cloudUser.id,setting_key:'manual_overrides',setting_value:prepis
+  },{onConflict:'user_id,setting_key'});
+  if(error){chyba('Cloud nastavenie zlyhalo: '+error.message);return;}
   render();
 }
 
@@ -1046,7 +1314,7 @@ async function nacitajSubor(ev){
     // zoradiť podľa dátumu zostupne a orezať na 6
     Object.keys(log).forEach(id=>{
       log[id].sort((a,b)=>String(isoDatum(b.d)||'').localeCompare(String(isoDatum(a.d)||'')));
-      log[id]=log[id].slice(0,6);
+      
     });
 
     let teloPridane=0;
@@ -1056,12 +1324,15 @@ async function nacitajSubor(ev){
       });
       if(teloPridane){
         telo.sort((a,b)=>String(isoDatum(b.d)||'').localeCompare(String(isoDatum(a.d)||'')));
-        telo=telo.slice(0,26);
+        
         await ULOZISKO.set(JSON.stringify(telo), TELO_KLUC);
       }
     }
 
     await uloz();
+    if(cloudUser){
+      try{await cloudUploadLocal();await cloudLoad();}catch(e){ioSprava('Import lokálne prebehol, ale cloud sync zlyhal: '+e.message,'bad');return;}
+    }
     let msg='Doplnených '+pridane+' záznamov.';
     if(teloPridane) msg+=' Plus '+teloPridane+' meraní tela.';
     if(preskocene) msg+=' Preskočených '+preskocene+' (duplikáty alebo neúplné).';
@@ -1083,41 +1354,46 @@ function ioSprava(text,typ){
 }
 
 function renderProgres(){
-  const sekcia=(T,nazov)=>{
-    const items=vsetkyCviky(T).map(c=>{
-      const z=log[c.id]||[];
-      if(!z.length){
-        return `<div class="zr zr-empty"><span class="zn">${c.n}</span><span class="zv">&mdash;</span></div>`;
-      }
-      const p=z[0];
-      return `<div class="zr"><span class="zn">${c.n}</span><span class="zv">${p.v}<em>${p.d}</em></span></div>`;
-    }).join('');
-    return `<div class="blk"><div class="blk-lbl"><h2>${nazov}</h2></div><div class="zoz">${items}</div></div>`;
-  };
+  const ids=Object.keys(log).sort((a,b)=>{
+    const an=metaAny(a).cvik.toLowerCase(), bn=metaAny(b).cvik.toLowerCase();
+    return an.localeCompare(bn,'sk');
+  });
+  const currentIds=new Set([...vsetkyCviky(A),...vsetkyCviky(B),...vsetkyCviky(C)].map(c=>c.id));
+  const cards=ids.map(id=>{
+    const z=log[id]||[];
+    const meta=metaAny(id);
+    const arch=currentIds.has(id)?'':' · archív';
+    return `<div class="pr">
+      <div class="pn">${meta.cvik}</div>
+      <div class="pe">${meta.typ}${arch} · ${z.length} zápisov</div>
+      ${z.length?`<div class="ph">${z.slice(0,3).map((x,i)=>`<div class="${i>0?'old':''}"><span>${x.d}</span><b>${x.v}</b></div>`).join('')}</div>`:''}
+      ${grafHtml(z)}
+      ${z.length?`<details style="margin-top:8px"><summary style="cursor:pointer;font-weight:600;color:#1F5FBF">Všetky zápisy</summary>
+        <div class="zoz">${z.map(x=>`<div class="zr"><span class="zn">${x.d}${x.p?`<em class="pzn">${x.p}</em>`:''}</span><span class="zv">${x.v}</span></div>`).join('')}</div>
+      </details>`:''}
+    </div>`;
+  }).join('');
+
+  const bezHist=[...vsetkyCviky(A),...vsetkyCviky(B),...vsetkyCviky(C)]
+    .filter(c=>!(log[c.id]||[]).length)
+    .map(c=>`<div class="zr zr-empty"><span class="zn">${c.n}</span><span class="zv">bez zápisu</span></div>`).join('');
 
   const spolu=Object.keys(log).reduce((a,k)=>a+(log[k]||[]).length,0);
-
-  document.getElementById('app').innerHTML=boardHtml()+
-    `<div class="head">
-       <h1>Posledné váhy</h1>
-       <div class="sub">Pri každom cviku posledný zápis. <b>Graf a celú históriu nájdeš po rozkliknutí cviku v tréningu.</b></div>
-       <div class="facts">
-         <div><div class="k">Zápisov spolu</div><div class="v">${spolu}</div></div>
-       </div>
-     </div>`+
-    sekcia(A,'Tréning A · utorok')+
-    sekcia(B,'Tréning B · štvrtok')+
-    sekcia(C,'Tréning C · sobota')+
-    `<div class="io">
-       <h3>Záloha zápisov</h3>
-       <p>Export uloží všetky zápisy do súboru <b>treningy.json</b>. Import ich doplní späť — existujúce sa neprepíšu, duplikáty sa preskočia.</p>
-       <div class="io-row">
-         <button class="io-btn" onclick="exportuj()">Export</button>
-         <button class="io-btn alt" onclick="spustImport()">Import</button>
-       </div>
-       <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="nacitajSubor(event)">
-       <div id="ioMsg"></div>
-     </div>`;
+  document.getElementById('app').innerHTML=boardHtml()+`
+    <div class="head">
+      <h1>Progres</h1>
+      <div class="sub"><b>Kompletná história všetkých cvikov</b>, aj tých, ktoré už nie sú v aktuálnom pláne.</div>
+      <div class="facts"><div><div class="k">Zápisov spolu</div><div class="v">${spolu}</div></div><div><div class="k">Cvikov v histórii</div><div class="v">${ids.length}</div></div></div>
+    </div>
+    <div class="blk"><div class="blk-lbl"><h2>História cvikov</h2></div>${cards||'<div class="tprazd">Zatiaľ bez tréningových zápisov.</div>'}</div>
+    ${bezHist?`<div class="blk"><div class="blk-lbl"><h2>Aktuálne bez histórie</h2></div><div class="zoz">${bezHist}</div></div>`:''}
+    <div class="io">
+      <h3>Záloha</h3>
+      <p>Cloud je primárne úložisko. Export JSON ostáva ako ďalšia offline poistka.</p>
+      <div class="io-row"><button class="io-btn" onclick="exportuj()">Export JSON</button><button class="io-btn alt" onclick="spustImport()">Import JSON</button></div>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="nacitajSubor(event)">
+      <div id="ioMsg"></div>
+    </div>`;
 }
 
 const TYZDEN=[
@@ -1226,18 +1502,28 @@ async function zapisTelo(){
   const w=parseFloat((document.getElementById('t-w').value||'').replace(',','.'));
   const pas=parseFloat((document.getElementById('t-p').value||'').replace(',','.'));
   if(!w||!pas){chyba('Vyplň váhu aj pás.');return;}
-  const d=new Date();
-  telo.unshift({d:d.getDate()+'.'+(d.getMonth()+1)+'.', w:Math.round(w*10)/10, p:Math.round(pas*10)/10});
-  telo=telo.slice(0,26);
-  await ULOZISKO.set(JSON.stringify(telo), TELO_KLUC);
+  const {error}=await db.from('body_measurements').upsert({
+    user_id:cloudUser.id,
+    measured_on:todayIso(),
+    weight_kg:Math.round(w*10)/10,
+    waist_cm:Math.round(pas*10)/10
+  },{onConflict:'user_id,measured_on'});
+  if(error){chyba('Cloud zápis merania zlyhal: '+error.message);return;}
+  await cloudLoad();
   render();
 }
 
 async function zmazTelo(){
   if(!telo.length) return;
   if(!confirm('Zmazať meranie z '+telo[0].d+'?')) return;
-  telo.shift();
-  await ULOZISKO.set(JSON.stringify(telo), TELO_KLUC);
+  if(telo[0]._cloud_id){
+    const {error}=await db.from('body_measurements').delete().eq('id',telo[0]._cloud_id);
+    if(error){chyba('Mazanie merania zlyhalo: '+error.message);return;}
+    await cloudLoad();
+  }else{
+    telo.shift();
+    await ULOZISKO.set(JSON.stringify(telo),TELO_KLUC);
+  }
   render();
 }
 
