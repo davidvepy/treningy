@@ -19,8 +19,14 @@
   .wrap{max-width:560px;margin:0 auto;}
 
   .board{background:var(--deep);color:#fff;padding:16px 18px 0;}
-  .board-top{font-family:'JetBrains Mono',monospace;font-size:10.5px;
-    letter-spacing:.15em;text-transform:uppercase;color:#8FA9C4;}
+  .board-top{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.15em;
+    text-transform:uppercase;color:#8FA9C4;}
+  .cloudbar{display:flex;align-items:center;justify-content:flex-end;gap:7px;min-width:0;
+    color:#B9CDDF;letter-spacing:.04em;text-transform:none;}
+  .cloudbar .cloudmail{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cloudbar button{background:none;border:0;color:#B9CDDF;font:inherit;cursor:pointer;padding:2px 0;
+    text-decoration:underline;text-underline-offset:2px;}
   .tabs{display:flex;margin-top:12px;overflow-x:auto;scrollbar-width:none;
     -webkit-overflow-scrolling:touch;}
   .tabs::-webkit-scrollbar{display:none;}
@@ -255,6 +261,52 @@
   .err{margin:12px 18px;padding:11px 13px;background:#FBE9E7;
     border-left:4px solid var(--center);font-size:13px;}
   .loading{padding:40px 18px;text-align:center;color:var(--steel);font-size:14px;}
+  @media(max-width:560px){
+    body{padding-bottom:72px;}
+    .wrap{width:100%;max-width:none;}
+    .board{padding:calc(12px + env(safe-area-inset-top,0px)) 14px 0;}
+    .board-top{align-items:flex-start;flex-direction:column;gap:6px;}
+    .cloudbar{width:100%;justify-content:flex-start;font-size:10px;}
+    .cloudbar .cloudmail{max-width:calc(100vw - 130px);}
+    .tabs{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:0 3px;
+      width:100%;margin-top:10px;overflow:visible;}
+    .tab{min-width:0;width:100%;padding:9px 3px 8px;font-size:14px;line-height:1;
+      border-bottom-width:3px;}
+    .tab:nth-child(-n+4){grid-column:span 3;}
+    .tab:nth-child(n+5){grid-column:span 4;}
+    .tab span{font-size:8.5px;line-height:1.15;margin-top:3px;}
+    .head{padding:17px 14px 0;}
+    .head h1{font-size:28px;}
+    .head .sub{font-size:13px;}
+    .blk{margin-left:14px;margin-right:14px;}
+    .warm,.foot,.io{margin-left:14px;margin-right:14px;}
+    .dr{gap:9px;}
+    .dd{width:76px;flex-basis:76px;}
+    .dt b{font-size:14.5px;}
+    .dt i{font-size:12px;}
+    .facts{gap:14px;flex-wrap:wrap;}
+    .log-row{flex-wrap:wrap;}
+    .log-row input{flex:1 1 170px;}
+    .log-row .tbtn{flex:1 1 100%;height:38px;}
+    .telform{flex-wrap:wrap;}
+    .telform input{flex:1 1 calc(50% - 4px);}
+    .telform button{flex:1 1 100%;}
+    .io-row{flex-direction:column;}
+    .zr{align-items:flex-start;}
+    .zv{max-width:52%;white-space:normal;}
+    .pikrow{display:block;padding-top:2px;}
+  }
+  @media(max-width:360px){
+    .board{padding-left:10px;padding-right:10px;}
+    .tab{font-size:13px;padding-left:2px;padding-right:2px;}
+    .tab span{font-size:8px;}
+    .head,.blk,.warm,.foot,.io{margin-left:0;margin-right:0;}
+    .head{padding-left:12px;padding-right:12px;}
+    .blk{margin-left:12px;margin-right:12px;}
+    .warm,.foot,.io{margin-left:12px;margin-right:12px;}
+    .dd{width:70px;flex-basis:70px;}
+  }
+
   @media(prefers-reduced-motion:reduce){*{transition:none!important;}}
 </style>
 </head>
@@ -975,13 +1027,11 @@ function exHtml(c,n){
     </div>` : '';
 
   const cas = c.pauza ? `<button class="tbtn" onclick="event.stopPropagation();spustCasovac('${c.id}',${c.pauza})">⏱ ${c.pauza>=60?Math.round(c.pauza/60*10)/10+' min':c.pauza+' s'}</button>` : '';
-  const piktoIco = PIKTO[c.pik]||'';
   const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(c.n+' cvičenie technika');
 
   return `
     <div class="ex ${c.key?'key':''} ${otvorene[c.id]?'open':''}">
       <div class="ex-head" onclick="prepniCvik('${c.id}')">
-        <div class="pikmini">${piktoIco}</div>
         <div class="ex-title">
           <div class="n">${c.n}</div>
           <div class="sets">${[c.alt,c.sets].filter(Boolean).join(' · ')}</div>
@@ -991,7 +1041,6 @@ function exHtml(c,n){
       </div>
       <div class="ex-body">
         <div class="pikrow">
-          <div class="pikbig">${piktoIco}</div>
           <div class="pikinfo">
             <div class="ako">${c.ako}</div>
             <div class="chyba"><b>Pozor:</b> ${c.chyba}</div>
@@ -1015,9 +1064,10 @@ function exHtml(c,n){
 function boardHtml(){
   return `
     <div class="board">
-      <div class="board-top">Tréningový plán
-        <span style="float:right;color:#B9CDDF">☁ cloud ${cloudUser?`· ${cloudUser.email||''}`:''}
-        ${cloudUser?`<button onclick="odhlas()" style="background:none;border:0;color:#B9CDDF;font:inherit;cursor:pointer;padding:0 0 0 6px">odhlásiť</button>`:''}</span>
+      <div class="board-top">
+        <span>Tréningový plán</span>
+        <span class="cloudbar">☁ cloud ${cloudUser?`<span class="cloudmail">${cloudUser.email||''}</span>`:''}
+        ${cloudUser?`<button onclick="odhlas()">odhlásiť</button>`:''}</span>
       </div>
       <div class="tabs">
         <button class="tab ${aktivny==='D'?'on':''}" onclick="prepniTab('D')">Dnes<span>Plán</span></button>
