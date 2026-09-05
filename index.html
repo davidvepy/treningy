@@ -266,91 +266,104 @@ const KEY='david-treningy-v3';
 const CHEV='<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>';
 
 const A={
-  h1:'Prsia, ramená<br>triceps, stehná',
-  sub:'Dva ťažké tlaky s plnou pauzou, potom <b>dva supersety</b> — dva cviky za sebou bez pauzy. Tým ušetríš 20 minút a nestratíš ani sériu.',
-  facts:[['Trvanie','47 min'],['Cvikov','7'],['Sérií','24']],
-  rozcvicka:'<ul><li>Bicykel 3 min voľne</li><li>Face pulls, 2 × 15 veľmi ľahko</li><li>Prvá séria tlakov s prázdnou osou</li></ul><p>Kratšia rozcvička je možná preto, že prvý cvik má rozbehovú sériu v sebe.</p>',
+  h1:'Hrudník, ramená<br>triceps, nohy',
+  sub:'Utorok je hlavný tlakový deň. Priorita je <b>plnší hrudník, širšie ramená a triceps</b>, nohy len udržiavame. Cieľ: odcvičiť kvalitne do 45 minút.',
+  facts:[['Trvanie','40–45 min'],['Cvikov','6'],['Fokus','Hrudník + ramená']],
+  rozcvicka:'<ul><li>Hlboký drep s palicou · 30–45 s</li><li>Cossack drep · 4 × na stranu</li><li>90/90 prehodenia · 6 × na stranu</li><li>Bench: 1–2 ľahké rozbehové série</li></ul><p>Rozcvička má pripraviť bedrá a ramená, nie ťa unaviť.</p>',
   bloky:[
-    {n:'Ťažké tlaky', cas:'19 min', cviky:[
-      {id:'a1', pik:'press', n:'Tlaky na rovnej lavičke', alt:'Veľká činka · bench press', sets:'4 × 6–8 · pauza 2,5 min', ser:4, mn:6, mx:8, krok:2.5, prio:'v', pauza:150, nah:[{n:'Tlaky na šikmej s činkou',poz:'Ak je rovná lavica obsadená. Sklon 15°, váhu ber o 5 kg nižšiu.'},{n:'Tlaky jednoručkami na rovnej',poz:'Iný cvik, iné čísla. Zapíš ako variant, nech graf neklame.'}], key:true,
-       ako:'Lopatky stiahni k sebe a dole, chodidlá pevne na zemi. Činku spúšťaj k spodnej časti hrudníka, nie ku krku. Hore vytlač bez blokovania lakťov.',
-       preco:'Základný stavebný cvik na prsia. Najviac váhy, najväčší podnet, preto je prvý.',
-       chyba:'Odtrhávať zadok z lavičky alebo odrážať činku od hrudníka. Ak to potrebuješ, je priťažká.'},
-      {id:'a2', pik:'press', n:'Tlaky na šikmej — jednoručky', alt:'Sklon 30° · váha na JEDNU ruku', sets:'3 × 8–10 · pauza 2 min', ser:3, mn:8, mx:10, krok:2.5, prio:'v', pauza:120, nah:[{n:'Tlaky na šikmej s činkou',poz:'Váha nie je porovnateľná s jednoručkami. Vždy označ variant.'}], key:true,
-       ako:'Lavička na 30 stupňov. Jednoručky na úrovni hrudníka, vytlač hore. Na konci ich nedávaj k sebe, drž nad hrudníkom.',
-       preco:'Horná časť hrudníka. Toto robí ten vypnutý hrudník, ktorý chceš.',
-       chyba:'Príliš strmá lavička. Nad 45 stupňov už robíš ramená, nie prsia.'}
+    {n:'Hlavné tlaky', cas:'18 min', cviky:[
+      {id:'a1', pik:'press', n:'Tlaky na rovnej lavičke', alt:'Barbell Bench Press', sets:'4 × 6–8 · pauza 2–2,5 min', vaha:'57,5 kg', ser:4, mn:6, mx:8, krok:2.5, prio:'v', pauza:150,
+       nah:[{n:'Tlaky jednoručkami na rovnej · Dumbbell Bench Press',vaha:'cca 25 kg/ruč.',poz:'Nie je to priamy prepočet. Začni konzervatívne a nechaj ~2 opakovania v rezerve.'}],
+       key:true,
+       ako:'Lopatky stiahni k sebe a dole, chodidlá pevne na zemi. Činku spúšťaj kontrolovane k spodnej časti hrudníka a vytlač bez odrážania.',
+       preco:'Hlavný silový cvik na prsia. Držíme ho kvôli dlhodobému progresu.',
+       chyba:'Odtrhávať zadok z lavičky alebo odrážať činku od hrudníka.'},
+      {id:'a2m', pik:'press', n:'Tlaky na šikmej na stroji', alt:'Incline Chest Press Machine', sets:'3 × 8–10 · pauza 90–120 s', vaha:'45–50 kg podľa stroja', ser:3, mn:8, mx:10, krok:2.5, prio:'v', pauza:105,
+       nah:[{n:'Tlaky jednoručkami na šikmej · Incline Dumbbell Press',vaha:'22,5 kg/ruč.',poz:'Tvoj overený variant. Sklon približne 30°.'}],
+       key:true,
+       ako:'Nastav sed tak, aby rukoväte vychádzali približne na hornú časť hrudníka. Lopatky drž opreté, lakte nesmerujú úplne do strán.',
+       preco:'Horná časť hrudníka bez potreby ďalšej veľkej stabilizácie.',
+       chyba:'Príliš vysoký sklon alebo ramená vytlačené dopredu.'}
     ]},
-    {ss:true, n:'Superset 1', cas:'10 min', pozn:'4 kolá · po dvojici pauza 75 s', cviky:[
-      {id:'a3', pik:'lateral', n:'Upažovanie s jednoručkami', alt:'Lateral raise · v stoji', sets:'4 × 12–15', ser:4, mn:12, mx:15, krok:2.5, prio:'o', pauza:75, nah:[{n:'Upažovanie na kladke',poz:'Rovnaká práca, plynulejšie napätie. Váha bude nižšia.'}], key:true,
-       ako:'Jednoručky pri bokoch, dvíhaj do strán po výšku ramien. <b>Ťaháš lakťami, nie rukami</b> — predstav si šnúrky priviazané na lakťoch, za ktoré ťa niekto ťahá do strán.',
-       preco:'Najdôležitejší cvik pre šírku ramien v celom programe. Bočná hlava deltu je jediný sval, ktorý ti opticky rozšíri ramená.',
-       chyba:'Priťažké jednoručky a hojdanie telom. Ak sa hojdáš, uber váhu. Tu vyhráva technika, nie kilá.'},
-      {id:'a4', pik:'triceps', n:'Triceps na kladke s lanom', alt:'Rope pushdown', sets:'4 × 10–12', ser:4, mn:10, mx:12, krok:2.5, prio:'v', pauza:75, nah:[{n:'Sťahovanie kladky rovnou tyčou',poz:'Ak je lano obsadené. Menší rozsah v hornej fáze.'}],
-       ako:'Stoj pred hornou kladkou, <b>lakte prilepené k bokom</b>. Tlač lano dole a v dolnej polohe ho jemne rozťahuj do strán.',
-       preco:'Triceps tvorí dve tretiny objemu ruky. Väčšie ruky sa robia tricepsom, nie bicepsom.',
-       chyba:'Odlepovať lakte od tela. Vtedy prácu preberá rameno.'}
+    {ss:true, n:'Superset · ramená + triceps', cas:'10 min', pozn:'3 kolá · po dvojici pauza 60–75 s', cviky:[
+      {id:'a3c', pik:'lateral', n:'Upažovanie na kladke', alt:'Cable Lateral Raise', sets:'3 × 12–15 na stranu', vaha:'5 kg', ser:3, mn:12, mx:15, krok:2.5, prio:'o', pauza:70,
+       nah:[{n:'Upažovanie s jednoručkami · Dumbbell Lateral Raise',vaha:'10 kg/ruč.',poz:'Ak technika padá, pokojne uber.'}],
+       key:true,
+       ako:'Stoj bokom ku kladke, trup pevný. Ťahaj lakťom do strany približne po výšku ramena.',
+       preco:'Bočné delty sú tvoja najvyššia estetická priorita.',
+       chyba:'Hojdať telom alebo ťahať trapézom.'},
+      {id:'a4', pik:'triceps', n:'Triceps na kladke s lanom', alt:'Rope Pushdown', sets:'3 × 10–12', vaha:'22,5 kg', ser:3, mn:10, mx:12, krok:2.5, prio:'v', pauza:70,
+       nah:[{n:'Sťahovanie kladky rovnou tyčou · Straight-Bar Pushdown',vaha:'20–22,5 kg',poz:'Váha na inej kladke nemusí byť porovnateľná.'}],
+       ako:'Lakte drž pri bokoch. Dole úplne vystri predlaktia a lano jemne roztiahni.',
+       preco:'Objem tricepsu výrazne mení vzhľad celej ruky.',
+       chyba:'Odlepovať lakte od tela alebo si pomáhať trupom.'}
     ]},
-    {ss:true, n:'Superset 2', cas:'8 min', pozn:'3 kolá · po dvojici pauza 60 s', cviky:[
-      {id:'a5', pik:'flye', n:'Rozpažovanie na kladkách', alt:'Peck deck alebo kabelový fly', sets:'3 × 12–15', ser:3, mn:12, mx:15, krok:2.5, prio:'v', pauza:60, nah:[{n:'Pectoral machine',poz:'Iná váha aj dráha. Vždy označ variant, inak graf ukáže falošný skok.'}],
-       ako:'Lakte mierne pokrčené a v jednej polohe. Ťaháš ruky oblúkom pred seba, ako keby si niekoho objímal. Na konci stlač hrudník.',
-       preco:'Dotvaruje prsia a naťahuje ich v spodnej polohe. Tu nejde o váhu, ale o pocit ťahu.',
-       chyba:'Ohýbať a naťahovať lakte. Potom z toho je tlak, nie rozpažovanie.'},
-      {id:'a6', pik:'tricepsOh', n:'Francúzsky tlak nad hlavu', alt:'Jednoručka obojručne · overhead extension', sets:'3 × 10–12', ser:3, mn:10, mx:12, krok:2.5, prio:'v', pauza:60, nah:[{n:'Triceps nad hlavu na kladke',poz:'Rovnaká hlava tricepsu, plynulejšie napätie.'}],
-       ako:'V sede, jednu ťažkú jednoručku drž oboma rukami nad hlavou. Spúšťaj za hlavu ohybom v lakťoch, lakte smerujú dopredu a nehýbu sa.',
-       preco:'<b>Dlhá hlava tricepsu</b> — tá tvorí objem ruky zospodu a bez cviku nad hlavou ju nezasiahneš.',
-       chyba:'Roztvárať lakte do strán. Drž ich pri hlave.'}
-    ]},
-    {n:'Stehná', cas:'7 min', cviky:[
-      {id:'a7', pik:'legPress', n:'Leg Press', alt:'Tlak nohami na stroji', sets:'3 × 10–12 · pauza 90 s', ser:3, mn:10, mx:12, krok:10, prio:'v', pauza:90, nah:[{n:'Hack drep',poz:'Väčší nárok na driek. Pri citlivých krížoch radšej nie.'}],
-       ako:'Chrbát celý opretý, nohy na platni na šírku ramien. Spusti, kým nie sú kolená v 90 stupňoch, vytlač späť. <b>Kolená na konci nenaťahuj dobiela.</b>',
-       preco:'Stehná a zadok. Bezpečná náhrada drepu, keďže máš chrbát opretý a vysadenú panvu.',
-       chyba:'Púšťať tak hlboko, že sa spodok chrbta odlepí od sedadla. Tam prestaň.'}
+    {ss:true, n:'Hrudník + nohy', cas:'10–12 min', pozn:'3 kolá · medzi cvikmi len presun, po dvojici 75–90 s', cviky:[
+      {id:'a5m', pik:'flye', n:'Pec deck', alt:'Machine Chest Fly', sets:'3 × 12–15', vaha:'cca 15 kg podľa stroja', ser:3, mn:12, mx:15, krok:2.5, prio:'v', pauza:80,
+       nah:[{n:'Rozpažovanie na kladkách · Cable Fly',vaha:'7,5 kg/strana',poz:'Drž lakte mierne pokrčené a rovnaký uhol počas série.'}],
+       ako:'Hrudník drž opretý, ruky zatváraj oblúkom pred telo. Na konci krátko stlač prsia.',
+       preco:'Druhý stimul pre prsia bez veľkej systémovej únavy.',
+       chyba:'Príliš veľká váha a skracovanie rozsahu.'},
+      {id:'a7', pik:'legPress', n:'Leg Press', alt:'Leg Press', sets:'3 × 10–12', vaha:'100 kg', ser:3, mn:10, mx:12, krok:10, prio:'v', pauza:90,
+       nah:[{n:'Hack drep · Hack Squat',vaha:'podľa stroja, cieľ RIR ~2',poz:'Čísla medzi strojmi nie sú porovnateľné. Začni ľahšie, než si myslíš.'}],
+       ako:'Chrbát celý opretý, kolená sledujú špičky. Choď len tak hlboko, aby sa panva nezačala odliepať.',
+       preco:'Udržiavací knee-dominant vzor bez potreby veľkého objemu nôh.',
+       chyba:'Príliš hlboký rozsah za cenu podsadenia panvy.'}
     ]}
   ]
 };
 
 const B={
-  h1:'Chrbát, biceps<br>zadné delty, stehná',
-  sub:'Deň po hokeji, preto <b>žiadne výbušné cviky ani drepy</b>. Ťahy chrbtom sú regeneračne najlacnejšia voľba a zároveň ti robia V-siluetu.',
-  facts:[['Trvanie','46 min'],['Cvikov','7'],['Sérií','24']],
-  rozcvicka:'<ul><li>Bicykel 3 min voľne</li><li>Face pulls, 2 × 15 ľahko</li><li>Sťahovanie kladky ľahko, 15 opakovaní</li></ul><p>Po zápase je telo stuhnuté — rozcvičku dnes nepreskakuj.</p>',
+  h1:'Ramená, ruky<br>upper body + panva',
+  sub:'Štvrtok je estetický deň pred hokejom. Priorita sú <b>ramená, biceps, triceps</b> a horná polovica tela bez veľkej únavy nôh.',
+  facts:[['Trvanie','40–45 min'],['Cvikov','7'],['Fokus','Ramená + ruky']],
+  rozcvicka:'<ul><li>Hlboký drep s palicou · 30 s</li><li>Cossack drep · 4 × na stranu</li><li>90/90 prehodenia · 6 × na stranu</li><li>1 ľahká séria tlakov nad hlavu</li></ul><p>Deň pred hokejom nechceme rozbiť zadný reťazec ani nohy.</p>',
   bloky:[
-    {n:'Ťažké ťahy', cas:'19 min', cviky:[
-      {id:'b1', pik:'pulldown', n:'Sťahovanie hornej kladky', alt:'Široký nadhmat · lat pulldown', sets:'4 × 8–10 · pauza 2,5 min', ser:4, mn:8, mx:10, krok:2.5, prio:'v', pauza:150, nah:[{n:'Príťah na kladke v sede',poz:'Iná rovina ťahu, hrúbka namiesto šírky. Označ variant.'},{n:'Zhyby s dopomocou',poz:'Ak je kladka obsadená.'}], key:true,
-       ako:'Chyť hrazdu širšie ako ramená. <b>Najprv stiahni lopatky dole</b>, až potom ťahaj k hornej časti hrudníka. Hrudník vypnutý, mierny záklon trupu.',
-       preco:'Šírka chrbta. Toto robí V-tvar, ktorý pri úzkom páse tvorí celú siluetu.',
-       chyba:'Ťahať len rukami. Pohyb začína lopatkami, nie bicepsom. Ak dáš nad 8 čistých zhybov, rob radšej zhyby.'},
-      {id:'b2', pik:'rowBent', n:'Príťahy v predklone', alt:'Veľká činka alebo T-Bar Row', sets:'4 × 8–10 · pauza 2 min', ser:4, mn:8, mx:10, krok:2.5, prio:'v', pauza:120, nah:[{n:'Príťah v predklone s činkou',poz:'Väčší nárok na driek. Pri citlivých krížoch radšej jednoručku.'}], key:true,
-       ako:'Predklon asi 45 stupňov, chrbát rovný, kolená mierne pokrčené. Ťahaj činku <b>k pupku, nie k hrudníku</b>. Lakte idú dozadu popri tele.',
-       preco:'Hrúbka chrbta. To je to, čo robí chrbát mohutným zboku.',
-       chyba:'Guliť chrbát alebo sa narovnávať pri každom opakovaní. Trup drž pevný celú sériu.'}
+    {n:'Ramená', cas:'10 min', cviky:[
+      {id:'b1oh', pik:'overhead', n:'Tlaky nad hlavu v sede', alt:'Seated Dumbbell Shoulder Press', sets:'3 × 8–10 · pauza 2 min', vaha:'17,5 kg/ruč.', ser:3, mn:8, mx:10, krok:2.5, prio:'v', pauza:120,
+       nah:[{n:'Tlaky na ramená na stroji · Shoulder Press Machine',vaha:'podľa stroja, cieľ 8–10 čistých',poz:'Strojové váhy sa nedajú rozumne prepočítať z jednoručiek.'}],
+       key:true,
+       ako:'Chrbát opretý, rebrá dole. Tlač jednoručky hore bez prehnutia v drieku.',
+       preco:'Buduje objem ramena a vertikálny tlakový vzor.',
+       chyba:'Dokončovať opakovanie záklonom.'}
     ]},
-    {ss:true, n:'Superset 1', cas:'10 min', pozn:'4 kolá · po dvojici pauza 75 s', cviky:[
-      {id:'b3', pik:'reverseFly', n:'Reverzné rozpažovanie', alt:'Peck deck naopak alebo v predklone', sets:'4 × 15', ser:4, mn:15, mx:18, krok:2.5, prio:'o', pauza:75, nah:[{n:'Face pull na kladke',poz:'Rovnaká partia, lepšia kontrola. Váha bude iná.'}], key:true,
-       ako:'Sadni si k peck decku čelom a roztváraj ruky dozadu. Ak ho nemáš, predklon s ľahkými jednoručkami a dvíhaj do strán a dozadu.',
-       preco:'<b>Zadné deltoidy robia rameno okrúhlym z profilu.</b> Bez nich vyzerá rameno sploštene, aj keď máš bočnú hlavu.',
-       chyba:'Priťažká váha a švihanie. Toto je ľahký cvik s vysokým počtom opakovaní.'},
-      {id:'b4', pik:'curl', n:'Biceps kladivovým úchopom', alt:'Hammer curl · v sede', sets:'4 × 10–12', ser:4, mn:10, mx:12, krok:2.5, prio:'v', pauza:75, nah:[{n:'Biceps na kladke, neutrálny úchop',poz:'Plynulejšie napätie.'}],
-       ako:'Sad si na lavičku s operadlom, <b>dlane smerujú k sebe</b> ako keby si držal kladivo. Dvíhaj k ramenám, dole púšťaj pomaly.',
-       preco:'Biceps a predlaktie naraz. Kladivový úchop robí rameno hrubšie zboku než klasický biceps.',
-       chyba:'Hojdať telom. Sed to väčšinou vyrieši sám.'}
+    {ss:true, n:'Superset · delty + chrbát', cas:'9 min', pozn:'3 kolá · po dvojici pauza 60–75 s', cviky:[
+      {id:'b2lat', pik:'lateral', n:'Upažovanie s jednoručkami', alt:'Dumbbell Lateral Raise', sets:'4 × 12–18', vaha:'10 kg/ruč.', ser:4, mn:12, mx:18, krok:2.5, prio:'o', pauza:70,
+       nah:[{n:'Upažovanie na kladke · Cable Lateral Raise',vaha:'5 kg',poz:'Ak chceš plynulejšie napätie alebo sú jednoručky obsadené.'}],
+       key:true,
+       ako:'Ťahaj lakťami do strán, trup drž pokojný. Posledné opakovania majú byť ťažké, ale bez hojdania.',
+       preco:'Druhá týždenná dávka bočných deltov, kľúčová pre V-tvar.',
+       chyba:'Švihanie a dvíhanie ramien k ušiam.'},
+      {id:'b3row', pik:'rowSeated', n:'Príťah na kladke v sede', alt:'Seated Cable Row', sets:'3 × 10–12', vaha:'60 kg', ser:3, mn:10, mx:12, krok:5, prio:'v', pauza:70,
+       nah:[{n:'Príťah s oporou hrudníka · Chest-Supported Row',vaha:'cca 25 kg/ruč. alebo ekvivalent stroja',poz:'Ak je kladka obsadená.'}],
+       ako:'Najprv stiahni lopatky, potom ťahaj rukoväť k bruchu. Trup sa nehýbe.',
+       preco:'Hrúbka chrbta a protiváha k tlakom.',
+       chyba:'Zakláňať sa a robiť z toho pohyb celým telom.'}
     ]},
-    {ss:true, n:'Superset 2', cas:'8 min', pozn:'3 kolá · po dvojici pauza 60 s', cviky:[
-      {id:'b5', pik:'pullover', n:'Sťahovanie kladky vystretými rukami', alt:'Straight-arm pulldown', sets:'3 × 12–15', ser:3, mn:12, mx:15, krok:2.5, prio:'v', pauza:60, nah:[{n:'Pullover s jednoručkou',poz:'Ak je kladka obsadená. Ťažšie sa dávkuje.'}],
-       ako:'Ruky vystreté s mierne pokrčenými lakťami, ktoré sa nehýbu. Ťahaj tyč oblúkom zhora až k stehnám.',
-       preco:'Široký sval chrbta a <b>serratus</b> — tie „prsty" po bokoch rebier, ktoré robia atletický vzhľad.',
-       chyba:'Ohýbať lakte. Potom z toho je triceps, nie chrbát.'},
-      {id:'b6', pik:'curl', n:'Biceps na kazateľskej lavici', alt:'Preacher curl', sets:'3 × 10–12', ser:3, mn:10, mx:12, krok:2.5, prio:'v', pauza:60, nah:[{n:'Biceps s jednoručkami v sede',poz:'Ak je kazateľská obsadená.'}],
-       ako:'Ramená polož na šikmú opierku, ruky visia dole. Dvíhaj činku k sebe. <b>Dole nepúšťaj do úplného vystretia</b>, nechaj lakeť mierne pokrčený.',
-       preco:'Opierka fixuje ramená, takže sa nedá švihať a biceps dostane všetko.',
-       chyba:'Dvíhať zadok z lavičky pri posledných opakovaniach.'}
+    {ss:true, n:'Superset · hrudník + biceps', cas:'8 min', pozn:'3 kolá · po dvojici pauza 60 s', cviky:[
+      {id:'b4fly', pik:'flye', n:'Rozpažovanie zdola nahor', alt:'Low-to-High Cable Fly', sets:'3 × 12–15', vaha:'7,5 kg/strana', ser:3, mn:12, mx:15, krok:2.5, prio:'v', pauza:60,
+       nah:[{n:'Pec deck · Machine Chest Fly',vaha:'cca 15 kg podľa stroja',poz:'Nie je to priamy prepočet.'}],
+       ako:'Kladky nastav nízko a ruky veď oblúkom šikmo hore a pred seba. Lakte ostávajú mierne pokrčené.',
+       preco:'Druhá dávka pre prsia v týždni, s dôrazom na hornú časť.',
+       chyba:'Meniť uhol v lakťoch a robiť z pohybu tlak.'},
+      {id:'b5curl', pik:'curl', n:'Kladivový biceps', alt:'Hammer Curl', sets:'3 × 10–12', vaha:'17,5 kg/ruč.', ser:3, mn:10, mx:12, krok:2.5, prio:'v', pauza:60,
+       nah:[{n:'Kladivový biceps na lane · Rope Hammer Curl',vaha:'cca 17,5–20 kg podľa kladky',poz:'Drž neutrálny úchop a lakte pri tele.'}],
+       ako:'Dlane smerujú k sebe, lakte drž pri bokoch. Dole púšťaj pomaly.',
+       preco:'Biceps + brachialis, opticky pridáva hrúbku ruky.',
+       chyba:'Hojdať telom.'}
     ]},
-    {n:'Stehná a zadok', cas:'7 min', cviky:[
-      {id:'b7', pik:'hinge', n:'Rumunský mŕtvy ťah', alt:'RDL · s popruhmi', sets:'3 × 10 · pauza 90 s', ser:3, mn:10, mx:10, krok:5, prio:'v', pauza:90, nah:[{n:'Hip thrust',poz:'Zadok bez zaťaženia drieku. Dobrá voľba, ak sa kríže ozvú.'}],
-       ako:'Kolená len mierne pokrčené. Zadok tlač dozadu, chrbát rovný, činka kĺže popri stehnách dole. Keď ucítiš silný ťah v zadných stehnách, vráť sa hore.',
-       preco:'Zadná strana stehien a zadok. Zároveň <b>rovná tú vysadenú panvu</b>, čo ti opticky uberie pár centimetrov brucha.',
-       chyba:'Guliť chrbát. Ohýbaš sa v bedrách, nie v chrbtici. <b>Popruhy sú tu preto, aby váhu nedržal trapéz.</b>'}
+    {ss:true, n:'Superset · triceps + panva', cas:'9 min', pozn:'3 kolá · po dvojici pauza 60–75 s', cviky:[
+      {id:'b6tri', pik:'tricepsOh', n:'Triceps nad hlavou na kladke', alt:'Cable Overhead Triceps Extension', sets:'3 × 10–12', vaha:'15 kg', ser:3, mn:10, mx:12, krok:2.5, prio:'v', pauza:65,
+       nah:[{n:'Francúzsky tlak nad hlavu · Overhead Dumbbell Extension',vaha:'27,5 kg',poz:'Tvoj overený variant.'}],
+       ako:'Lakte drž pri hlave a zafixované. Pohyb rob len predlaktiami.',
+       preco:'Dlhá hlava tricepsu, dôležitá pre objem ruky.',
+       chyba:'Roztvárať lakte alebo sa prehýbať.'},
+      {id:'b7split', pik:'splitSquat', n:'Bulharský drep', alt:'Bulgarian Split Squat', sets:'2 × 10 na nohu', vaha:'vlastná váha', ser:2, mn:10, mx:10, krok:4, prio:'v', pauza:65,
+       nah:[{n:'Výpad na mieste · Static Lunge',vaha:'vlastná váha',poz:'Ak nie je voľná lavička. Leg press nie je plnohodnotná náhrada pre tento účel.'}],
+       key:true,
+       ako:'Zadná noha na lavičke, panvu drž pod kontrolou. Zadok zadnej nohy aktívny, trup stabilný.',
+       preco:'Jednonožný vzor a práca s flexorom bedra bez veľkého objemu nôh.',
+       chyba:'Prehnúť driek alebo padať kolenom dovnútra.'}
     ]}
   ]
 };
@@ -431,52 +444,49 @@ const M={
 };
 
 const C={
-  h1:'Ramená, hrudník<br>chrbát, ruky',
-  sub:'Krátky doplnkový tréning. Zdvihne ti <b>frekvenciu na dvakrát týždenne</b> pri každej partii hornej polovice — tam sa rozhoduje o výsledku. Jeden cvik na nohy je tam kvôli panve, nie kvôli objemu.',
-  facts:[['Trvanie','42 min'],['Cvikov','8'],['Sérií','23']],
-  rozcvicka:'<ul><li>Bicykel 3 min voľne</li><li>Face pulls, 2 × 15 veľmi ľahko</li><li>Krúženie ramenami, 10 × dopredu a dozadu</li></ul><p>Po piatkovom behu sú lýtka a bedrá stuhnuté. Rozcvičku dnes neskracuj.</p>',
+  h1:'Chrbát, zadné ramená<br>biceps + zadný reťazec',
+  sub:'Sobota je hlavný ťahový deň. Budujeme <b>šírku a hrúbku chrbta, zadné ramená a biceps</b>. RDL ostáva kontrolovaný kvôli krížom.',
+  facts:[['Trvanie','40–45 min'],['Cvikov','6'],['Fokus','Chrbát + biceps']],
+  rozcvicka:'<ul><li>2–3 min ľahký bicykel alebo chôdza</li><li>90/90 prehodenia · 6 × na stranu</li><li>Ľahké sťahovanie kladky · 12–15 opakovaní</li><li>1 technická séria RDL s ľahkou váhou</li></ul><p>Ak sú po piatkovom hokeji nohy ťažké, RDL môžeš nahradiť hip thrustom.</p>',
   bloky:[
-    {n:'Tlak nad hlavu', cas:'9 min', cviky:[
-      {id:'c1', pik:'overhead', n:'Tlaky nad hlavu v sede', alt:'Jednoručky · shoulder press', sets:'3 × 8–10 · pauza 2 min', ser:3, mn:8, mx:10, krok:2.5, prio:'v', pauza:120, nah:[{n:'Tlaky nad hlavu na stroji',poz:'Ak nie sú voľné jednoručky. Iná váha, označ variant.'}], key:true,
-       ako:'Operadlo takmer kolmo, chrbát celý opretý. Jednoručky od úrovne uší tlač hore. <b>Rebrá drž dole</b> — ak sa prehneš v drieku, tlačíš chrbticou, nie ramenami.',
-       preco:'Predná a bočná hlava deltu naraz. V utorok robíš tlaky vodorovne, tu ich robíš zvislo — iný uhol, iný podnet.',
-       chyba:'Prehnúť sa v drieku, aby si dotlačil poslednú sériu. <b>Pri tvojej vysadenej panve je to presne ten pohyb, ktorý ťa bolí.</b> Radšej uber váhu.'}
+    {n:'Hlavné ťahy', cas:'18 min', cviky:[
+      {id:'c1pull', pik:'pulldown', n:'Sťahovanie hornej kladky', alt:'Lat Pulldown', sets:'3 × 8–10 · pauza 2 min', vaha:'60 kg', ser:3, mn:8, mx:10, krok:2.5, prio:'v', pauza:120,
+       nah:[{n:'Zhyby s dopomocou · Assisted Pull-Up',vaha:'dopomoc taká, aby si dal 8–10 čistých',poz:'Pri tomto cviku je „váha“ množstvo dopomoci, nie priamy ekvivalent kladky.'}],
+       key:true,
+       ako:'Najprv stiahni lopatky dole, potom ťahaj k hornej časti hrudníka. Trup len mierne zaklonený.',
+       preco:'Šírka chrbta a V-tvar.',
+       chyba:'Ťahať len bicepsom alebo hýbať trupom.'},
+      {id:'c2csr', pik:'rowBent', n:'Príťah s oporou hrudníka', alt:'Chest-Supported Row', sets:'4 × 8–10 · pauza 90–120 s', vaha:'25–30 kg/ruč. alebo ekvivalent stroja', ser:4, mn:8, mx:10, krok:2.5, prio:'v', pauza:105,
+       nah:[{n:'Príťah jednoručky · One-Arm Dumbbell Row',vaha:'27,5 kg',poz:'Tvoj overený variant. Driek drž pevný.'}],
+       key:true,
+       ako:'Hrudník opri o šikmú lavičku alebo opierku stroja. Ťahaj lakte dozadu bez odlepovania hrudníka.',
+       preco:'Hrúbka chrbta s menším nárokom na driek než klasický predklon.',
+       chyba:'Dvíhať ramená k ušiam alebo skracovať rozsah.'}
     ]},
-    {ss:true, n:'Superset 1', cas:'9 min', pozn:'3 kolá · po dvojici pauza 75 s', cviky:[
-      {id:'c2', pik:'lateral', n:'Upažovanie na kladke', alt:'Jednou rukou · cable lateral raise', sets:'3 × 15 na stranu', ser:3, mn:15, mx:18, krok:2.5, prio:'o', pauza:75, nah:[{n:'Upažovanie s jednoručkami',poz:'Rovnaká práca. Váha bude vyššia, označ variant.'}], key:true,
-       ako:'Stoj bokom k spodnej kladke, rukoväť chyť vzdialenejšou rukou pred telom. Ťahaj do strany po výšku ramena. <b>Kladka drží napätie aj v dolnej polohe</b>, na rozdiel od jednoručiek.',
-       preco:'Druhá dávka pre bočné delty v týždni. Toto je tvoja najvyššia estetická priorita a raz týždenne na ňu nestačí.',
-       chyba:'Ťahať telom. Druhou rukou sa chyť stojana, tým si to zafixuješ.'},
-      {id:'c3', pik:'rowSeated', n:'Príťah na kladke v sede', alt:'Neutrálny úchop · seated row', sets:'3 × 10–12', ser:3, mn:10, mx:12, krok:5, prio:'v', pauza:75, nah:[{n:'Príťah na T-tyči',poz:'Väčší nárok na driek.'}],
-       ako:'Chrbát rovný, hrudník von. <b>Najprv stiahni lopatky k sebe</b>, až potom ťahaj rukoväť k bruchu. Späť púšťaj pomaly a nechaj lopatky rozísť.',
-       preco:'Hrúbka chrbta, druhá dávka v týždni. Zároveň ťahá ramená dozadu, čo ti opticky vyrovná postoj.',
-       chyba:'Zaklonením celého trupu si pomáhať pri ťahu. Trup drž na mieste.'}
+    {ss:true, n:'Superset · zadné delty + biceps', cas:'9 min', pozn:'3 kolá · po dvojici pauza 60–75 s', cviky:[
+      {id:'c3rev', pik:'reverseFly', n:'Reverzné rozpažovanie', alt:'Reverse Fly', sets:'3 × 12–15', vaha:'10 kg/ruč. alebo podľa stroja', ser:3, mn:12, mx:15, krok:2.5, prio:'o', pauza:70,
+       nah:[{n:'Face pull na kladke · Face Pull',vaha:'10–15 kg',poz:'Ak je reverse pec deck alebo priestor obsadený.'}],
+       key:true,
+       ako:'Lakte veď do strán a mierne dozadu. Pohyb je malý a kontrolovaný.',
+       preco:'Zadné delty robia rameno plnšie z profilu a pomáhajú vyvážiť tlakové cviky.',
+       chyba:'Príliš ťažká váha a švihanie.'},
+      {id:'c4pre', pik:'curl', n:'Biceps na kazateľskej lavici', alt:'Preacher Curl', sets:'3 × 10–12', vaha:'25 kg', ser:3, mn:10, mx:12, krok:2.5, prio:'v', pauza:70,
+       nah:[{n:'Biceps na kladke · Cable Curl',vaha:'cca 20–22,5 kg podľa kladky',poz:'Ak je kazateľská obsadená.'}],
+       ako:'Ramená drž opreté. Dvíhaj bez odlepovania lakťov a bez švihu.',
+       preco:'Stabilný bicepsový cvik, na ktorom vieš dobre sledovať progres.',
+       chyba:'Odlepovať ramená alebo zadok pri posledných opakovaniach.'}
     ]},
-    {ss:true, n:'Superset 2', cas:'8 min', pozn:'3 kolá · po dvojici pauza 60 s', cviky:[
-      {id:'c4', pik:'flye', n:'Rozpažovanie na kladkách', alt:'Cable fly · spodné kladky smerom hore', sets:'3 × 12–15', ser:3, mn:12, mx:15, krok:2.5, prio:'v', pauza:60, nah:[{n:'Pectoral machine',poz:'Iná váha aj dráha. VŽDY označ variant.'}],
-       ako:'Kladky nastav nízko a ťahaj rukoväte oblúkom <b>šikmo hore a pred seba</b>, ako keby si niekoho objímal zospodu. Lakte mierne pokrčené a v jednej polohe celý čas. Na konci stlač hrudník a chvíľu podrž.',
-       preco:'Prsia druhýkrát v týždni bez akejkoľvek záťaže na chrbticu. <b>Spodný uhol berie hornú časť hrudníka</b>, ktorá je pri tvojej estetike dôležitejšia než stredná.',
-       chyba:'Ohýbať a naťahovať lakte. Potom z toho je tlak, nie rozpažovanie. Tu nejde o váhu, ale o pocit ťahu na začiatku pohybu.'},
-      {id:'c5', pik:'curl', n:'Biceps kladivovým úchopom', alt:'Hammer curl · v stoji', sets:'3 × 12', ser:3, mn:12, mx:12, krok:2.5, prio:'v', pauza:60, nah:[{n:'Biceps na kladke, neutrálny úchop',poz:'Plynulejšie napätie.'}],
-       ako:'Dlane smerujú k sebe, lakte pri tele. Dvíhaj k ramenám, dole púšťaj pomaly na dva razy.',
-       preco:'Druhá dávka pre biceps a predlaktie. Ruky sú tvoja priorita a raz týždenne je málo.',
-       chyba:'Hojdať telom. Ak sa hojdáš, je to o 2 kg priťažké.'}
-    ]},
-    {ss:true, n:'Superset 3', cas:'10 min', pozn:'3 kolá · po dvojici pauza 60 s', cviky:[
-      {id:'c7', pik:'facePull', n:'Face pull na kladke', alt:'Zadné delty · lano vo výške tváre', sets:'3 × 15–20', ser:3, mn:15, mx:20, krok:2.5, prio:'o', pauza:60, nah:[{n:'Reverzné rozpažovanie s jednoručkami',poz:'Ak je kladka obsadená. Horšia kontrola.'}], key:true,
-       ako:'Lano vo výške tváre, kladka nastavená na úroveň hlavy. Ťahaj lano <b>k čelu a lakte roztiahni do strán</b>, na konci vytoč palce dozadu. Nie k brade, nie k hrudi.',
-       preco:'<b>Jediná dávka pre zadné delty v týždni bola vo štvrtok — teraz sú dve.</b> Zadné delty ťahajú ramená dozadu, čo ti priamo vyrovná ten predsunutý postoj z fotiek. Estetika ramien nie je len o bočných deltách.',
-       chyba:'Ťahať s príliš veľkou váhou a zapojiť trapéz. Ak cítiš ťah hore v krku a nie vzadu na ramene, uber váhu na polovicu.'},
-      {id:'c8', pik:'tricepsOh', n:'Triceps nad hlavu na kladke', alt:'Lano · overhead extension', sets:'3 × 12', ser:3, mn:12, mx:12, krok:2.5, prio:'v', pauza:60, nah:[{n:'Francúzsky tlak s EZ tyčou',poz:'Rovnaká hlava tricepsu.'}],
-       ako:'Chrbtom ku kladke, lano nad hlavou, lakte pri ušiach a <b>zafixované</b>. Naťahuj len predlaktie, hore stlač triceps a chvíľu podrž.',
-       preco:'Triceps mal doteraz len jednu poriadnu dávku v utorok. Poloha nad hlavou berie <b>dlhú hlavu tricepsu</b>, ktorá tvorí objem ramena zospodu a v utorkovom francúzskom tlaku ju dostávaš unavenú.',
-       chyba:'Rozťahovať lakte do strán. Vtedy prácu preberajú ramená. Lakte drž úzko a nehýb nimi.'}
-    ]},
-    {n:'Nohy a panva', cas:'6 min', cviky:[
-      {id:'c6', pik:'splitSquat', n:'Bulharský drep', alt:'Jednonožný drep · zadná noha na lavičke', sets:'2 × 10 na nohu · pauza 60 s', ser:3, mn:10, mx:10, krok:4, prio:'v', pauza:60, nah:[{n:'Výpady na mieste',poz:'Podobný nárok na panvu. Použi, ak nie je lavička.'},{n:'Leg press — NIE JE náhrada',poz:'Bulharský drep je tu kvôli panve, nie stehnám. Leg press flexor bedra nenaťahuje a nerieši rozdiel medzi nohami. Radšej urob 2×10 vlastnou váhou doma.'}], key:true,
-       ako:'Zadné priehlavie na lavičke, predná noha asi krok pred ňou. Klesaj kolmo dole, predné koleno nad chodidlom. <b>Zadok zadnej nohy drž stiahnutý a panvu podsunutú</b> celý čas.',
-       preco:'Jediný nohový cvik navyše, a je tu kvôli panve, nie kvôli stehnám. <b>Naťahuje flexor bedra zadnej nohy pod záťažou</b> — presne to, čo pri anteverzii potrebuješ. Zároveň rieši rozdiel medzi ľavou a pravou nohou z hokeja.',
-       chyba:'Nechať panvu vyklopiť dopredu a prehnúť sa v drieku. Vtedy z toho je zaťažený driek, nie stehno. Rob to najprv <b>len s vlastnou váhou</b>.'}
+    {ss:true, n:'Biceps + zadný reťazec', cas:'10 min', pozn:'2–3 kolá · RDL rob technicky, nie na čas', cviky:[
+      {id:'c5inc', pik:'curl', n:'Biceps na šikmej lavičke', alt:'Incline Dumbbell Curl', sets:'2 × 10–12', vaha:'10–12,5 kg/ruč.', ser:2, mn:10, mx:12, krok:2.5, prio:'v', pauza:60,
+       nah:[{n:'Biceps na spodnej kladke · Cable Curl',vaha:'cca 17,5–20 kg',poz:'Ak nie je voľná lavička alebo jednoručky.'}],
+       ako:'Lakte nechaj mierne za telom, ramená uvoľnené. Dole kontrolovane natiahni biceps.',
+       preco:'Druhý bicepsový uhol bez zbytočne tretieho cviku.',
+       chyba:'Posúvať lakte dopredu alebo skracovať spodnú fázu.'},
+      {id:'c6rdl', pik:'hinge', n:'Rumunský mŕtvy ťah', alt:'Romanian Deadlift', sets:'3 × 8–10', vaha:'35 kg', ser:3, mn:8, mx:10, krok:5, prio:'v', pauza:90,
+       nah:[{n:'Hip thrust · Hip Thrust',vaha:'začni konzervatívne, cca 40–50 kg',poz:'Použi najmä ak sú po hokeji nohy/kríže unavené. Váhy nie sú priamo porovnateľné.'}],
+       ako:'Zadok tlač dozadu, kolená mierne pokrčené, činka blízko stehien. Hore skonči v neutrále.',
+       preco:'Hip hinge vzor, hamstringy a zadok. Držíme ho v programe, ale progresujeme opatrne.',
+       chyba:'Guliť chrbát alebo dokončovať pohyb záklonom.'}
     ]}
   ]
 };
@@ -709,7 +719,10 @@ function exHtml(c,n){
     </div>` : '';
 
   const nahHtml = (c.nah&&c.nah.length) ? `
-    <div class="swline"><b>Ak je obsadené:</b> ${c.nah.map(x=>x.n).join(' · ')}</div>` : '';
+    <div class="fld swap">
+      <div class="k">Alternatíva, keď je obsadené</div>
+      ${c.nah.map(x=>`<div class="sw"><b>${x.n}</b>${x.vaha?` · <strong>${x.vaha}</strong>`:''}${x.poz?`<br><span style="color:#6C8AA6">${x.poz}</span>`:''}</div>`).join('')}
+    </div>` : '';
 
   const cas = c.pauza ? `<button class="tbtn" onclick="event.stopPropagation();spustCasovac('${c.id}',${c.pauza})">⏱ ${c.pauza>=60?Math.round(c.pauza/60*10)/10+' min':c.pauza+' s'}</button>` : '';
   const piktoIco = PIKTO[c.pik]||'';
@@ -722,6 +735,7 @@ function exHtml(c,n){
         <div class="ex-title">
           <div class="n">${c.n}</div>
           <div class="sets">${[c.alt,c.sets].filter(Boolean).join(' · ')}</div>
+          ${c.vaha?`<div style="margin-top:5px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;color:#1F5FBF">Váha: ${c.vaha}</div>`:''}
         </div>
         ${CHEV}
       </div>
@@ -1110,9 +1124,9 @@ const TYZDEN=[
   {d:1,n:'Pondelok', t:'Z2 beh',        s:'30–40 min · tep 139–151 · kadencia 176', tab:null, ikona:'run'},
   {d:2,n:'Utorok',   t:'Tréning A',     s:'Prsia, ramená, triceps, nohy',            tab:'A',  ikona:'gym'},
   {d:3,n:'Streda',   t:'Z2 beh',        s:'30–40 min · ráno, kým nie je horúco',     tab:null, ikona:'run'},
-  {d:4,n:'Štvrtok',  t:'Tréning B',     s:'Chrbát, biceps, zadné delty, nohy',       tab:'B',  ikona:'gym'},
+  {d:4,n:'Štvrtok',  t:'Tréning B',     s:'Ramená, ruky, upper body + panva',         tab:'B',  ikona:'gym'},
   {d:5,n:'Piatok',   t:'Hokej 18:45',   s:'Jedlo po hokeji o 20:45 — výnimka z okna',tab:null, ikona:'puk'},
-  {d:6,n:'Sobota',   t:'Tréning C',     s:'Ramená, hrudník, chrbát, ruky · flexibilné', tab:'C', ikona:'gym'},
+  {d:6,n:'Sobota',   t:'Tréning C',     s:'Chrbát, zadné ramená, biceps + zadný reťazec', tab:'C', ikona:'gym'},
   {d:0,n:'Nedeľa',   t:'Voľno',         s:'Mobilita, prechádzka, váženie a pás',     tab:'M',  ikona:'rest'}
 ];
 
@@ -1312,8 +1326,8 @@ function render(){
 
     <div class="foot" style="margin-top:9px">
       <h3>Keď máš len 35 minút</h3>
-      <p>Vynechaj <b>Superset 2</b>. Zvyšok nechaj tak. Stratíš 6 sérií doplnkovej práce, ale ťažké cviky aj bočné delty ostanú celé.</p>
-      <p>Nikdy neškrtaj prvé dva cviky ani prvý superset — tam je 80 % výsledku.</p>
+      <p>Nechaj <b>prvé dva hlavné cviky</b> a potom prioritné ramená/ruky. Posledný doplnkový blok môžeš skrátiť alebo vynechať.</p>
+      <p>Neobetuj techniku ani pauzy na hlavných cvikoch len preto, aby si stihol všetko.</p>
     </div>
 
     <div class="foot" style="margin-top:9px">
