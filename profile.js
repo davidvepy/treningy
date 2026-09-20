@@ -1,13 +1,14 @@
 function renderProfile(){
-  const rows=[...state.measurements].sort((a,b)=>String(b.measured_on).localeCompare(String(a.measured_on)));
-  const content=`<div class="page-head"><div><div class="eyebrow">Profil</div><h1>Dávid</h1><p>${h(state.user.email||'')}</p></div><button class="ghost small-btn" id="logout">Odhlásiť</button></div><div class="card"><div class="section-title" style="margin-top:0"><h2>Nové meranie</h2><span>váha + pás</span></div><form id="measure-form" class="measure-form"><label class="field"><span>Dátum</span><input class="text-input" id="m-date" type="date" value="${todayIso()}" required></label><label class="field"><span>Hmotnosť kg</span><input class="text-input" id="m-weight" type="number" step="0.1" inputmode="decimal" required></label><label class="field"><span>Pás cm</span><input class="text-input" id="m-waist" type="number" step="0.1" inputmode="decimal" required></label><button class="primary" type="submit">ULOŽIŤ MERANIE</button></form></div><div class="section-title"><h2>Merania</h2><span>${rows.length}</span></div><div class="card">${rows.length?rows.map(m=>`<div class="measurement-row"><span>${isoDate(m.measured_on)}</span><b>${fmtNumber(m.weight_kg)} kg</b><b>${fmtNumber(m.waist_cm)} cm</b></div>`).join(''):'<div class="empty">Zatiaľ bez meraní.</div>'}</div><div class="card help-card" style="margin-top:12px"><div class="section-title" style="margin-top:0"><h2>Ako trénovať</h2><span>info</span></div><details><summary>Ako fungujú supersety</summary><p>Dva cviky ideš po sebe bez plnej pauzy. Pauzu odpočítavaj až po druhom cviku páru.</p></details><details><summary>Keď máš len 35 minút</summary><p>Drž hlavné pracovné cviky a znižuj až doplnkový objem. Nevyhadzuj RAMP ani technicky náročný prvý cvik.</p></details><details><summary>Ako voliť váhu</summary><p>Pracovná váha má umožniť cieľový rozsah opakovaní pri predpísanom RIR a čistej technike.</p></details><details><summary>Kedy pridať váhu</summary><p>Double progression: najprv splň hornú hranicu opakovaní vo všetkých pracovných sériách pri cieľovom RIR, potom pridaj najmenší dostupný krok.</p></details><details><summary>Týždenný objem</summary><p>Objem je nástroj, nie skóre. Prioritou je kvalitná pracovná séria, cieľový RIR, technika a regenerácia.</p></details></div><div class="card" style="margin-top:12px"><div class="section-title" style="margin-top:0"><h2>Aplikácia</h2><span>v${APP_VERSION}</span></div><p style="color:var(--muted);font-size:12px;line-height:1.5;margin:0">Frontend beží priamo na GitHub Pages. Supabase slúži ako autentifikácia a databáza. Service role kľúč nie je vo frontende.</p></div>`;
-  app.innerHTML=shell(content,'profile');bindNav();document.getElementById('logout').onclick=()=>supabase.auth.signOut();document.getElementById('measure-form').onsubmit=saveMeasurement;
+  const content=`<header class="page-title"><h1>Profil</h1></header>
+    <div class="profile-card"><div><span>Prihlásený účet</span><b>${h(state.user.email||'Dávid')}</b></div><button id="logout">Odhlásiť</button></div>
+    <div class="section-bar"><h2>AKO TRÉNOVAŤ</h2></div>
+    <div class="help-list">
+      <details><summary>Ako fungujú supersety</summary><p>Dva cviky ideš po sebe bez plnej pauzy. Pauzu odpočítavaj až po druhom cviku páru.</p></details>
+      <details><summary>Keď máš len 35 minút</summary><p>Nechaj hlavné pracovné cviky a skráť doplnkový objem. Rozcvičku a technicky náročný prvý cvik nevyhadzuj.</p></details>
+      <details><summary>Ako voliť váhu</summary><p>Vyber záťaž, s ktorou spravíš cieľový rozsah opakovaní čistou technikou bez bolestivej kompenzácie.</p></details>
+      <details><summary>Kedy pridať váhu</summary><p>Najprv dosiahni hornú hranicu opakovaní vo všetkých pracovných sériách. Potom pridaj najmenší dostupný krok záťaže.</p></details>
+      <details><summary>Týždenný objem</summary><p>Tonáž a počet sérií sleduj ako trend. Nie sú samy osebe skóre kvality tréningu.</p></details>
+    </div>
+    <div class="app-info"><span>Tréning v${APP_VERSION}</span><p>Dáta sú uložené v Supabase. Staré workout_logs zostávajú zachované a používajú sa v histórii a progrese.</p></div>`;
+  app.innerHTML=shell(content,'profile');bindNav();document.getElementById('logout').onclick=()=>supabase.auth.signOut();
 }
-async function saveMeasurement(e){
-  e.preventDefault();const date=document.getElementById('m-date').value,weight=n(document.getElementById('m-weight').value),waist=n(document.getElementById('m-waist').value);if(!date||weight===null||waist===null)return;
-  const existing=state.measurements.find(x=>x.measured_on===date);let r;
-  if(existing)r=await supabase.from('body_measurements').update({weight_kg:weight,waist_cm:waist}).eq('user_id',state.user.id).eq('id',existing.id);
-  else r=await supabase.from('body_measurements').insert({id:Date.now(),user_id:state.user.id,measured_on:date,weight_kg:weight,waist_cm:waist});
-  if(r.error)return toast('Meranie sa nepodarilo uložiť.','error');toast('Meranie uložené.');await loadCore(false);updateUrl('#/profile');
-}
-

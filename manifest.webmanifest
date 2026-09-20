@@ -1,13 +1,9 @@
 {
-  "name": "Tréning Dávid",
-  "short_name": "Tréning",
-  "start_url": "./#/training",
-  "scope": "./",
-  "display": "standalone",
-  "background_color": "#0a0f1c",
-  "theme_color": "#0a0f1c",
-  "description": "Mobile-first silový tréningový tracker.",
-  "icons": [
-    {"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
-  ]
+  "name":"Tréning",
+  "short_name":"Tréning",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#ffffff",
+  "theme_color":"#ffffff",
+  "icons":[{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }

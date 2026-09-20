@@ -1,77 +1,76 @@
-function allExerciseKeys(){
+function reverseAliasMap(){const map={};for(const [key,ids] of Object.entries(LEGACY_ALIASES))for(const id of ids)map[id]=key;return map;}
+function allExerciseCatalog(){
   const map=new Map();
-  for(const ex of state.sessionExercises){const p=safeJson(ex.payload);if(!map.has(ex.exercise_key))map.set(ex.exercise_key,{key:ex.exercise_key,name:p.englishName||p.name||'Neznámy cvik',sk:p.name||''});}
-  for(const ex of state.planExercises){const p=safeJson(ex.payload);if(!map.has(ex.exercise_key))map.set(ex.exercise_key,{key:ex.exercise_key,name:p.englishName||p.name||'Neznámy cvik',sk:p.name||''});}
+  const add=(key,p,source)=>{const name=exerciseName(p,key);if(!validExerciseName(name))return;if(!map.has(key))map.set(key,{key,name,sk:exerciseSkName(p),payload:p,source});else if(source==='plan'){const x=map.get(key);x.name=name;x.sk=exerciseSkName(p);x.payload=p;x.source=source;}};
+  for(const ex of state.planExercises)add(ex.exercise_key,safeJson(ex.payload),'plan');
+  for(const ex of state.sessionExercises)add(ex.exercise_key,safeJson(ex.payload),'session');
+  const reverse=reverseAliasMap();
+  for(const row of state.legacyLogs){if(!validExerciseName(row.exercise_name))continue;const canonical=reverse[row.exercise_id];if(canonical){if(!map.has(canonical))map.set(canonical,{key:canonical,name:row.exercise_name,sk:'',payload:{},source:'legacy'});}else{const key=`legacy:${row.exercise_id}`;if(!map.has(key))map.set(key,{key,name:row.exercise_name,sk:'',payload:{},source:'legacy'});}}
   return [...map.values()].sort((a,b)=>a.name.localeCompare(b.name,'sk'));
 }
-function renderProgress(){
-  const exercises=allExerciseKeys().filter(x=>`${x.name} ${x.sk}`.toLowerCase().includes(state.progressSearch.toLowerCase()));
-  const lastM=state.measurements.at(-1),firstM=state.measurements[0];
-  const content=`<div class="page-head"><div><div class="eyebrow">Progres</div><h1>Výkon, nie ego.</h1><p>Váha, odhad 1RM, tonáž a opakovania. Tonáž je trend, nie skóre kvality tréningu.</p></div></div><div class="metric-grid"><div class="metric-card"><span>Hmotnosť</span><b>${lastM?`${fmtNumber(lastM.weight_kg)} kg`:'—'}</b></div><div class="metric-card"><span>Pás</span><b>${lastM?`${fmtNumber(lastM.waist_cm)} cm`:'—'}</b></div><div class="metric-card"><span>Δ váha</span><b>${lastM&&firstM?`${fmtNumber(n(lastM.weight_kg)-n(firstM.weight_kg))} kg`:'—'}</b></div><div class="metric-card"><span>Tréningy</span><b>${state.sessions.filter(s=>s.status==='completed').length}</b></div></div><div class="section-title"><h2>Cviky</h2><span>${exercises.length}</span></div><div class="search"><input id="exercise-search" class="text-input" placeholder="Hľadať cvik…" value="${h(state.progressSearch)}"></div><div class="exercise-list">${exercises.map(x=>`<button data-progress-key="${h(x.key)}"><b>${h(x.name)}</b><span>${h(x.sk)}</span></button>`).join('')}</div>`;
-  app.innerHTML=shell(content,'progress');bindNav();document.getElementById('exercise-search').oninput=e=>{state.progressSearch=e.target.value;renderProgress();setTimeout(()=>{const el=document.getElementById('exercise-search');el?.focus();el?.setSelectionRange(el.value.length,el.value.length);},0);};document.querySelectorAll('[data-progress-key]').forEach(b=>b.onclick=()=>updateUrl(`#/exercise/${encodeURIComponent(b.dataset.progressKey)}`));
-}
-
-function exerciseHistory(key){
-  const points=[];
+function legacyIdsForKey(key){if(key.startsWith('legacy:'))return[key.slice(7)];return LEGACY_ALIASES[key]||[];}
+function exerciseHistoryPoints(key){
+  const byDate=new Map();
   for(const ex of state.sessionExercises.filter(x=>x.exercise_key===key)){
-    const s=state.sessions.find(x=>x.id===ex.session_id);if(!s||s.status!=='completed')continue;
-    const sets=state.sets.filter(st=>st.session_id===ex.session_id&&st.exercise_id===ex.id&&st.complete&&st.set_type!=='warmup');if(!sets.length)continue;
-    points.push({date:s.recorded_date,session:s,exercise:ex,sets,maxWeight:Math.max(...sets.map(x=>n(x.weight,0))),est1RM:Math.max(...sets.map(x=>e1rm(x.weight,x.reps))),tonnage:sets.reduce((a,x)=>a+setTonnage(x,ex),0),reps:sets.reduce((a,x)=>a+n(x.reps,0),0)});
+    const s=state.sessions.find(x=>x.id===ex.session_id&&x.status==='completed');if(!s)continue;
+    const sets=state.sets.filter(st=>st.session_id===s.id&&st.exercise_id===ex.id&&st.complete&&(st.set_type||'working')!=='warmup');if(!sets.length)continue;
+    const point={date:s.recorded_date,source:'normalized',sets,maxWeight:Math.max(0,...sets.map(x=>n(x.weight,0))),est1RM:Math.max(0,...sets.map(x=>estimate1RM(x.weight,x.reps)||0)),tonnage:sets.reduce((a,x)=>a+setTonnage(x,ex),0),reps:sets.reduce((a,x)=>a+n(x.reps,0),0),partial:isPartialSession(s)};
+    byDate.set(point.date,point);
   }
-  return points.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const ids=new Set(legacyIdsForKey(key));
+  const grouped={};for(const row of state.legacyLogs.filter(r=>ids.has(r.exercise_id)))(grouped[row.performed_on]??=[]).push(row);
+  for(const [date,rows] of Object.entries(grouped)){
+    if(byDate.has(date))continue;
+    let maxWeight=0,est=0,tonnage=0,reps=0;const sets=[];
+    for(const row of rows){const w=n(row.weight_kg,0);maxWeight=Math.max(maxWeight,w);tonnage+=legacyTonnage(row);for(const r of row.reps||[]){const rr=n(r,0);reps+=rr;est=Math.max(est,estimate1RM(w,rr)||0);sets.push({weight:w,reps:rr,complete:true,set_type:'working'});}}
+    byDate.set(date,{date,source:'legacy',sets,maxWeight,est1RM:est,tonnage,reps,partial:true});
+  }
+  return [...byDate.values()].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
 }
-function latestExerciseDef(key){
-  const active=state.activeExercises.find(x=>x.exercise_key===key);if(active)return active;
-  const pe=state.planExercises.find(x=>x.exercise_key===key);if(pe)return pe;
-  return [...state.sessionExercises].reverse().find(x=>x.exercise_key===key)||null;
-}
-function renderExerciseDetail(idOrKey){
-  let ex=state.activeExercises.find(x=>x.id===idOrKey); const activeContext=!!ex; const key=ex?.exercise_key||idOrKey; if(!ex)ex=latestExerciseDef(key);
-  if(!ex)return updateUrl('#/progress'); const ep=safeJson(ex.payload),historyPts=exerciseHistory(key),latest=historyPts.at(-1),metrics={maxWeight:latest?.maxWeight||0,est1RM:latest?.est1RM||0,tonnage:latest?.tonnage||0,reps:latest?.reps||0};
-  const alternatives=parseAlternatives(ep.alternative||'');
-  const muscles=musclesFor(ep.pattern,ep.englishName||ep.name);
-  const content=`<div class="detail-head"><button class="back-btn" id="back">${icon('back')}</button><div><div class="eyebrow">${h(ep.name||'Cvik')}</div><h1>${h(ep.englishName||ep.name||'Cvik')}</h1><p>${h(muscles.join(' · '))}</p></div></div><div class="prescription" style="padding:0 0 10px"><span class="chip">${h(ep.sets??'—')}×${h(ep.repMin??'?')}${ep.repMax&&ep.repMax!==ep.repMin?`–${h(ep.repMax)}`:''}</span><span class="chip">RIR ${h(ep.rirMin??'—')}${ep.rirMax&&ep.rirMax!==ep.rirMin?`–${h(ep.rirMax)}`:''}</span><span class="chip accent">${fmtNumber(ep.weight)} kg</span><span class="chip">${h(restLabel(ep))}</span></div>
-  <div class="card"><div class="detail-section"><h2>Technika</h2><div class="tech-grid">${techniqueCards(ep,muscles)}</div></div><div class="detail-section"><h2>Progresia</h2><p>${h(ep.progression||'Najprv pridávaj kvalitné opakovania v cieľovom RIR, až potom záťaž.')}</p></div>${activeContext&&alternatives.length?`<button class="secondary" style="width:100%;margin-top:12px" id="replace-toggle">NAHRADIŤ CVIK</button><div class="replace-list" id="replace-list">${alternatives.map((a,i)=>`<button class="alt-btn" data-alt="${i}"><b>${h(a.name)}</b><small>${h(a.detail)}</small></button>`).join('')}</div>`:''}</div>
-  <div class="section-title"><h2>História výkonu</h2><span>${historyPts.length} tréningov</span></div><div class="metric-grid"><div class="metric-card"><span>Max váha</span><b>${metrics.maxWeight?`${fmtNumber(metrics.maxWeight)} kg`:'—'}</b></div><div class="metric-card"><span>Odhad 1RM</span><b>${metrics.est1RM?`${fmtNumber(metrics.est1RM)} kg`:'—'}</b></div><div class="metric-card"><span>Tonáž</span><b>${metrics.tonnage?`${fmtNumber(metrics.tonnage/1000,2)} t`:'—'}</b></div><div class="metric-card"><span>Reps</span><b>${metrics.reps||'—'}</b></div></div><div class="chart-card"><div class="metric-switch">${[['maxWeight','Najvyššia váha'],['est1RM','Odhad 1RM'],['tonnage','Tonáž'],['reps','Opakovania']].map(([k,l])=>`<button data-metric="${k}" class="${state.chartMetric===k?'active':''}">${l}</button>`).join('')}</div><div class="chart-wrap"><canvas id="progress-chart"></canvas></div><p class="chart-note">Odhad 1RM používa Epleyho vzorec: váha × (1 + reps / 30). Pri vysokom počte opakovaní ho neber ako presné maximum.</p></div>`;
-  app.innerHTML=shell(content,activeContext?'training':'progress');bindNav();document.getElementById('back').onclick=()=>history.back();document.querySelectorAll('[data-metric]').forEach(b=>b.onclick=()=>{state.chartMetric=b.dataset.metric;renderExerciseDetail(idOrKey);});drawChart(historyPts,state.chartMetric);
-  if(activeContext&&alternatives.length){document.getElementById('replace-toggle').onclick=()=>document.getElementById('replace-list').classList.toggle('open');document.querySelectorAll('[data-alt]').forEach(b=>b.onclick=()=>replaceExercise(ex,alternatives[n(b.dataset.alt,0)]));}
-}
-function techniqueCards(ep,muscles){
-  const how=Array.isArray(ep.how)?ep.how:[];const breathing=how.find(x=>/nadých|dych|spevni|brace/i.test(x))||(/press|squat|deadlift|row|pulldown/i.test(ep.englishName||'')?'Pred pracovným opakovaním vytvor stabilný trup. Pri náročnej fáze drž oporu a vydýchni po prekonaní najťažšieho bodu.':'Dýchaj plynulo, výdych smeruj do náročnej fázy pohybu.');
-  return `<div class="tech-card"><b>Setup</b><p>${h(how[0]||'Nastav stabilnú pozíciu a rozsah, v ktorom máš kontrolu.')}</p></div><div class="tech-card"><b>Vykonanie</b><p>${h(how.slice(1).join(' ')||how[0]||'Pohyb veď kontrolovane bez švihu.')}</p></div><div class="tech-card"><b>Dýchanie / brace</b><p>${h(breathing)}</p></div><div class="tech-card"><b>Čo máš cítiť</b><p>${h(muscles.length?`Primárne ${muscles.join(', ').toLowerCase()}, nie kĺbovú bolesť.`:'Cieľovú svalovú skupinu, nie ostrú kĺbovú bolesť.')}</p></div><div class="tech-card"><b>Najčastejšia chyba</b><p>${h(ep.mistake||'Strata kontroly rozsahu alebo kompenzácia trupom.')}</p></div>`;
-}
-function musclesFor(pattern,name=''){
-  const p=String(pattern||'').toLowerCase(),nme=String(name).toLowerCase();
-  if(p==='horizontal_push'||/press|fly|pec/.test(nme))return['Hrudník','predný delt','triceps'];
-  if(p==='vertical_pull'||/pulldown|pull-up/.test(nme))return['Široký sval chrbta','biceps','horný chrbát'];
-  if(p==='horizontal_pull'||/row/.test(nme))return['Stred chrbta','latissimus','zadný delt','biceps'];
-  if(p==='hinge'||/deadlift|rdl/.test(nme))return['Hamstringy','sedacie svaly','vzpriamovače trupu'];
-  if(p==='squat'||/squat|leg press/.test(nme))return['Kvadricepsy','sedacie svaly','adduktory'];
-  if(p==='unilateral')return['Kvadricepsy','sedacie svaly','stabilizátory bedra'];
-  if(/lateral raise/.test(nme))return['Bočný delt'];
-  if(/curl/.test(nme))return['Biceps','brachialis'];
-  if(/triceps|pushdown/.test(nme))return['Triceps'];
-  if(/reverse fly/.test(nme))return['Zadný delt','horný chrbát'];
-  return['Cieľové svaly cviku'];
-}
-function parseAlternatives(text){
-  if(!text)return[];const chunks=String(text).split(/\s+(?:Alebo|Ak nie je lavička:)\s+/i).map(x=>x.replace(/^\.|\.$/g,'').trim()).filter(Boolean);
-  return chunks.map(c=>{const first=c.split(',')[0].trim();const parts=first.split('·').map(x=>x.trim());return{name:parts[1]||parts[0],sk:parts[0],english:parts[1]||'',detail:c,weight:n((c.match(/([0-9]+(?:[,.][0-9]+)?)\s*kg/i)||[])[1]?.replace(',','.'),null)};});
-}
-async function replaceExercise(ex,alt){
-  const oldKey=ex.exercise_key,old=safeJson(ex.payload),newKey=slugify(alt.english||alt.sk||alt.name),payload={...old,name:alt.sk||alt.name,englishName:alt.english||alt.name,exerciseKey:newKey,weight:alt.weight??old.weight,replacedFrom:oldKey,alternative:''};
-  const {error}=await supabase.from('trainer_hub_session_exercises').update({exercise_key:newKey,payload}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('session_id',ex.session_id).eq('id',ex.id);
-  if(error)return toast('Nahradenie cviku sa nepodarilo.','error');ex.exercise_key=newKey;ex.payload=payload;toast(`Cvik nahradený: ${alt.name}`);updateUrl('#/active');
-}
-function drawChart(points,metric){
-  const canvas=document.getElementById('progress-chart');if(!canvas)return;const box=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;canvas.width=Math.max(1,box.width*dpr);canvas.height=Math.max(1,box.height*dpr);const c=canvas.getContext('2d');c.scale(dpr,dpr);const W=box.width,H=box.height,pad={l:42,r:12,t:18,b:28};c.clearRect(0,0,W,H);
-  if(!points.length){c.fillStyle='#93a4ba';c.font='12px system-ui';c.fillText('Zatiaľ bez dát.',16,36);return;}
-  const vals=points.map(x=>n(x[metric],0)),min0=Math.min(...vals),max0=Math.max(...vals),spread=Math.max(1,max0-min0),min=Math.max(0,min0-spread*.15),max=max0+spread*.15;
-  c.strokeStyle='rgba(148,163,184,.16)';c.lineWidth=1;for(let i=0;i<4;i++){const y=pad.t+(H-pad.t-pad.b)*(i/3);c.beginPath();c.moveTo(pad.l,y);c.lineTo(W-pad.r,y);c.stroke();}
-  c.fillStyle='#7f92aa';c.font='10px system-ui';c.textAlign='right';for(let i=0;i<4;i++){const v=max-(max-min)*(i/3);c.fillText(metric==='tonnage'?fmtNumber(v/1000,1):fmtNumber(v,1),pad.l-7,pad.t+(H-pad.t-pad.b)*(i/3)+3);}
-  const xy=points.map((p,i)=>({x:points.length===1?(pad.l+W-pad.r)/2:pad.l+(W-pad.l-pad.r)*(i/(points.length-1)),y:pad.t+(H-pad.t-pad.b)*(1-(n(p[metric],0)-min)/(max-min||1)),p}));
-  c.strokeStyle='#8cf2c3';c.lineWidth=2.5;c.beginPath();xy.forEach((pt,i)=>i?c.lineTo(pt.x,pt.y):c.moveTo(pt.x,pt.y));c.stroke();
-  c.fillStyle='#8cf2c3';for(const pt of xy){c.beginPath();c.arc(pt.x,pt.y,4,0,Math.PI*2);c.fill();}
-  c.fillStyle='#7f92aa';c.font='9px system-ui';c.textAlign='center';const labels=xy.length<=5?xy:xy.filter((_,i)=>i===0||i===xy.length-1||i===Math.floor((xy.length-1)/2));for(const pt of labels)c.fillText(new Date(`${pt.p.date}T12:00:00`).toLocaleDateString('sk-SK',{day:'numeric',month:'numeric'}),pt.x,H-8);
-}
+function latestExerciseDef(key){const active=state.activeExercises.find(x=>x.exercise_key===key);if(active)return active;const plan=state.planExercises.find(x=>x.exercise_key===key);if(plan)return plan;return [...state.sessionExercises].reverse().find(x=>x.exercise_key===key)||null;}
 
+function renderProgress(){
+  const tabs=[['exercises','Cviky'],['tonnage','Tonáž'],['body','Telo']];
+  let body='';if(state.progressTab==='tonnage')body=renderTonnageProgress();else if(state.progressTab==='body')body=renderBodyProgress();else body=renderExerciseProgressList();
+  const content=`<header class="page-title"><h1>Progres</h1></header><div class="subtabs">${tabs.map(([k,l])=>`<button data-progress-tab="${k}" class="${state.progressTab===k?'active':''}">${l}</button>`).join('')}</div>${body}`;
+  app.innerHTML=shell(content,'progress');bindNav();document.querySelectorAll('[data-progress-tab]').forEach(b=>b.onclick=()=>{state.progressTab=b.dataset.progressTab;renderProgress();});bindProgressBody();
+}
+function renderExerciseProgressList(){
+  const all=allExerciseCatalog(),q=state.progressSearch.toLowerCase(),items=all.filter(x=>`${x.name} ${x.sk}`.toLowerCase().includes(q));
+  return `<div class="search-wrap"><input id="exercise-search" placeholder="Hľadať cvik" value="${h(state.progressSearch)}"></div><div class="progress-exercises">${items.map(x=>{const pts=exerciseHistoryPoints(x.key),last=pts.at(-1),best=Math.max(0,...pts.map(p=>p.maxWeight||0));return `<button data-progress-key="${h(x.key)}"><div><strong>${h(x.name)}</strong>${x.sk&&x.sk!==x.name?`<span>${h(x.sk)}</span>`:''}</div><div><b>${best?`${fmtNumber(best)} kg`:'—'}</b><span>${last?`${pts.length} tréningov`:'bez histórie'}</span></div></button>`}).join('')}</div>`;
+}
+function workoutTonnageEntries(){
+  const normalized=state.sessions.filter(s=>s.status==='completed').map(s=>{const p=safeJson(s.payload),st=sessionStats(s.id);return{date:s.recorded_date,title:p.title||'Tréning',tonnage:st.tonnage,sets:st.workingSets,partial:isPartialSession(s)||String(p.source||'').includes('import')};});
+  const dates=new Set(normalized.map(x=>x.date));const legacy=Object.entries(legacyGroups()).filter(([d])=>!dates.has(d)).map(([date,rows])=>{const st=legacyDayStats(rows);return{date,title:'Historický tréning',tonnage:st.tonnage,sets:st.workingSets,partial:true};});
+  return[...normalized,...legacy].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+}
+function renderTonnageProgress(){const pts=workoutTonnageEntries();return `<div class="info-note">Tonáž = externá záťaž × opakovania. Warm-up a bodyweight sa nezapočítavajú. Je to objem práce, nie skóre kvality tréningu.</div><div class="chart-card light"><canvas id="tonnage-chart"></canvas></div><div class="tonnage-list">${[...pts].reverse().map(x=>`<div><span>${isoDate(x.date)}${x.partial?' · čiastočný záznam':''}</span><strong>${x.tonnage?`${fmtNumber(x.tonnage/1000,2)} t`:'—'}</strong><small>${x.sets} sérií</small></div>`).join('')||'<div class="empty-card">Zatiaľ bez tonáže.</div>'}</div>`;}
+function renderBodyProgress(){const rows=[...state.measurements].sort((a,b)=>String(b.measured_on).localeCompare(String(a.measured_on))),latest=rows[0];return `<div class="body-summary">${latest?`<div><span>Hmotnosť</span><b>${fmtNumber(latest.weight_kg)} kg</b></div><div><span>Pás</span><b>${fmtNumber(latest.waist_cm)} cm</b></div>`:'<div><span>Merania</span><b>—</b></div>'}</div><form class="measurement-form" id="measurement-form"><input id="m-date" type="date" value="${todayIso()}" required><input id="m-weight" type="number" step="0.1" inputmode="decimal" placeholder="Hmotnosť kg" required><input id="m-waist" type="number" step="0.1" inputmode="decimal" placeholder="Pás cm" required><button type="submit">ULOŽIŤ MERANIE</button></form><div class="measurement-list">${rows.map(m=>`<div><span>${isoDate(m.measured_on)}</span><b>${fmtNumber(m.weight_kg)} kg</b><b>${fmtNumber(m.waist_cm)} cm</b></div>`).join('')}</div>`;}
+function bindProgressBody(){
+  const search=document.getElementById('exercise-search');if(search)search.oninput=e=>{state.progressSearch=e.target.value;renderProgress();setTimeout(()=>{const x=document.getElementById('exercise-search');x?.focus();x?.setSelectionRange(x.value.length,x.value.length);},0);};
+  document.querySelectorAll('[data-progress-key]').forEach(b=>b.onclick=()=>updateUrl(`#/exercise/${encodeURIComponent(b.dataset.progressKey)}`));
+  if(state.progressTab==='tonnage')drawTonnageChart(workoutTonnageEntries());
+  const form=document.getElementById('measurement-form');if(form)form.onsubmit=saveMeasurement;
+}
+async function saveMeasurement(e){e.preventDefault();const date=document.getElementById('m-date').value,weight=n(document.getElementById('m-weight').value),waist=n(document.getElementById('m-waist').value);if(!date||weight===null||waist===null)return;const existing=state.measurements.find(x=>x.measured_on===date);let r;if(existing)r=await supabase.from('body_measurements').update({weight_kg:weight,waist_cm:waist}).eq('user_id',state.user.id).eq('id',existing.id);else r=await supabase.from('body_measurements').insert({id:Date.now(),user_id:state.user.id,measured_on:date,weight_kg:weight,waist_cm:waist});if(r.error)return toast('Meranie sa nepodarilo uložiť.','error');toast('Meranie uložené.');await loadCore(false);state.progressTab='body';renderProgress();}
+
+function renderExerciseDetail(idOrKey){
+  let activeEx=state.activeExercises.find(x=>x.id===idOrKey),key=activeEx?.exercise_key||idOrKey;const catalog=allExerciseCatalog().find(x=>x.key===key);let def=activeEx||latestExerciseDef(key);const p=safeJson(def?.payload),name=activeEx?exerciseName(p,key):(catalog?.name||exerciseName(p,key));if(!validExerciseName(name))return updateUrl('#/progress');
+  const pts=exerciseHistoryPoints(key),bestWeight=Math.max(0,...pts.map(x=>x.maxWeight||0)),best1rm=Math.max(0,...pts.map(x=>x.est1RM||0)),latest=pts.at(-1),alts=parseAlternatives(p.alternative||''),muscles=def?musclesFor(p.pattern,p.englishName||p.name):[];
+  const technique=def?`<div class="detail-section"><h2>Technika</h2>${techniqueCards(p,muscles)}</div>`:`<div class="info-note">Toto je historický cvik zo starého tréningového logu. Technický popis k nemu ešte nie je priradený.</div>`;
+  const content=`<div class="detail-header"><button class="back-button" id="back">${icon('back')}</button><div><span>${h(exerciseSkName(p)||'Detail cviku')}</span><h1>${h(name)}</h1></div></div>
+    ${def?`<div class="exercise-prescription"><span>${h(p.sets??'—')}×${h(p.repMin??'?')}${p.repMax&&p.repMax!==p.repMin?`–${h(p.repMax)}`:''}</span><span>${fmtNumber(p.weight)} kg</span><span>pauza ${h(restLabel(p))}</span></div>`:''}
+    <div class="stats-row"><div><span>Najvyššia váha</span><b>${bestWeight?`${fmtNumber(bestWeight)} kg`:'—'}</b></div><div><span>Odhad 1RM</span><b>${best1rm?`${fmtNumber(best1rm)} kg`:'—'}</b></div><div><span>Tréningy</span><b>${pts.length}</b></div></div>
+    <div class="metric-tabs"><button data-metric="maxWeight" class="${state.chartMetric==='maxWeight'?'active':''}">Pracovná váha</button><button data-metric="est1RM" class="${state.chartMetric==='est1RM'?'active':''}">Odhad 1RM</button></div>
+    <div class="chart-card light"><canvas id="exercise-chart"></canvas><p>1RM je orientačný odhad podľa Epleyho vzorca. Pri sériách nad 15 opakovaní ho nepočítame.</p></div>
+    ${technique}
+    ${alts.length?`<div class="detail-section"><h2>Alternatívy</h2><div class="alternative-list">${alts.map(a=>`<div><b>${h(a.name)}</b><span>${h(a.detail)}</span></div>`).join('')}</div></div>`:''}
+    <div class="detail-section"><h2>História</h2><div class="exercise-history-list">${[...pts].reverse().map(x=>`<div><span>${isoDate(x.date)}${x.partial?' · historický/čiastočný':''}</span><b>${x.maxWeight?`${fmtNumber(x.maxWeight)} kg`:'—'}</b><small>${x.est1RM?`1RM ≈ ${fmtNumber(x.est1RM)} kg`:'1RM bez odhadu'}</small></div>`).join('')||'<div class="empty-card">Zatiaľ bez výkonu.</div>'}</div></div>`;
+  app.innerHTML=shell(content,activeEx?'training':'progress');bindNav();document.getElementById('back').onclick=()=>history.back();document.querySelectorAll('[data-metric]').forEach(b=>b.onclick=()=>{state.chartMetric=b.dataset.metric;renderExerciseDetail(idOrKey);});drawExerciseChart(pts,state.chartMetric);
+}
+function restLabel(p){const a=n(p.restMinSeconds,null),b=n(p.restSeconds,null);return a&&b&&a!==b?`${a}–${b} s`:`${b||a||0} s`;}
+function techniqueCards(p,muscles){const how=Array.isArray(p.how)?p.how:[];return `<div class="tech-list"><div><b>Setup</b><p>${h(how[0]||'Nastav stabilnú pozíciu a kontrolovaný rozsah.')}</p></div><div><b>Vykonanie</b><p>${h(how.slice(1).join(' ')||'Pohyb veď kontrolovane bez švihu.')}</p></div><div><b>Čo cítiť</b><p>${h(muscles.length?muscles.join(' · '):'Cieľovú svalovú skupinu bez ostrej kĺbovej bolesti.')}</p></div><div><b>Častá chyba</b><p>${h(p.mistake||'Strata kontroly alebo kompenzácia trupom.')}</p></div></div>`;}
+function musclesFor(pattern,name=''){const p=String(pattern||'').toLowerCase(),x=String(name).toLowerCase();if(p==='horizontal_push'||/press|fly|pec/.test(x))return['Hrudník','predný delt','triceps'];if(p==='vertical_pull'||/pulldown|pull-up/.test(x))return['Široký sval chrbta','biceps','horný chrbát'];if(p==='horizontal_pull'||/row/.test(x))return['Stred chrbta','latissimus','zadný delt','biceps'];if(p==='hinge'||/deadlift|rdl/.test(x))return['Hamstringy','sedacie svaly','vzpriamovače'];if(p==='squat'||/squat/.test(x))return['Kvadricepsy','sedacie svaly','adduktory'];if(/lateral raise/.test(x))return['Bočný delt'];if(/curl/.test(x))return['Biceps','brachialis'];if(/pushdown|triceps/.test(x))return['Triceps'];return[];}
+function drawLineChart(canvasId,points,metric,labelFormatter){const canvas=document.getElementById(canvasId);if(!canvas)return;const rect=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;canvas.width=Math.max(1,rect.width*dpr);canvas.height=Math.max(1,rect.height*dpr);const c=canvas.getContext('2d');c.scale(dpr,dpr);const W=rect.width,H=rect.height,pad={l:42,r:12,t:16,b:28};c.clearRect(0,0,W,H);const valid=points.filter(p=>n(p[metric],0)>0);if(!valid.length){c.fillStyle='#7b8190';c.font='12px system-ui';c.fillText('Zatiaľ bez dát.',12,28);return;}const vals=valid.map(p=>n(p[metric],0)),min0=Math.min(...vals),max0=Math.max(...vals),spread=Math.max(1,max0-min0),min=Math.max(0,min0-spread*.18),max=max0+spread*.18;c.strokeStyle='#e7e9ee';c.lineWidth=1;for(let i=0;i<4;i++){const y=pad.t+(H-pad.t-pad.b)*i/3;c.beginPath();c.moveTo(pad.l,y);c.lineTo(W-pad.r,y);c.stroke();c.fillStyle='#8a8f9c';c.font='10px system-ui';c.textAlign='right';c.fillText(labelFormatter(max-(max-min)*i/3),pad.l-6,y+3);}const xy=valid.map((p,i)=>({x:valid.length===1?(pad.l+W-pad.r)/2:pad.l+(W-pad.l-pad.r)*i/(valid.length-1),y:pad.t+(H-pad.t-pad.b)*(1-(n(p[metric],0)-min)/(max-min||1)),p}));c.strokeStyle='#1677ff';c.lineWidth=2.5;c.beginPath();xy.forEach((pt,i)=>i?c.lineTo(pt.x,pt.y):c.moveTo(pt.x,pt.y));c.stroke();c.fillStyle='#1677ff';for(const pt of xy){c.beginPath();c.arc(pt.x,pt.y,3.5,0,Math.PI*2);c.fill();}c.fillStyle='#8a8f9c';c.font='9px system-ui';c.textAlign='center';const labels=xy.length<=5?xy:xy.filter((_,i)=>i===0||i===xy.length-1||i===Math.floor((xy.length-1)/2));for(const pt of labels)c.fillText(new Date(`${pt.p.date}T12:00:00`).toLocaleDateString('sk-SK',{day:'numeric',month:'numeric'}),pt.x,H-7);}
+function drawExerciseChart(points,metric){drawLineChart('exercise-chart',points,metric,v=>`${fmtNumber(v)} kg`);}
+function drawTonnageChart(points){drawLineChart('tonnage-chart',points,'tonnage',v=>`${fmtNumber(v/1000,1)} t`);}

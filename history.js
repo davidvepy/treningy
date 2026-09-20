@@ -1,23 +1,35 @@
+function historyEntries(){
+  const normalized=state.sessions.filter(s=>s.status==='completed');
+  const normalizedDates=new Set(normalized.map(s=>s.recorded_date));
+  const legacy=Object.entries(legacyGroups()).filter(([date])=>!normalizedDates.has(date)).map(([date,rows])=>({legacy:true,id:`legacy:${date}`,recorded_date:date,rows,payload:{title:'Tréning · historický záznam'}}));
+  return [...normalized,...legacy].sort((a,b)=>String(b.recorded_date).localeCompare(String(a.recorded_date)));
+}
 function renderHistory(){
-  const normalized=state.sessions.filter(s=>s.status==='completed'); const dates=new Set(normalized.map(s=>s.recorded_date));
-  const legacyGroups={};for(const l of state.legacyLogs){if(dates.has(l.performed_on))continue;(legacyGroups[l.performed_on]??=[]).push(l);}
-  const legacy=Object.entries(legacyGroups).map(([date,rows])=>({legacy:true,id:`legacy:${date}`,recorded_date:date,status:'completed',payload:{title:'Starší tréningový záznam',source:'workout_logs'},rows}));
-  const all=[...normalized,...legacy].sort((a,b)=>String(b.recorded_date).localeCompare(String(a.recorded_date)));
-  const content=`<div class="page-head"><div><div class="eyebrow">História</div><h1>Tréningy</h1><p>Presné série, trvanie, tonáž a PR. Starý <code>workout_logs</code> zostáva zachovaný.</p></div></div><div class="feed">${all.length?all.map(renderHistoryItem).join(''):'<div class="card empty">Zatiaľ bez tréningov.</div>'}</div>`;
+  const entries=historyEntries();
+  const content=`<header class="page-title"><h1>História</h1></header><div class="history-list">${entries.length?entries.map(renderHistoryItem).join(''):'<div class="empty-card">Zatiaľ tu nie je žiadny dokončený tréning.</div>'}</div>`;
   app.innerHTML=shell(content,'history');bindNav();document.querySelectorAll('[data-session]').forEach(b=>b.onclick=()=>updateUrl(`#/session/${encodeURIComponent(b.dataset.session)}`));
 }
 function renderHistoryItem(s){
-  const d=shortDate(s.recorded_date),p=safeJson(s.payload);
-  if(s.legacy){const ton=(s.rows||[]).reduce((a,r)=>a+legacyTonnage(r),0);const sets=(s.rows||[]).reduce((a,r)=>a+(Array.isArray(r.reps)?r.reps.length:0),0);return `<button class="feed-item" data-session="${h(s.id)}"><div class="feed-date"><div><b>${d.day}</b><span>${h(d.month)}</span></div></div><div class="feed-main"><h3>${h(p.title)}</h3><p>${sets} sérií · legacy import</p></div><div class="feed-metric"><b>${fmtNumber(ton/1000,2)} t</b><span>tonáž</span></div></button>`;}
-  const st=sessionStats(s.id),prs=Array.isArray(p.prs)?p.prs:[];return `<button class="feed-item" data-session="${h(s.id)}"><div class="feed-date"><div><b>${d.day}</b><span>${h(d.month)}</span></div></div><div class="feed-main"><h3>${h(p.title||'Silový tréning')}</h3><p>${st.workingSets} pracovných sérií · ${formatDuration(sessionDuration(s))} ${prs.length?`<span class="pr">· ★ ${prs.length} PR</span>`:''}</p></div><div class="feed-metric"><b>${fmtNumber(st.tonnage/1000,2)} t</b><span>tonáž</span></div></button>`;
+  const d=shortDate(s.recorded_date),p=safeJson(s.payload),stats=s.legacy?legacyDayStats(s.rows||[]):sessionStats(s.id),partial=s.legacy||isPartialSession(s)||String(p.source||'').includes('import');
+  return `<button class="history-item" data-session="${h(s.id)}"><div class="history-date"><b>${d.day}</b><span>${h(d.month)}</span></div><div class="history-main"><strong>${h(p.title||'Silový tréning')}</strong><span>${stats.workingSets?`${stats.workingSets} sérií`:''}${partial?' · čiastočný/historický záznam':''}</span></div><div class="history-tonnage"><b>${stats.tonnage?`${fmtNumber(stats.tonnage/1000,2)} t`:'—'}</b><span>tonáž</span></div></button>`;
 }
-function legacyTonnage(r){const w=n(r.weight_kg,0),reps=Array.isArray(r.reps)?r.reps.map(x=>n(x,0)):[];if(w<=0)return 0;const raw=String(r.raw_entry||'').toLowerCase();const factor=/\/ruč|na ruku|\/strana/.test(raw)?2:1;return w*reps.reduce((a,b)=>a+b,0)*factor;}
-
 function renderSessionDetail(id){
-  if(id.startsWith('legacy:')) return renderLegacySession(id.slice(7));
-  const s=state.sessions.find(x=>x.id===id);if(!s)return updateUrl('#/history');const p=safeJson(s.payload),exs=state.sessionExercises.filter(x=>x.session_id===id).sort((a,b)=>a.ordinal-b.ordinal),stats=sessionStats(id),prs=Array.isArray(p.prs)?p.prs:[];
-  const content=`<div class="detail-head"><button class="back-btn" id="back">${icon('back')}</button><div><div class="eyebrow">${isoDate(s.recorded_date)}</div><h1>${h(p.title||'Tréning')}</h1><p>${stats.workingSets} pracovných sérií · ${formatDuration(sessionDuration(s))}</p></div></div><div class="metric-grid"><div class="metric-card"><span>Tonáž</span><b>${fmtNumber(stats.tonnage/1000,2)} t</b></div><div class="metric-card"><span>Série</span><b>${stats.workingSets}</b></div><div class="metric-card"><span>Reps</span><b>${stats.reps}</b></div><div class="metric-card"><span>PR</span><b>${prs.length}</b></div></div><div class="card" style="margin-top:12px">${exs.map(ex=>{const ep=safeJson(ex.payload),sets=state.sets.filter(x=>x.session_id===id&&x.exercise_id===ex.id).sort((a,b)=>a.ordinal-b.ordinal);return `<div class="session-exercise"><button class="exercise-name" data-progress-ex="${h(ex.exercise_key)}"><h3>${h(ep.englishName||ep.name||ex.exercise_key)}</h3></button><div class="set-line">${sets.map(st=>`<span class="set-badge ${(st.set_type||'working')==='warmup'?'warmup':''}">${SET_TYPE_LABEL[st.set_type||'working']} · ${fmtNumber(st.weight)}×${fmtNumber(st.reps,0)}${n(st.rir,null)!==null?` @${fmtNumber(st.rir,0)}`:''}</span>`).join('')}</div>${ep.note?`<p style="color:var(--muted);font-size:11px;margin:8px 0 0">${h(ep.note)}</p>`:''}</div>`}).join('')}</div>`;
-  app.innerHTML=shell(content,'history');bindNav();document.getElementById('back').onclick=()=>history.back();document.querySelectorAll('[data-progress-ex]').forEach(b=>b.onclick=()=>updateUrl(`#/exercise/${encodeURIComponent(b.dataset.progressEx)}`));
+  if(id.startsWith('legacy:'))return renderLegacySession(id.slice(7));
+  const s=state.sessions.find(x=>x.id===id);if(!s)return updateUrl('#/history');
+  const p=safeJson(s.payload),stats=sessionStats(id),exs=state.sessionExercises.filter(x=>x.session_id===id).sort((a,b)=>a.ordinal-b.ordinal),partial=isPartialSession(s)||String(p.source||'').includes('import');
+  const content=`<div class="detail-header"><button class="back-button" id="back">${icon('back')}</button><div><span>${isoDate(s.recorded_date)}</span><h1>${h(p.title||'Tréning')}</h1>${partial?'<em>čiastočný záznam</em>':''}</div></div>
+    <div class="stats-row"><div><span>Tonáž</span><b>${stats.tonnage?`${fmtNumber(stats.tonnage/1000,2)} t`:'—'}</b></div><div><span>Série</span><b>${stats.workingSets}</b></div><div><span>Opakovania</span><b>${stats.reps}</b></div></div>
+    <div class="session-card">${exs.map(ex=>renderSessionExercise(ex,id)).join('')}</div>`;
+  app.innerHTML=shell(content,'history');bindNav();document.getElementById('back').onclick=()=>history.back();document.querySelectorAll('[data-exercise-key]').forEach(b=>b.onclick=()=>updateUrl(`#/exercise/${encodeURIComponent(b.dataset.exerciseKey)}`));
 }
-function renderLegacySession(date){const rows=state.legacyLogs.filter(x=>x.performed_on===date);const content=`<div class="detail-head"><button class="back-btn" id="back">${icon('back')}</button><div><div class="eyebrow">${isoDate(date)}</div><h1>Starší tréningový záznam</h1><p>Pôvodná tabuľka workout_logs, bez zásahu do dát.</p></div></div><div class="card">${rows.map(r=>`<div class="session-exercise"><h3>${h(r.exercise_name||r.exercise_id)}</h3><div class="set-line">${(r.reps||[]).map(x=>`<span class="set-badge">${fmtNumber(r.weight_kg)}×${fmtNumber(x,0)}</span>`).join('')}</div>${r.note?`<p>${h(r.note)}</p>`:''}</div>`).join('')}</div>`;app.innerHTML=shell(content,'history');bindNav();document.getElementById('back').onclick=()=>history.back();}
-
+function renderSessionExercise(ex,sessionId){
+  const p=safeJson(ex.payload),sets=state.sets.filter(s=>s.session_id===sessionId&&s.exercise_id===ex.id).sort((a,b)=>a.ordinal-b.ordinal);
+  return `<div class="session-exercise"><button data-exercise-key="${h(ex.exercise_key)}"><strong>${h(exerciseName(p,ex.exercise_key))}</strong>${exerciseSkName(p)&&exerciseSkName(p)!==exerciseName(p,ex.exercise_key)?`<span>${h(exerciseSkName(p))}</span>`:''}</button><div class="set-pills">${sets.map(s=>{const label=`${SET_TYPE_LABEL[s.set_type||'working']||'S'}${s.ordinal}`;return `<span class="${(s.set_type||'working')==='warmup'?'warmup':''}">${h(label)} · ${fmtNumber(s.weight)} × ${fmtNumber(s.reps,0)}${s.complete?'':' · nedokončené'}</span>`}).join('')}</div></div>`;
+}
+function renderLegacySession(date){
+  const rows=(legacyGroups()[date]||[]).filter(r=>validExerciseName(r.exercise_name)),stats=legacyDayStats(rows);
+  const content=`<div class="detail-header"><button class="back-button" id="back">${icon('back')}</button><div><span>${isoDate(date)}</span><h1>Historický tréning</h1><em>čiastočný záznam</em></div></div>
+    <div class="stats-row"><div><span>Tonáž</span><b>${stats.tonnage?`${fmtNumber(stats.tonnage/1000,2)} t`:'—'}</b></div><div><span>Série</span><b>${stats.workingSets}</b></div><div><span>Opakovania</span><b>${stats.reps}</b></div></div>
+    <div class="session-card">${rows.map(r=>`<div class="session-exercise"><button data-legacy-id="${h(r.exercise_id)}"><strong>${h(r.exercise_name)}</strong></button><div class="set-pills">${(r.reps||[]).map((rep,i)=>`<span>S${i+1} · ${r.weight_kg!=null?`${fmtNumber(r.weight_kg)} × `:''}${fmtNumber(rep,0)}</span>`).join('')||`<span>${h(r.raw_entry||'Historický údaj')}</span>`}</div></div>`).join('')}</div>`;
+  app.innerHTML=shell(content,'history');bindNav();document.getElementById('back').onclick=()=>history.back();document.querySelectorAll('[data-legacy-id]').forEach(b=>b.onclick=()=>updateUrl(`#/exercise/${encodeURIComponent('legacy:'+b.dataset.legacyId)}`));
+}
