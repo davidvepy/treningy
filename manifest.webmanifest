@@ -3,7 +3,7 @@
   "short_name":"Tréning",
   "start_url":"./",
   "display":"standalone",
-  "background_color":"#ffffff",
-  "theme_color":"#ffffff",
+  "background_color":"#eef3f8",
+  "theme_color":"#eef3f8",
   "icons":[{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }

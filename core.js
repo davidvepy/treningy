@@ -1,7 +1,7 @@
 const SUPABASE_URL='https://nragtrsgbvrnmbwlowoi.supabase.co';
 const SUPABASE_KEY='sb_publishable_Y9GtqKdB0pD-KQItwiu4Mw_ANXeA1Da';
 const CLIENT_ID='david';
-const APP_VERSION='3.2.0';
+const APP_VERSION='3.3.0';
 const AUTH_STORAGE_KEY='sb-nragtrsgbvrnmbwlowoi-auth-token';
 
 function parseStoredSession(raw){
@@ -75,7 +75,7 @@ const supabase=createSupabaseLite(SUPABASE_URL,SUPABASE_KEY);
 
 const app=document.getElementById('app');
 const toastRoot=document.getElementById('toast-root');
-const state={user:null,loading:true,plan:null,workouts:[],planExercises:[],sessions:[],sessionExercises:[],sets:[],legacyLogs:[],measurements:[],activeSession:null,activeExercises:[],activeSets:[],timer:loadTimer(),timerTick:null,saveTimers:new Map(),progressSearch:'',progressTab:'exercises',chartMetric:'maxWeight',finishOpen:false,online:navigator.onLine};
+const state={user:null,loading:true,plan:null,workouts:[],planExercises:[],sessions:[],sessionExercises:[],sets:[],legacyLogs:[],measurements:[],activeSession:null,activeExercises:[],activeSets:[],timer:loadTimer(),timerTick:null,saveTimers:new Map(),progressSearch:'',progressTab:'exercises',chartMetric:'maxWeight',finishOpen:false,online:navigator.onLine,routineChecks:{},routineNote:'',routineDuration:'',editExerciseOpen:false};
 
 const SET_TYPE_ORDER=['working','warmup','failure','drop'];
 const SET_TYPE_LABEL={working:'S',warmup:'WU',failure:'F',drop:'D'};
@@ -172,4 +172,4 @@ async function loadCore(showLoading=true){
   }catch(e){console.error(e);state.loading=false;window.__showBootError(e.message||String(e));}
 }
 function setActive(s){state.activeSession=s;if(!s){state.activeExercises=[];state.activeSets=[];return;}state.activeExercises=state.sessionExercises.filter(x=>x.session_id===s.id).sort((a,b)=>a.ordinal-b.ordinal);state.activeSets=state.sets.filter(x=>x.session_id===s.id).sort((a,b)=>a.ordinal-b.ordinal);}
-function renderRoute(){if(!state.user)return renderLogin();if(state.loading)return;const r=route();if(r==='#/active')return renderActive();if(r.startsWith('#/exercise/'))return renderExerciseDetail(decodeURIComponent(r.split('/').slice(2).join('/')));if(r.startsWith('#/session/'))return renderSessionDetail(decodeURIComponent(r.split('/').slice(2).join('/')));if(r.startsWith('#/history'))return renderHistory();if(r.startsWith('#/progress'))return renderProgress();if(r.startsWith('#/profile'))return renderProfile();return renderTraining();}
+function renderRoute(){if(!state.user)return renderLogin();if(state.loading)return;const r=route();if(r==='#/active')return renderActive();if(r.startsWith('#/routine/'))return renderRoutineDetail(decodeURIComponent(r.split('/').slice(2).join('/')));if(r.startsWith('#/exercise/'))return renderExerciseDetail(decodeURIComponent(r.split('/').slice(2).join('/')));if(r.startsWith('#/session/'))return renderSessionDetail(decodeURIComponent(r.split('/').slice(2).join('/')));if(r.startsWith('#/history'))return renderHistory();if(r.startsWith('#/progress'))return renderProgress();if(r.startsWith('#/profile'))return renderProfile();return renderTraining();}

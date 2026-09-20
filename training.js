@@ -108,3 +108,145 @@ function showReplacementPanel(ex){const alts=parseAlternatives(safeJson(ex.paylo
 async function applyReplacement(ex,alt,permanent){const oldKey=ex.exercise_key,old={...safeJson(ex.payload)},newKey=slugify(alt.english||alt.sk||alt.name),payload={...old,name:alt.sk||alt.name,englishName:alt.english||alt.name,exerciseKey:newKey,weight:alt.weight??old.weight,replacedFrom:oldKey};let r=await supabase.from('trainer_hub_session_exercises').update({exercise_key:newKey,payload}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('session_id',ex.session_id).eq('id',ex.id);if(r.error)return toast('Nahradenie sa nepodarilo.','error');if(permanent){const planRow=state.planExercises.find(x=>x.workout_id===old.templateWorkoutId&&x.id===old.templateExerciseId)||state.planExercises.find(x=>x.workout_id===old.templateWorkoutId&&x.exercise_key===oldKey);if(planRow){const pp={...safeJson(planRow.payload),name:payload.name,englishName:payload.englishName,exerciseKey:newKey,weight:payload.weight};r=await supabase.from('trainer_hub_workout_exercises').update({exercise_key:newKey,payload:pp}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).eq('workout_id',planRow.workout_id).eq('id',planRow.id);if(!r.error){planRow.exercise_key=newKey;planRow.payload=pp;}}}ex.exercise_key=newKey;ex.payload=payload;toast(permanent?'Cvik zmenený aj v pláne.':'Cvik nahradený iba dnes.');renderActive();}
 
 async function finishWorkout(){const s=state.activeSession;if(!s)return;const incomplete=state.activeSets.some(x=>!x.complete&&(x.set_type||'working')!=='warmup'),p={...safeJson(s.payload),status:'completed',finishedAt:new Date().toISOString(),partial:incomplete,dataQuality:incomplete?'partial':'complete'};const r=await supabase.from('trainer_hub_workout_sessions').update({status:'completed',payload:p}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('id',s.id);if(r.error)return toast('Tréning sa nepodarilo ukončiť.','error');s.status='completed';s.payload=p;state.finishOpen=false;setActive(null);skipRest();await loadCore(false);updateUrl('#/history');}
+
+/* ===== v3.3 UX overrides ===== */
+function routineIcon(type=''){
+  const t=String(type).toLowerCase();
+  if(t.includes('zone')||t.includes('beh'))return '↗';
+  if(t.includes('hokej'))return '◉';
+  if(t.includes('mobil'))return '◇';
+  return '•';
+}
+function renderTraining(){
+  const templates=strengthTemplates(),next=nextPlannedWorkout(),active=state.activeSession;
+  const strength=['A','B','C'].map(k=>renderTemplateCardV33(k,templates[k])).join('');
+  const extras=state.workouts.filter(w=>safeJson(w.payload).type!=='Silový tréning').sort((a,b)=>a.ordinal-b.ordinal);
+  const today=next?.w, tp=safeJson(today?.payload);
+  const content=`
+    <header class="home-top"><div><span>TRÉNINGOVÝ HUB</span><h1>Ahoj, Dávid</h1></div><div class="status-dot ${state.online?'':'offline'}"></div></header>
+    <section class="workout-hero ${active?'active':''}">
+      <div class="hero-kicker">${active?'ROZPRACOVANÝ TRÉNING':'DNES / NAJBLIŽŠIE'}</div>
+      <h2>${h(active?safeJson(active.payload).title:(tp?.title||'Vyber si tréning'))}</h2>
+      <p>${active?'Série máš priebežne uložené. Môžeš pokračovať presne tam, kde si skončil.':h(tp?.durationRange||tp?.instructions||'Silový tréning, mobilita alebo kondícia podľa plánu.')}</p>
+      <button id="main-start">${active?'POKRAČOVAŤ':'ZAČAŤ SILOVÝ TRÉNING'}</button>
+    </section>
+    <div class="section-heading"><div><span>SILA</span><h2>Moje tréningy</h2></div></div>
+    <div class="strength-grid" id="template-strip">${strength}</div>
+    <div class="section-heading"><div><span>KONDÍCIA & REGENERÁCIA</span><h2>Beh, Zone 2 a mobilita</h2></div></div>
+    <div class="routine-list">${extras.map(renderRoutineCard).join('')}</div>`;
+  app.innerHTML=shell(content,'training');bindNav();
+  document.getElementById('main-start').onclick=()=>{
+    if(active)return updateUrl('#/active');
+    const day=new Date().getDay(),key=day===2?'A':day===4?'B':day===6?'C':null;
+    if(key&&templates[key])return startWorkout(key,templates[key]);
+    document.getElementById('template-strip')?.scrollIntoView({behavior:'smooth',block:'center'});
+  };
+  document.querySelectorAll('[data-template]').forEach(b=>b.onclick=()=>{const w=templates[b.dataset.template];if(w)startWorkout(b.dataset.template,w);});
+  document.querySelectorAll('[data-routine]').forEach(b=>b.onclick=()=>updateUrl(`#/routine/${encodeURIComponent(b.dataset.routine)}`));
+}
+function renderTemplateCardV33(key,w){
+  const names=templateShortList(w),p=safeJson(w?.payload);
+  return `<button class="strength-card" data-template="${key}" ${w?'':'disabled'}><div class="strength-badge">${key}</div><div class="strength-copy"><strong>${h(String(p.title||`Tréning ${key}`).replace(/ ·.*$/,''))}</strong><span>${h(names.slice(0,3).join(' · ')||'Nie je v pláne')}</span></div><div class="card-arrow">›</div></button>`;
+}
+function renderRoutineCard(w){
+  const p=safeJson(w.payload),type=p.type||'Tréning';
+  return `<button class="routine-card" data-routine="${h(w.id)}"><div class="routine-icon">${routineIcon(type)}</div><div><strong>${h(p.title||type)}</strong><span>${h(p.durationRange||p.instructions||type)}</span></div><div class="card-arrow">›</div></button>`;
+}
+
+function renderActive(){
+  const s=state.activeSession;if(!s)return updateUrl('#/training');
+  const p=safeJson(s.payload),next=nextIncompleteSet();
+  app.innerHTML=`<main class="active-page"><header class="active-header"><div><span>AKTÍVNY TRÉNING</span><b>${h(String(p.title||'Tréning').replace(/ ·.*$/,''))}</b></div><button id="finish-toggle">Možnosti</button></header>
+  <div class="workout-actions ${state.finishOpen?'open':''}" id="finish-panel">
+    <div class="action-sheet-title"><b>Čo chceš urobiť?</b><span>Hotové série sa ukladajú priebežne.</span></div>
+    <button id="finish-cancel"><b>Pokračovať v tréningu</b><span>Vrátiť sa k sériám</span></button>
+    <button id="save-exit"><b>Uložiť a zavrieť</b><span>Tréning zostane rozpracovaný</span></button>
+    <button id="finish-confirm" class="action-primary"><b>Dokončiť a uložiť</b><span>Zapísať do histórie ako hotový/čiastočný</span></button>
+    <button id="discard-workout" class="action-danger"><b>Ukončiť bez uloženia</b><span>Vymaže túto rozpracovanú session</span></button>
+  </div>
+  <div class="timer-bar ${state.timer?'on':''}" id="timer-bar"><div><strong class="timer-count">0:00</strong><span class="timer-exercise">Pauza</span></div><div><button id="rest-minus">−30</button><button id="rest-plus">+30</button><button id="rest-skip">Preskočiť</button></div></div>
+  <section class="active-content">${renderRamp(p)}${state.activeExercises.map(ex=>renderExerciseCard(ex,next?.exercise_id===ex.id,next?.set_id)).join('')}</section></main>`;
+  bindActive();renderTimerOnly();ensureTimerTick();
+}
+function bindActive(){
+  document.getElementById('finish-toggle').onclick=()=>{state.finishOpen=!state.finishOpen;document.getElementById('finish-panel').classList.toggle('open',state.finishOpen);};
+  document.getElementById('finish-cancel').onclick=()=>{state.finishOpen=false;document.getElementById('finish-panel').classList.remove('open');};
+  document.getElementById('save-exit').onclick=saveWorkoutAndExit;
+  document.getElementById('finish-confirm').onclick=finishWorkoutV33;
+  document.getElementById('discard-workout').onclick=discardWorkout;
+  document.getElementById('rest-minus').onclick=()=>changeRest(-30);document.getElementById('rest-plus').onclick=()=>changeRest(30);document.getElementById('rest-skip').onclick=skipRest;
+  document.querySelectorAll('[data-ramp]').forEach(x=>x.onchange=()=>saveRampCheck(x.dataset.ramp,x.checked));
+  document.querySelectorAll('[data-set-field]').forEach(x=>{x.onchange=()=>saveSetField(x.dataset.setId,x.dataset.setField,x.value);x.onblur=()=>saveSetField(x.dataset.setId,x.dataset.setField,x.value);});
+  document.querySelectorAll('[data-complete]').forEach(x=>x.onclick=()=>toggleSetComplete(x.dataset.complete));document.querySelectorAll('[data-set-type]').forEach(x=>x.onclick=()=>cycleSetType(x.dataset.setType));
+  document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>updateUrl(`#/exercise/${encodeURIComponent(x.dataset.detail)}`));
+  document.querySelectorAll('[data-menu]').forEach(x=>x.onclick=()=>{const p=document.querySelector(`[data-menu-panel="${CSS.escape(x.dataset.menu)}"]`);document.querySelectorAll('.exercise-menu.open').forEach(y=>{if(y!==p)y.classList.remove('open')});p?.classList.toggle('open');});
+  document.querySelectorAll('[data-action]').forEach(x=>x.onclick=()=>handleExerciseAction(x.dataset.action,x.dataset.ex));
+}
+async function saveWorkoutAndExit(){
+  const s=state.activeSession;if(!s)return;
+  const p={...safeJson(s.payload),savedAt:new Date().toISOString(),status:'active'};
+  const r=await supabase.from('trainer_hub_workout_sessions').update({payload:p}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('id',s.id);
+  if(r.error)return toast('Tréning sa nepodarilo uložiť.','error');
+  s.payload=p;state.finishOpen=false;skipRest();toast('Tréning uložený. Môžeš sa k nemu vrátiť.');updateUrl('#/training');
+}
+async function finishWorkoutV33(){
+  const s=state.activeSession;if(!s)return;
+  const incomplete=state.activeSets.some(x=>!x.complete&&(x.set_type||'working')!=='warmup');
+  const p={...safeJson(s.payload),status:'completed',finishedAt:new Date().toISOString(),partial:incomplete,dataQuality:incomplete?'partial':'complete'};
+  const r=await supabase.from('trainer_hub_workout_sessions').update({status:'completed',payload:p}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('id',s.id);
+  if(r.error)return toast('Tréning sa nepodarilo dokončiť.','error');
+  s.status='completed';s.payload=p;state.finishOpen=false;setActive(null);skipRest();await loadCore(false);toast('Tréning uložený. Ďalší štart bude čistý.');updateUrl('#/training');
+}
+async function discardWorkout(){
+  const s=state.activeSession;if(!s)return;
+  if(!confirm('Naozaj ukončiť tréning bez uloženia? Táto rozpracovaná session sa vymaže.'))return;
+  let r=await supabase.from('trainer_hub_workout_sets').delete().eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('session_id',s.id);if(r.error)return toast('Série sa nepodarilo vymazať.','error');
+  r=await supabase.from('trainer_hub_session_exercises').delete().eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('session_id',s.id);if(r.error)return toast('Cviky sa nepodarilo vymazať.','error');
+  r=await supabase.from('trainer_hub_workout_sessions').delete().eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('id',s.id);if(r.error)return toast('Session sa nepodarilo vymazať.','error');
+  state.sets=state.sets.filter(x=>x.session_id!==s.id);state.sessionExercises=state.sessionExercises.filter(x=>x.session_id!==s.id);state.sessions=state.sessions.filter(x=>x.id!==s.id);state.finishOpen=false;setActive(null);skipRest();toast('Rozpracovaný tréning bol zahodený.');updateUrl('#/training');
+}
+
+function renderRoutineDetail(workoutId){
+  const w=state.workouts.find(x=>x.id===workoutId);if(!w)return updateUrl('#/training');
+  const p=safeJson(w.payload),after=Array.isArray(p.after)?p.after:[],isZone=String(p.type||'').includes('Zone');
+  const checks=state.routineChecks[workoutId]||{};
+  const content=`<div class="routine-detail"><div class="detail-header"><button class="back-button" id="back">${icon('back')}</button><div><span>${h(p.type||'Tréning')}</span><h1>${h(p.title||'Tréning')}</h1></div></div>
+    <div class="routine-summary">${p.durationRange?`<div><span>Trvanie</span><b>${h(p.durationRange)}</b></div>`:''}${isZone&&p.heartRateLow?`<div><span>Tep</span><b>${h(p.heartRateLow)}–${h(p.heartRateHigh)} bpm</b></div>`:''}</div>
+    ${p.instructions?`<div class="routine-instructions">${h(p.instructions)}</div>`:''}
+    ${after.length?`<div class="routine-checklist">${after.map((x,i)=>`<label><input type="checkbox" data-routine-check="${i}" ${checks[i]?'checked':''}><div><b>${h(x.name)}</b><span>${h(x.dose||'')}</span>${Array.isArray(x.how)&&x.how.length?`<small>${h(x.how.join(' '))}</small>`:''}</div></label>`).join('')}</div>`:''}
+    <div class="routine-log-card"><label>Reálne trvanie (min)<input id="routine-duration" type="number" inputmode="numeric" min="0" placeholder="voliteľné" value="${h(state.routineDuration||'')}"></label><label>Poznámka<textarea id="routine-note" placeholder="voliteľné">${h(state.routineNote||'')}</textarea></label><button id="routine-complete">ULOŽIŤ AKO HOTOVÉ</button></div>
+  </div>`;
+  app.innerHTML=shell(content,'training');bindNav();document.getElementById('back').onclick=()=>history.back();
+  document.querySelectorAll('[data-routine-check]').forEach(x=>x.onchange=()=>{const c=state.routineChecks[workoutId]||{};c[x.dataset.routineCheck]=x.checked;state.routineChecks[workoutId]=c;});
+  document.getElementById('routine-duration').oninput=e=>state.routineDuration=e.target.value;document.getElementById('routine-note').oninput=e=>state.routineNote=e.target.value;
+  document.getElementById('routine-complete').onclick=()=>completeRoutine(w);
+}
+async function completeRoutine(w){
+  const p=safeJson(w.payload),id=`routine-${Date.now()}-${crypto.randomUUID().slice(0,8)}`,checks=state.routineChecks[w.id]||{};
+  const session={owner_id:state.user.id,client_id:CLIENT_ID,id,recorded_date:todayIso(),status:'completed',payload:{id,date:todayIso(),status:'completed',title:p.title||p.type||'Tréning',type:p.type||'Tréning',sessionType:'routine',workoutId:w.id,planId:state.plan?.id||null,source:'tracker_v33',version:APP_VERSION,durationMinutes:state.routineDuration? n(state.routineDuration,null):null,note:state.routineNote||'',checklist:checks,partial:false,finishedAt:new Date().toISOString()}};
+  const r=await supabase.from('trainer_hub_workout_sessions').insert(session);if(r.error)return toast('Aktivitu sa nepodarilo uložiť.','error');
+  state.sessions.unshift(session);state.routineChecks[w.id]={};state.routineDuration='';state.routineNote='';toast('Aktivita uložená.');updateUrl('#/history');
+}
+
+/* ===== v3.3.1 weekly home refinement ===== */
+function renderTraining(){
+  const templates=strengthTemplates(),next=nextPlannedWorkout(),active=state.activeSession,today=new Date().getDay();
+  const tp=safeJson(next?.w?.payload);
+  const order=[1,2,3,4,5,6,0],labels={1:'PONDELOK',2:'UTOROK',3:'STREDA',4:'ŠTVRTOK',5:'PIATOK',6:'SOBOTA',0:'NEDEĽA'};
+  const weekRows=order.map(day=>{
+    let ws=state.workouts.filter(w=>n(safeJson(w.payload).day,null)===day).sort((a,b)=>a.ordinal-b.ordinal);if(day===6){const c=templates.C;ws=ws.filter(w=>safeJson(w.payload).type!=='Silový tréning'||w.id===c?.id);}
+    return `<div class="week-row ${day===today?'today':''}"><div class="week-day"><b>${labels[day]}</b>${day===today?'<span>DNES</span>':''}</div><div class="week-items">${ws.length?ws.map(w=>renderWeekWorkout(w)).join(''):'<div class="week-empty">Voľno / ľahká regenerácia</div>'}</div></div>`;
+  }).join('');
+  const content=`<header class="home-top"><div><span>TRÉNINGOVÝ HUB</span><h1>Týždenný plán</h1></div><div class="status-dot ${state.online?'':'offline'}"></div></header>
+    <section class="workout-hero ${active?'active':''}"><div class="hero-kicker">${active?'ROZPRACOVANÝ TRÉNING':'DNES / NAJBLIŽŠIE'}</div><h2>${h(active?safeJson(active.payload).title:(tp?.title||'Vyber si tréning'))}</h2><p>${active?'Série máš priebežne uložené. Môžeš pokračovať presne tam, kde si skončil.':h(tp?.durationRange||tp?.instructions||'Týždeň máš pokope na jednej obrazovke.')}</p><button id="main-start">${active?'POKRAČOVAŤ':'ZAČAŤ SILOVÝ TRÉNING'}</button></section>
+    <div class="quick-start"><span>Rýchly štart</span><div>${['A','B','C'].map(k=>`<button data-template="${k}" ${templates[k]?'':'disabled'}>${k}</button>`).join('')}</div></div>
+    <div class="section-heading week-heading"><div><span>PLÁN</span><h2>Tento týždeň</h2></div></div><div class="week-plan">${weekRows}</div>`;
+  app.innerHTML=shell(content,'training');bindNav();
+  document.getElementById('main-start').onclick=()=>{if(active)return updateUrl('#/active');const day=new Date().getDay(),key=day===2?'A':day===4?'B':day===6?'C':null;if(key&&templates[key])return startWorkout(key,templates[key]);document.querySelector('.quick-start')?.scrollIntoView({behavior:'smooth',block:'center'});};
+  document.querySelectorAll('[data-template]').forEach(b=>b.onclick=()=>{const w=templates[b.dataset.template];if(w)startWorkout(b.dataset.template,w);});
+  document.querySelectorAll('[data-week-workout]').forEach(b=>b.onclick=()=>{const w=state.workouts.find(x=>x.id===b.dataset.weekWorkout);if(!w)return;const p=safeJson(w.payload);if(p.type==='Silový tréning'){const m=String(p.title||'').match(/^Tréning\s+([ABC])/i);const key=m?.[1]?.toUpperCase();if(key)return startWorkout(key,w);}updateUrl(`#/routine/${encodeURIComponent(w.id)}`);});
+}
+function renderWeekWorkout(w){
+  const p=safeJson(w.payload),type=p.type||'Tréning';
+  return `<button class="week-workout" data-week-workout="${h(w.id)}"><div><strong>${h(String(p.title||type).replace(/^(Pondelok|Utorok|Streda|Štvrtok|Piatok|Sobota|Nedeľa)\s*·\s*/i,''))}</strong><span>${h(p.durationRange||p.objective||p.instructions||type)}</span></div><em>${p.type==='Silový tréning'?'SILA':h(type)}</em><i>›</i></button>`;
+}
