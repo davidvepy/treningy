@@ -1,5 +1,5 @@
-const CACHE = 'treningy-v2-2026-09-20b';
-const ASSETS = ['./','./index.html','./styles.css','./manifest.webmanifest','./icon.svg','./js/core.js','./js/training.js','./js/history.js','./js/progress.js','./js/profile.js','./js/bootstrap.js'];
+const CACHE = 'treningy-v3-2026-09-20';
+const ASSETS = ['./','./index.html','./styles.css','./manifest.webmanifest','./icon.svg','./core.js','./training.js','./history.js','./progress.js','./profile.js','./bootstrap.js'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });

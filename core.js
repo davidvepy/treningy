@@ -2,7 +2,7 @@ var supabase;
 const SUPABASE_URL = 'https://nragtrsgbvrnmbwlowoi.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Y9GtqKdB0pD-KQItwiu4Mw_ANXeA1Da';
 const CLIENT_ID = 'david';
-const APP_VERSION = '2.0.0';
+const APP_VERSION = '3.0.0';
 const __supabaseReady = import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/+esm').then(({createClient}) => {
   supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
