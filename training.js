@@ -128,7 +128,7 @@ function renderTraining(){
       <div class="hero-kicker">${active?'ROZPRACOVANÝ TRÉNING':'DNES / NAJBLIŽŠIE'}</div>
       <h2>${h(active?safeJson(active.payload).title:(tp?.title||'Vyber si tréning'))}</h2>
       <p>${active?'Série máš priebežne uložené. Môžeš pokračovať presne tam, kde si skončil.':h(tp?.durationRange||tp?.instructions||'Silový tréning, mobilita alebo kondícia podľa plánu.')}</p>
-      <button id="main-start">${active?'POKRAČOVAŤ':'ZAČAŤ SILOVÝ TRÉNING'}</button>
+      <button id="main-start">${active?'POKRAČOVAŤ':'ZAČAŤ TRÉNING'}</button>
     </section>
     <div class="section-heading"><div><span>SILA</span><h2>Moje tréningy</h2></div></div>
     <div class="strength-grid" id="template-strip">${strength}</div>
@@ -238,7 +238,7 @@ function renderTraining(){
     return `<div class="week-row ${day===today?'today':''}"><div class="week-day"><b>${labels[day]}</b>${day===today?'<span>DNES</span>':''}</div><div class="week-items">${ws.length?ws.map(w=>renderWeekWorkout(w)).join(''):'<div class="week-empty">Voľno / ľahká regenerácia</div>'}</div></div>`;
   }).join('');
   const content=`<header class="home-top"><div><span>TRÉNINGOVÝ HUB</span><h1>Týždenný plán</h1></div><div class="status-dot ${state.online?'':'offline'}"></div></header>
-    <section class="workout-hero ${active?'active':''}"><div class="hero-kicker">${active?'ROZPRACOVANÝ TRÉNING':'DNES / NAJBLIŽŠIE'}</div><h2>${h(active?safeJson(active.payload).title:(tp?.title||'Vyber si tréning'))}</h2><p>${active?'Série máš priebežne uložené. Môžeš pokračovať presne tam, kde si skončil.':h(tp?.durationRange||tp?.instructions||'Týždeň máš pokope na jednej obrazovke.')}</p><button id="main-start">${active?'POKRAČOVAŤ':'ZAČAŤ SILOVÝ TRÉNING'}</button></section>
+    <section class="workout-hero ${active?'active':''}"><div class="hero-kicker">${active?'ROZPRACOVANÝ TRÉNING':'DNES / NAJBLIŽŠIE'}</div><h2>${h(active?safeJson(active.payload).title:(tp?.title||'Vyber si tréning'))}</h2><p>${active?'Série máš priebežne uložené. Môžeš pokračovať presne tam, kde si skončil.':h(tp?.durationRange||tp?.instructions||'Týždeň máš pokope na jednej obrazovke.')}</p><button id="main-start">${active?'POKRAČOVAŤ':'ZAČAŤ TRÉNING'}</button></section>
     <div class="quick-start"><span>Rýchly štart</span><div>${['A','B','C'].map(k=>`<button data-template="${k}" ${templates[k]?'':'disabled'}>${k}</button>`).join('')}</div></div>
     <div class="section-heading week-heading"><div><span>PLÁN</span><h2>Tento týždeň</h2></div></div><div class="week-plan">${weekRows}</div>`;
   app.innerHTML=shell(content,'training');bindNav();
