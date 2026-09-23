@@ -1,7 +1,7 @@
 const SUPABASE_URL='https://nragtrsgbvrnmbwlowoi.supabase.co';
 const SUPABASE_KEY='sb_publishable_Y9GtqKdB0pD-KQItwiu4Mw_ANXeA1Da';
 const CLIENT_ID='david';
-const APP_VERSION='3.4.0';
+const APP_VERSION='3.7.0';
 const AUTH_STORAGE_KEY='sb-nragtrsgbvrnmbwlowoi-auth-token';
 
 function parseStoredSession(raw){
