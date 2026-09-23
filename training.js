@@ -42,11 +42,13 @@ function previousEntryForKey(key,excludeSessionId=null){
   if(!norm)return legacyEntry;if(!legacyEntry)return norm;return String(legacyEntry.date)>String(norm.date)?legacyEntry:norm;
 }
 function suggestWorkoutWeight(exPayload,key){
-  const planned=n(exPayload.weight,0),prev=previousEntryForKey(key);if(!prev?.sets?.length)return planned;
-  const sets=prev.sets.filter(s=>n(s.reps,0)>0),lastWeight=n(sets[0]?.weight,planned);if(!sets.length)return planned;
-  const sameWeight=sets.every(s=>n(s.weight,0)===lastWeight),top=sets.length>=n(exPayload.sets,sets.length)&&sets.slice(0,n(exPayload.sets,sets.length)).every(s=>n(s.reps,0)>=n(exPayload.repMax,999));
-  if(sameWeight&&top&&n(exPayload.step,0)>0)return lastWeight+n(exPayload.step,0);
-  return lastWeight||planned;
+  const planned=n(exPayload.weight,0),prev=previousEntryForKey(key);
+  if(!prev?.sets?.length)return planned;
+  const updatedAt=exPayload.weightUpdatedAt?new Date(exPayload.weightUpdatedAt).getTime():0;
+  const prevTime=n(prev.timestamp, prev.date?new Date(`${prev.date}T23:59:59`).getTime():0);
+  if(updatedAt&&prevTime&&updatedAt>prevTime)return planned;
+  const working=prev.sets.filter(s=>(s.set_type||'working')!=='warmup'&&s.complete!==false&&n(s.weight,null)!==null).sort((a,b)=>n(a.ordinal,0)-n(b.ordinal,0));
+  return n(working.at(-1)?.weight,planned);
 }
 async function startWorkout(templateKey,workout){
   if(state.activeSession){toast('Máš otvorený tréning.');return updateUrl('#/active');}
@@ -54,7 +56,7 @@ async function startWorkout(templateKey,workout){
   const uid=state.user.id,p=safeJson(workout.payload),id=`session-${Date.now()}-${crypto.randomUUID().slice(0,8)}`;
   const session={owner_id:uid,client_id:CLIENT_ID,id,recorded_date:todayIso(),status:'active',payload:{id,date:todayIso(),status:'active',title:p.title||`Tréning ${templateKey}`,template:templateKey,workoutId:workout.id,planId:state.plan?.id||null,source:'tracker_v32',version:APP_VERSION,ramp:p.ramp||[],rampChecks:{},partial:false}};
   const exercises=planEx.map((row,i)=>{const ep={...safeJson(row.payload)};ep.weight=suggestWorkoutWeight(ep,row.exercise_key);ep.templateExerciseId=row.id;ep.templateWorkoutId=workout.id;return{owner_id:uid,client_id:CLIENT_ID,session_id:id,id:`ex-${i+1}-${slugify(row.exercise_key).slice(0,28)}`,ordinal:i+1,exercise_key:row.exercise_key,payload:ep};});
-  const sets=[];for(const ex of exercises){const ep=safeJson(ex.payload),prev=previousEntryForKey(ex.exercise_key);for(let i=1;i<=n(ep.sets,3);i++){const ps=prev?.sets?.[i-1];sets.push({owner_id:uid,client_id:CLIENT_ID,session_id:id,exercise_id:ex.id,id:`set-${i}-${crypto.randomUUID().slice(0,8)}`,ordinal:i,weight:n(ps?.weight,n(ep.weight,0)),reps:n(ps?.reps,n(ep.repMin,8)),rir:null,complete:false,set_type:'working',completed_at:null});}}
+  const sets=[];for(const ex of exercises){const ep=safeJson(ex.payload),prev=previousEntryForKey(ex.exercise_key);for(let i=1;i<=n(ep.sets,3);i++){const ps=prev?.sets?.[i-1];sets.push({owner_id:uid,client_id:CLIENT_ID,session_id:id,exercise_id:ex.id,id:`set-${i}-${crypto.randomUUID().slice(0,8)}`,ordinal:i,weight:n(ep.weight,0),reps:n(ps?.reps,n(ep.repMin,8)),rir:null,complete:false,set_type:'working',completed_at:null});}}
   let r=await supabase.from('trainer_hub_workout_sessions').insert(session);if(r.error)return toast(r.error.message,'error',4500);
   r=await supabase.from('trainer_hub_session_exercises').insert(exercises);if(r.error)return toast(r.error.message,'error',4500);
   r=await supabase.from('trainer_hub_workout_sets').insert(sets);if(r.error)return toast(r.error.message,'error',4500);
@@ -77,7 +79,7 @@ function renderRamp(p){
 function renderExerciseCard(ex,isNext,nextSetId){
   const ep=safeJson(ex.payload),sets=state.activeSets.filter(s=>s.exercise_id===ex.id).sort((a,b)=>a.ordinal-b.ordinal),prev=previousEntryForKey(ex.exercise_key,ex.session_id);
   return `<article class="exercise-card ${isNext?'next-exercise':''}"><div class="exercise-card-head"><button class="exercise-title" data-detail="${h(ex.id)}"><strong>${h(exerciseName(ep,ex.exercise_key))}</strong>${exerciseSkName(ep)&&exerciseSkName(ep)!==exerciseName(ep,ex.exercise_key)?`<span>${h(exerciseSkName(ep))}</span>`:''}</button><button class="exercise-dots" data-menu="${h(ex.id)}">${icon('dots')}</button></div>
-  <div class="exercise-target"><span>Cieľ <b>${sets.filter(x=>(x.set_type||'working')!=='warmup').length}×${h(ep.repMin??'?')}${ep.repMax&&ep.repMax!==ep.repMin?`–${h(ep.repMax)}`:''}</b></span><span>Odporúčanie <b>${fmtNumber(ep.weight)} kg</b></span></div>
+  <div class="exercise-target"><span>Cieľ <b>${sets.filter(x=>(x.set_type||'working')!=='warmup').length}×${h(ep.repMin??'?')}${ep.repMax&&ep.repMax!==ep.repMin?`–${h(ep.repMax)}`:''}</b></span><span>Východisková <b>${fmtNumber(ep.weight)} kg</b></span></div>
   <div class="exercise-menu" data-menu-panel="${h(ex.id)}"><button data-action="replace" data-ex="${h(ex.id)}">Nahradiť cvik</button><button data-action="add" data-ex="${h(ex.id)}">Pridať sériu</button><button data-action="remove" data-ex="${h(ex.id)}">Odobrať sériu</button><button data-action="detail" data-ex="${h(ex.id)}">Detail cviku</button></div><div class="replace-panel" data-replace-panel="${h(ex.id)}"></div>
   <table class="set-table"><thead><tr><th>SET</th><th>MINULE</th><th>KG</th><th>REPS</th><th>HOTOVO</th></tr></thead><tbody>${sets.map((set,i)=>renderSetRow(set,prev?.sets?.[i],nextSetId===set.id)).join('')}</tbody></table></article>`;
 }
