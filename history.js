@@ -108,3 +108,34 @@ function renderSessionDetail(id){
   const content=`<div class="detail-header"><button class="back-button" id="back">${icon('back')}</button><div><span>${isoDate(s.recorded_date)}</span><h1>${h(p.title||'Tréning')}</h1>${partial?'<em>čiastočný záznam</em>':''}</div></div><div class="stats-row"><div><span>Tonáž</span><b>${stats.tonnage?`${fmtNumber(stats.tonnage/1000,2)} t`:'—'}</b></div><div><span>Série</span><b>${stats.workingSets}</b></div><div><span>Opakovania</span><b>${stats.reps}</b></div></div><div class="session-card">${exs.map(ex=>renderSessionExercise(ex,id)).join('')}</div>`;
   app.innerHTML=shell(content,'history');bindNav();document.getElementById('back').onclick=()=>history.back();document.querySelectorAll('[data-exercise-key]').forEach(b=>b.onclick=()=>updateUrl(`#/exercise/${encodeURIComponent(b.dataset.exerciseKey)}`));bindHistoryNameEditors();
 }
+
+/* ===== v4.0 – missed workout history ===== */
+function historyEntries(){
+  const normalized=state.sessions.filter(s=>['completed','skipped'].includes(s.status));
+  const completedDates=new Set(normalized.filter(s=>s.status==='completed').map(s=>s.recorded_date));
+  const legacy=Object.entries(legacyGroups()).filter(([date])=>!completedDates.has(date)).map(([date,rows])=>({legacy:true,id:`legacy:${date}`,recorded_date:date,rows,payload:{title:'Tréning · historický záznam'}}));
+  return [...normalized,...legacy].sort((a,b)=>String(b.recorded_date).localeCompare(String(a.recorded_date))||String(safeJson(b.payload).finishedAt||safeJson(b.payload).createdAt||'').localeCompare(String(safeJson(a.payload).finishedAt||safeJson(a.payload).createdAt||'')));
+}
+function renderHistoryItem(s){
+  const d=shortDate(s.recorded_date),p=safeJson(s.payload);
+  if(!s.legacy&&(s.status==='skipped'||p.sessionType==='missed'))return `<button class="history-item missed-history" data-session="${h(s.id)}"><div class="history-date"><b>${d.day}</b><span>${h(d.month)}</span></div><div class="history-main"><strong>${h(p.title||p.type||'Tréning')}</strong><span>Neabsolvované${p.reason?` · ${h(p.reason)}`:''}</span></div><div class="history-tonnage missed"><b>—</b><span>vynechané</span></div></button>`;
+  if(!s.legacy&&p.sessionType==='routine')return `<button class="history-item routine-history" data-session="${h(s.id)}"><div class="history-date"><b>${d.day}</b><span>${h(d.month)}</span></div><div class="history-main"><strong>${h(p.title||p.type||'Aktivita')}</strong><span>${h(p.type||'Kondícia / mobilita')}${p.durationMinutes?` · ${fmtNumber(p.durationMinutes,0)} min`:''}</span></div><div class="history-tonnage"><b>✓</b><span>hotovo</span></div></button>`;
+  const stats=s.legacy?legacyDayStats(s.rows||[]):sessionStats(s.id),partial=s.legacy||isPartialSession(s)||String(p.source||'').includes('import');
+  return `<button class="history-item" data-session="${h(s.id)}"><div class="history-date"><b>${d.day}</b><span>${h(d.month)}</span></div><div class="history-main"><strong>${h(p.title||'Silový tréning')}</strong><span>${stats.workingSets?`${stats.workingSets} sérií`:''}${partial?' · čiastočný/historický záznam':''}</span></div><div class="history-tonnage"><b>${stats.tonnage?`${fmtNumber(stats.tonnage/1000,2)} t`:'—'}</b><span>tonáž</span></div></button>`;
+}
+function renderSessionDetail(id){
+  if(id.startsWith('legacy:'))return renderLegacySession(id.slice(7));
+  const s=state.sessions.find(x=>x.id===id);if(!s)return updateUrl('#/history');const p=safeJson(s.payload);
+  if(s.status==='skipped'||p.sessionType==='missed'){
+    const content=`<div class="detail-header"><button class="back-button" id="back">${icon('back')}</button><div><span>${isoDate(s.recorded_date)}</span><h1>${h(p.title||p.type||'Tréning')}</h1><em class="missed-badge">Neabsolvované</em></div></div><div class="missed-detail-card"><span>Dôvod</span><p>${h(p.reason||'Bez uvedeného dôvodu')}</p><small>Tento záznam sa nepočíta do tonáže, PR ani progresu.</small></div>`;
+    app.innerHTML=shell(content,'history');bindNav();document.getElementById('back').onclick=()=>history.back();return;
+  }
+  if(p.sessionType==='routine'){
+    const completed=Object.values(safeJson(p.checklist)).filter(Boolean).length,total=Object.keys(safeJson(p.checklist)).length;
+    const content=`<div class="detail-header"><button class="back-button" id="back">${icon('back')}</button><div><span>${isoDate(s.recorded_date)}</span><h1>${h(p.title||p.type||'Aktivita')}</h1></div></div><div class="stats-row"><div><span>Typ</span><b>${h(p.type||'Aktivita')}</b></div><div><span>Trvanie</span><b>${p.durationMinutes?`${fmtNumber(p.durationMinutes,0)} min`:'—'}</b></div><div><span>Checklist</span><b>${total?`${completed}/${total}`:'—'}</b></div></div>${p.note?`<div class="info-note">${h(p.note)}</div>`:''}`;
+    app.innerHTML=shell(content,'history');bindNav();document.getElementById('back').onclick=()=>history.back();return;
+  }
+  const stats=sessionStats(id),exs=state.sessionExercises.filter(x=>x.session_id===id).sort((a,b)=>a.ordinal-b.ordinal),partial=isPartialSession(s)||String(p.source||'').includes('import');
+  const content=`<div class="detail-header"><button class="back-button" id="back">${icon('back')}</button><div><span>${isoDate(s.recorded_date)}</span><h1>${h(p.title||'Tréning')}</h1>${partial?'<em>čiastočný záznam</em>':''}</div></div><div class="stats-row"><div><span>Tonáž</span><b>${stats.tonnage?`${fmtNumber(stats.tonnage/1000,2)} t`:'—'}</b></div><div><span>Série</span><b>${stats.workingSets}</b></div><div><span>Opakovania</span><b>${stats.reps}</b></div></div><div class="session-card">${exs.map(ex=>renderSessionExercise(ex,id)).join('')}</div>`;
+  app.innerHTML=shell(content,'history');bindNav();document.getElementById('back').onclick=()=>history.back();document.querySelectorAll('[data-exercise-key]').forEach(b=>b.onclick=()=>updateUrl(`#/exercise/${encodeURIComponent(b.dataset.exerciseKey)}`));bindHistoryNameEditors?.();
+}

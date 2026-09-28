@@ -272,3 +272,54 @@ function renderRoutineDetail(workoutId){
   const content=`<div class="routine-detail"><div class="detail-header"><button class="back-button" id="back">${icon('back')}</button><div><span>${h(p.type||'Tréning')}</span><h1>${h(p.title||'Tréning')}</h1><em>${h(workoutDaysLabel(p))}</em></div></div><div class="routine-summary">${p.durationRange?`<div><span>Trvanie</span><b>${h(p.durationRange)}</b></div>`:''}${isZone&&p.heartRateLow?`<div><span>Tep</span><b>${h(p.heartRateLow)}–${h(p.heartRateHigh)} bpm</b></div>`:''}</div>${p.instructions?`<div class="routine-instructions">${h(p.instructions)}</div>`:''}${after.length?`<div class="routine-checklist">${after.map((x,i)=>`<label><input type="checkbox" data-routine-check="${i}" ${checks[i]?'checked':''}><div><b>${h(`${i+1}. ${x.name}`)}</b><span>${h(x.dose||'')}</span>${Array.isArray(x.how)&&x.how.length?`<small>${h(x.how.join(' '))}</small>`:''}${x.why?`<small class="routine-why"><strong>Prečo:</strong> ${h(x.why)}</small>`:''}</div></label>`).join('')}</div>`:''}<div class="routine-log-card"><label>Reálne trvanie (min)<input id="routine-duration" type="number" inputmode="numeric" min="0" placeholder="voliteľné" value="${h(state.routineDuration||'')}"></label><label>Poznámka<textarea id="routine-note" placeholder="voliteľné">${h(state.routineNote||'')}</textarea></label><button id="routine-complete">ULOŽIŤ AKO HOTOVÉ</button></div></div>`;
   app.innerHTML=shell(content,'training');bindNav();document.getElementById('back').onclick=()=>history.back();document.querySelectorAll('[data-routine-check]').forEach(x=>x.onchange=()=>{const c=state.routineChecks[workoutId]||{};c[x.dataset.routineCheck]=x.checked;state.routineChecks[workoutId]=c;});document.getElementById('routine-duration').oninput=e=>state.routineDuration=e.target.value;document.getElementById('routine-note').oninput=e=>state.routineNote=e.target.value;document.getElementById('routine-complete').onclick=()=>completeRoutine(w);
 }
+
+/* ===== v4.0 – missed workout logging ===== */
+function missedWorkoutExisting(workoutId,date){
+  return state.sessions.find(s=>s.recorded_date===date&&safeJson(s.payload).workoutId===workoutId&&['completed','skipped'].includes(s.status));
+}
+function closeMissedWorkoutDialog(){document.getElementById('missed-workout-overlay')?.remove();}
+function showMissedWorkoutDialog(w){
+  if(!w)return;
+  closeMissedWorkoutDialog();
+  const p=safeJson(w.payload),overlay=document.createElement('div');
+  overlay.className='missed-workout-overlay';overlay.id='missed-workout-overlay';
+  overlay.innerHTML=`<div class="missed-workout-modal"><div class="missed-modal-head"><div><span>NEABSOLVOVANÉ</span><h3>${h(p.title||p.type||'Tréning')}</h3></div><button type="button" id="missed-close">×</button></div><label>Dátum<input id="missed-date" type="date" value="${todayIso()}"></label><label>Dôvod<textarea id="missed-reason" maxlength="280" rows="4" placeholder="Napr. bolí ma chrbát, zlá regenerácia, choroba…"></textarea></label><div class="missed-help">Záznam sa uloží do Histórie, ale nebude sa počítať do tonáže, PR ani progresu.</div><div class="missed-actions"><button type="button" class="missed-cancel" id="missed-cancel">Zrušiť</button><button type="button" class="missed-save" id="missed-save">ULOŽIŤ AKO NEABSOLVOVANÉ</button></div></div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('missed-close').onclick=closeMissedWorkoutDialog;
+  document.getElementById('missed-cancel').onclick=closeMissedWorkoutDialog;
+  overlay.onclick=e=>{if(e.target===overlay)closeMissedWorkoutDialog();};
+  document.getElementById('missed-save').onclick=()=>saveMissedWorkout(w);
+  setTimeout(()=>document.getElementById('missed-reason')?.focus(),30);
+}
+async function saveMissedWorkout(w){
+  const p=safeJson(w.payload),date=document.getElementById('missed-date')?.value||todayIso(),reason=document.getElementById('missed-reason')?.value.trim()||'';
+  if(!reason)return toast('Napíš krátky dôvod, prečo si tréning neabsolvoval.','error',3500);
+  const existing=missedWorkoutExisting(w.id,date);
+  if(existing){const ep=safeJson(existing.payload);return toast(existing.status==='completed'?`Tento tréning už máš ${date} uložený ako absolvovaný.`:`Tento tréning už máš ${date} uložený ako neabsolvovaný.`,'error',4200);}
+  const id=`missed-${Date.now()}-${crypto.randomUUID().slice(0,8)}`;
+  const session={owner_id:state.user.id,client_id:CLIENT_ID,id,recorded_date:date,status:'skipped',payload:{id,date,status:'skipped',attendance:'missed',sessionType:'missed',title:p.title||p.type||'Tréning',type:p.type||'Tréning',workoutId:w.id,planId:state.plan?.id||null,source:'tracker_v40',version:APP_VERSION,reason,createdAt:new Date().toISOString()}};
+  const btn=document.getElementById('missed-save');if(btn){btn.disabled=true;btn.textContent='UKLADÁM…';}
+  const r=await supabase.from('trainer_hub_workout_sessions').insert(session);
+  if(r.error){if(btn){btn.disabled=false;btn.textContent='ULOŽIŤ AKO NEABSOLVOVANÉ';}return toast(`Záznam sa neuložil: ${r.error.message}`,'error',4500);}
+  state.sessions.unshift(session);closeMissedWorkoutDialog();toast('Neabsolvovaný tréning je zapísaný v histórii.');updateUrl('#/history');
+}
+function renderWeekWorkout(w){
+  const p=safeJson(w.payload),type=p.type||'Tréning';
+  return `<div class="week-workout-wrap"><button class="week-workout" data-week-workout="${h(w.id)}"><div><strong>${h(String(p.title||type).replace(/^(Pondelok|Utorok|Streda|Štvrtok|Piatok|Sobota|Nedeľa)\s*·\s*/i,''))}</strong><span>${h(p.durationRange||p.objective||p.instructions||type)}</span></div><em>${p.type==='Silový tréning'?'SILA':h(type)}</em><i>›</i></button><button class="week-missed" type="button" data-week-missed="${h(w.id)}">Neabsolvoval som</button></div>`;
+}
+function renderTraining(){
+  const active=state.activeSession,today=new Date().getDay(),next=nextPlannedWorkout(),units=sortedWorkoutUnits();
+  const order=[1,2,3,4,5,6,0],labels={1:'PO',2:'UT',3:'ST',4:'ŠT',5:'PI',6:'SO',0:'NE'};
+  const weekRows=order.map(day=>{const ws=units.filter(w=>workoutDays(w.payload).includes(day));return `<div class="week-row ${day===today?'today':''}"><div class="week-day"><b>${labels[day]}</b>${day===today?'<span>DNES</span>':''}</div><div class="week-items">${ws.length?ws.map(renderWeekWorkout).join(''):'<div class="week-empty">Bez naplánovanej jednotky</div>'}</div></div>`;}).join('');
+  const content=`<header class="home-header"><h1>Tréning</h1></header><button class="start-workout" id="main-start">${active?'POKRAČOVAŤ V TRÉNINGU':'ZAČAŤ TRÉNING'}</button>${next&&!active?`<div class="today-line"><span>Najbližšie</span><b>${h(safeJson(next.w.payload).title||'')}</b></div>`:''}<div class="section-bar"><h2>TÝŽDENNÝ PLÁN</h2></div><div class="week-plan">${weekRows}</div><div class="section-bar"><h2>TRÉNINGOVÉ JEDNOTKY</h2></div><div class="unit-library">${units.map(renderUnitLibraryCard).join('')}</div>`;
+  app.innerHTML=shell(content,'training');bindNav();
+  document.getElementById('main-start').onclick=()=>{if(active)return updateUrl('#/active');const todays=units.filter(w=>workoutDays(w.payload).includes(today));if(todays.length===1)return launchWorkoutUnit(todays[0]);if(todays.length>1)return document.querySelector('.week-row.today')?.scrollIntoView({behavior:'smooth',block:'center'});document.querySelector('.unit-library')?.scrollIntoView({behavior:'smooth',block:'start'});};
+  document.querySelectorAll('[data-week-workout]').forEach(b=>b.onclick=()=>launchWorkoutUnit(state.workouts.find(x=>x.id===b.dataset.weekWorkout)));
+  document.querySelectorAll('[data-week-missed]').forEach(b=>b.onclick=e=>{e.stopPropagation();showMissedWorkoutDialog(state.workouts.find(x=>x.id===b.dataset.weekMissed));});
+  document.querySelectorAll('[data-unit-launch]').forEach(b=>b.onclick=()=>launchWorkoutUnit(state.workouts.find(x=>x.id===b.dataset.unitLaunch)));
+}
+function renderRoutineDetail(workoutId){
+  const w=state.workouts.find(x=>x.id===workoutId);if(!w)return updateUrl('#/training');const p=safeJson(w.payload),after=Array.isArray(p.after)?p.after:[],checks=state.routineChecks[workoutId]||{},isZone=p.type==='Zone 2';
+  const content=`<div class="routine-detail"><div class="detail-header"><button class="back-button" id="back">${icon('back')}</button><div><span>${h(p.type||'Tréning')}</span><h1>${h(p.title||'Tréning')}</h1><em>${h(workoutDaysLabel(p))}</em></div></div><div class="routine-summary">${p.durationRange?`<div><span>Trvanie</span><b>${h(p.durationRange)}</b></div>`:''}${isZone&&p.heartRateLow?`<div><span>Tep</span><b>${h(p.heartRateLow)}–${h(p.heartRateHigh)} bpm</b></div>`:''}</div>${p.instructions?`<div class="routine-instructions">${h(p.instructions)}</div>`:''}${after.length?`<div class="routine-checklist">${after.map((x,i)=>`<label><input type="checkbox" data-routine-check="${i}" ${checks[i]?'checked':''}><div><b>${h(`${i+1}. ${x.name}`)}</b><span>${h(x.dose||'')}</span>${Array.isArray(x.how)&&x.how.length?`<small>${h(x.how.join(' '))}</small>`:''}${x.why?`<small class="routine-why"><strong>Prečo:</strong> ${h(x.why)}</small>`:''}</div></label>`).join('')}</div>`:''}<div class="routine-log-card"><label>Reálne trvanie (min)<input id="routine-duration" type="number" inputmode="numeric" min="0" placeholder="voliteľné" value="${h(state.routineDuration||'')}"></label><label>Poznámka<textarea id="routine-note" placeholder="voliteľné">${h(state.routineNote||'')}</textarea></label><div class="routine-result-actions"><button id="routine-complete">ULOŽIŤ AKO HOTOVÉ</button><button id="routine-missed" type="button">NEABSOLVOVAL SOM</button></div></div></div>`;
+  app.innerHTML=shell(content,'training');bindNav();document.getElementById('back').onclick=()=>history.back();document.querySelectorAll('[data-routine-check]').forEach(x=>x.onchange=()=>{const c=state.routineChecks[workoutId]||{};c[x.dataset.routineCheck]=x.checked;state.routineChecks[workoutId]=c;});document.getElementById('routine-duration').oninput=e=>state.routineDuration=e.target.value;document.getElementById('routine-note').oninput=e=>state.routineNote=e.target.value;document.getElementById('routine-complete').onclick=()=>completeRoutine(w);document.getElementById('routine-missed').onclick=()=>showMissedWorkoutDialog(w);
+}
