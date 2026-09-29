@@ -1,4 +1,4 @@
-/* Tréning v4.1 – body measurement save fix */
+/* Tréning v4.3 – final iOS/Supabase body measurement fix */
 function parseMeasurementNumber(value){
   if(value===null||value===undefined)return null;
   const normalized=String(value).trim().replace(/\s+/g,'').replace(',','.');
@@ -6,6 +6,19 @@ function parseMeasurementNumber(value){
   const parsed=Number(normalized);
   return Number.isFinite(parsed)?parsed:null;
 }
+
+renderBodyProgress=function(){
+  const rows=[...state.measurements].sort((a,b)=>String(b.measured_on).localeCompare(String(a.measured_on)));
+  const latest=rows[0];
+  return `<div class="body-summary">${latest?`<div><span>Hmotnosť</span><b>${fmtNumber(latest.weight_kg)} kg</b></div><div><span>Pás</span><b>${fmtNumber(latest.waist_cm)} cm</b></div>`:'<div><span>Merania</span><b>—</b></div>'}</div>
+    <form class="measurement-form" id="measurement-form" novalidate>
+      <input id="m-date" type="date" value="${todayIso()}">
+      <input id="m-weight" type="text" inputmode="decimal" autocomplete="off" placeholder="Hmotnosť kg">
+      <input id="m-waist" type="text" inputmode="decimal" autocomplete="off" placeholder="Pás cm">
+      <button type="submit">ULOŽIŤ MERANIE</button>
+    </form>
+    <div class="measurement-list">${rows.map(m=>`<div><span>${isoDate(m.measured_on)}</span><b>${fmtNumber(m.weight_kg)} kg</b><b>${fmtNumber(m.waist_cm)} cm</b></div>`).join('')}</div>`;
+};
 
 saveMeasurement=async function(e){
   e.preventDefault();
@@ -31,7 +44,6 @@ saveMeasurement=async function(e){
         .eq('id',existing.id);
     }else{
       r=await supabase.from('body_measurements').insert({
-        id:Date.now(),
         user_id:state.user.id,
         owner_id:state.user.id,
         client_id:CLIENT_ID,
@@ -48,6 +60,7 @@ saveMeasurement=async function(e){
   }catch(err){
     console.error('Measurement save failed',err);
     toast(`Meranie sa nepodarilo uložiť: ${err.message||err}`,'error',6000);
-    if(button){button.disabled=false;button.textContent='ULOŽIŤ MERANIE';}
+  }finally{
+    if(button&&document.body.contains(button)){button.disabled=false;button.textContent='ULOŽIŤ MERANIE';}
   }
 };
