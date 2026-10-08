@@ -1,7 +1,7 @@
 const SUPABASE_URL='https://nragtrsgbvrnmbwlowoi.supabase.co';
 const SUPABASE_KEY='sb_publishable_Y9GtqKdB0pD-KQItwiu4Mw_ANXeA1Da';
 const CLIENT_ID='david';
-const APP_VERSION='4.0.0';
+const APP_VERSION='4.1.0';
 const AUTH_STORAGE_KEY='sb-nragtrsgbvrnmbwlowoi-auth-token';
 
 function parseStoredSession(raw){
@@ -22,19 +22,27 @@ function createSupabaseLite(baseUrl,apiKey){
   function normalizeSession(payload){if(!payload?.access_token)return null;return {...payload,expires_at:payload.expires_at||Math.floor(Date.now()/1000)+Number(payload.expires_in||3600)};}
   async function authRequest(path,body,token){
     const headers={'apikey':apiKey,'Content-Type':'application/json'};if(token)headers.Authorization=`Bearer ${token}`;
-    const res=await fetch(`${baseUrl}${path}`,{method:'POST',headers,body:body===undefined?undefined:JSON.stringify(body)});
+    let res;try{res=await fetch(`${baseUrl}${path}`,{method:'POST',headers,body:body===undefined?undefined:JSON.stringify(body)});}catch{return{data:null,error:{message:'Nie je dostupné pripojenie.',network:true}};}
     let data=null;try{data=await res.json();}catch{}
     if(!res.ok)return{data:null,error:{message:data?.msg||data?.message||data?.error_description||data?.error||`HTTP ${res.status}`}};
     return{data,error:null};
   }
+  let refreshPromise=null;
   async function ensureSession(){
     session=session||parseStoredSession(localStorage.getItem(AUTH_STORAGE_KEY));
     if(!session)return null;
     if(Number(session.expires_at||0)>Math.floor(Date.now()/1000)+45)return session;
     if(!session.refresh_token)return session;
-    const r=await authRequest('/auth/v1/token?grant_type=refresh_token',{refresh_token:session.refresh_token});
-    if(r.error||!r.data?.access_token){writeSession(null);notify('SIGNED_OUT');return null;}
-    const next=normalizeSession(r.data);writeSession(next);notify('TOKEN_REFRESHED');return next;
+    if(refreshPromise)return refreshPromise;
+    const refreshToken=session.refresh_token;
+    refreshPromise=(async()=>{
+      const r=await authRequest('/auth/v1/token?grant_type=refresh_token',{refresh_token:refreshToken});
+      if(session?.refresh_token!==refreshToken)return session;
+      if(r.error?.network)return session;
+      if(r.error||!r.data?.access_token){writeSession(null);notify('SIGNED_OUT');return null;}
+      const next=normalizeSession(r.data);writeSession(next);notify('TOKEN_REFRESHED');return next;
+    })().finally(()=>{refreshPromise=null;});
+    return refreshPromise;
   }
   async function restFetch(table,q){
     const current=await ensureSession();
@@ -44,8 +52,8 @@ function createSupabaseLite(baseUrl,apiKey){
     if(q.orderBy)params.set('order',`${q.orderBy.column}.${q.orderBy.ascending?'asc':'desc'}`);
     if(q.limitValue!=null)params.set('limit',String(q.limitValue));
     const headers={'apikey':apiKey,'Authorization':`Bearer ${current?.access_token||apiKey}`,'Content-Type':'application/json','Accept':'application/json'};
-    if(q.method!=='GET')headers.Prefer='return=minimal';
-    const res=await fetch(`${baseUrl}/rest/v1/${encodeURIComponent(table)}${params.toString()?'?'+params.toString():''}`,{method:q.method,headers,body:q.body==null?undefined:JSON.stringify(q.body)});
+    if(q.method!=='GET')headers.Prefer=q.selectCols?'return=representation':'return=minimal';
+    let res;try{res=await fetch(`${baseUrl}/rest/v1/${encodeURIComponent(table)}${params.toString()?'?'+params.toString():''}`,{method:q.method,headers,body:q.body==null?undefined:JSON.stringify(q.body)});}catch{return{data:null,error:{message:'Nie je dostupné pripojenie.',network:true}};}
     let data=null;if(res.status!==204){try{data=await res.json();}catch{}}
     if(!res.ok)return{data:null,error:{message:data?.message||data?.hint||data?.details||`HTTP ${res.status}`}};
     return{data,error:null};
@@ -168,7 +176,7 @@ async function loadCore(showLoading=true){
     state.plan=(plansR.data||[]).filter(p=>safeJson(p.payload).status==='active').sort((a,b)=>String(safeJson(b.payload).createdAt||'').localeCompare(String(safeJson(a.payload).createdAt||'')))[0]||null;
     state.sessions=sessionsR.data||[];state.sessionExercises=(sessionExR.data||[]).filter(x=>validExerciseName(exerciseName(safeJson(x.payload),x.exercise_key)));state.sets=setsR.data||[];state.legacyLogs=(logsR.data||[]).filter(x=>validExerciseName(x.exercise_name));state.measurements=measureR.data||[];
     if(state.plan){const [wR,eR]=await Promise.all([supabase.from('trainer_hub_workouts').select('*').eq('owner_id',uid).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).order('ordinal'),supabase.from('trainer_hub_workout_exercises').select('*').eq('owner_id',uid).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).order('ordinal')]);if(wR.error)throw new Error(wR.error.message);if(eR.error)throw new Error(eR.error.message);state.workouts=wR.data||[];state.planExercises=(eR.data||[]).filter(x=>validExerciseName(exerciseName(safeJson(x.payload),x.exercise_key)));}else{state.workouts=[];state.planExercises=[];}
-    const active=state.sessions.find(s=>s.status==='active');setActive(active||null);state.loading=false;renderRoute();
+    restoreQueuedSets();const active=state.sessions.find(s=>s.status==='active');setActive(active||null);state.loading=false;renderRoute();
   }catch(e){console.error(e);state.loading=false;window.__showBootError(e.message||String(e));}
 }
 function setActive(s){state.activeSession=s;if(!s){state.activeExercises=[];state.activeSets=[];return;}state.activeExercises=state.sessionExercises.filter(x=>x.session_id===s.id).sort((a,b)=>a.ordinal-b.ordinal);state.activeSets=state.sets.filter(x=>x.session_id===s.id).sort((a,b)=>a.ordinal-b.ordinal);}

@@ -18,13 +18,21 @@ Navrhované riešenie: ponechať webové rozhranie aj Supabase a pridať iOS oba
 
 Dokumentácia: https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities
 
-## Ďalšie časti odsúhlaseného smerovania
+## Súčasť finálnej webovej úpravy
 
-1. Trvalá lokálna fronta zmien sérií oddelená podľa používateľa. Synchronizácia s opakovaním, jasný stav uloženia a vyprázdnenie pred dokončením tréningu. Pri odhlásení nesmie dôjsť k odoslaniu dát pod iným účtom.
-2. Databázové transakcie pre založenie session, kopírovanie a zmenu poradia. Aktuálne REST operácie pozostávajú z viacerých zápisov; zlyhanie posledného môže zanechať čiastočný stav.
-3. Voliteľné návrhy progresie podľa dokončených pracovných sérií, stanoveného rozsahu, zaznamenaného RIR a nastaveného kroku váhy. Prijať po náhľade; žiadne automatické zvýšenie bez nastaveného pravidla. Zohľadniť rozdielne váhy jednotlivých sérií, náhrady cvikov a čiastočné tréningy.
-4. Úpravy bežnou vetou pre jasne určené operácie, s validáciou a náhľadom pred uložením. Nikdy nevykonávať voľne generované SQL.
-5. Jednorazové presuny v kalendári a kratšie varianty zostavené z vopred označených priorít cvikov.
-6. Zjednotiť opakovane definované funkcie vo verziách training.js a plan-editor.js a presunúť opravy do hlavných modulov.
+- Trvalá lokálna fronta zmien existujúcich sérií, oddelená podľa účtu. Kontrola potvrdenia databázou, obnovenie po načítaní, opakovanie po pripojení a blokovanie dokončenia, kým existujú neodoslané zmeny. Vytvorenie nového tréningu a načítanie aplikácie stále vyžadujú internet.
+- Voliteľné návrhy progresie podľa vlastného kroku cviku, počtu dokončených pracovných sérií, hornej hranice opakovaní a RIR poslednej série. Návrh sa prijíma explicitne v náhľade; čiastočné tréningy, rozdielne váhy, legacy dáta a chýbajúca rezerva návrh nevytvoria.
+- Predvyplnenie jednotlivých pracovných sérií zachová ich vlastné váhy a ignoruje drop série. Neskoršia manuálna úprava plánu má prednosť.
+- Jednoduché úpravy vetou pre pauzu, série a váhu všetkých cvikov v jednotke. Rozpoznávajú konkrétne príkazy a pripravia náhľad bez priameho zápisu do databázy. Nie je to generatívny AI editor.
+- Odstránenie 16 zastaraných duplicitných definícií v training.js a plan-editor.js.
+- Obnova prihlásenia sa zdieľa medzi súbežnými požiadavkami; výpadok siete používateľa neodhlási a oneskorená obnova po odhlásení nemôže obnoviť starý účet.
 
-Tieto časti ani natívna iOS aplikácia ešte nie sú implementované v tejto zmene.
+Overenie: 19 automatických testov plus mobilný test rozloženia a celého toku so syntetickou databázou (kópia, knižnica, hromadná zmena a vrátenie, štart, offline zmena série a opakované odoslanie, história, progres a profil). Šírky 320, 375, 390 a 430 px. Testy nezapisujú do produkčného Supabase. Zatiaľ nebolo vykonané overenie na fyzickom iPhone ani integračné zapisovanie s používateľovým produkčným prihlásením.
+
+## Neskoršie rozšírenia
+
+- Natívny iOS obal a Live Activities podľa návrhu vyššie.
+- Plne offline spustenie webu, nové tréningy bez siete a synchronizácia medzi viacerými súbežne otvorenými kartami.
+- Databázové transakcie pre založenie session, kopírovanie a zmenu poradia. Táto verzia má kompenzačné čistenie neúplného nového tréningu; viaceré REST zápisy stále nie sú jednou transakciou.
+- Jednorazové presuny v kalendári a automatické kratšie varianty podľa používateľom určených priorít. Aktuálne môže používateľ kopírovať jednotku a upraviť jej cviky aj dni.
+- Rozšírené generatívne úpravy plánu s validovaným náhľadom a verziami.

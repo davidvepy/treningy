@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 function fixture(){
   const elements=new Map();
-  const document={getElementById(id){if(!elements.has(id))elements.set(id,{isConnected:true,disabled:false});return elements.get(id);}};
+  const document={querySelectorAll:()=>[],getElementById(id){if(!elements.has(id))elements.set(id,{isConnected:true,disabled:false});return elements.get(id);}};
   const w={id:'strength',payload:{title:'Tréning A',type:'Silový tréning'}};
   const context={document,state:{workouts:[w],activeSession:null},safeJson:x=>x||{},templateExercises:()=>[],h:String,icon:()=>'',workoutDaysLabel:()=>'',shell:x=>x,app:{},bindNav(){},updateUrl(hash){context.hash=hash;},openWorkoutUnitEditor(){},strengthLabelForWorkout:()=> 'A',async startWorkout(){context.starts++;},starts:0};
   vm.createContext(context);vm.runInContext(fs.readFileSync('mobile.js','utf8'),context);

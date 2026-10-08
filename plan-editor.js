@@ -37,33 +37,8 @@ function suggestWorkoutWeight(exPayload,key){
   if(updatedAt&&prev.timestamp&&updatedAt>prev.timestamp)return planned;
 
   // No automatic progression. Remember the last actually completed working-set weight.
-  const working=prev.sets.filter(s=>(s.set_type||'working')!=='warmup'&&s.complete!==false&&n(s.weight,null)!==null).sort((a,b)=>n(a.ordinal,0)-n(b.ordinal,0));
+  const working=prev.sets.filter(s=>(s.set_type||'working')==='working'&&s.complete!==false&&n(s.weight,null)!==null).sort((a,b)=>n(a.ordinal,0)-n(b.ordinal,0));
   return n(working.at(-1)?.weight,planned);
-}
-
-function renderProfile(){
-  const content=`<header class="page-title"><h1>Profil</h1></header>
-    <div class="profile-card"><div><span>Prihlásený účet</span><b>${h(state.user.email||'Dávid')}</b></div><button id="logout">Odhlásiť</button></div>
-
-    <div class="section-bar"><h2>TRÉNINGOVÝ PLÁN</h2></div>
-    <div class="plan-editor-entry">
-      <div><b>Upraviť A / B / C</b><span>Váhy, série, opakovania, pauzy a poradie.</span></div>
-      <button id="open-plan-editor">Upraviť plán</button>
-    </div>
-
-    <div class="section-bar"><h2>AKO TRÉNOVAŤ</h2></div>
-    <div class="help-list">
-      <details><summary>Ako fungujú supersety</summary><p>Dva cviky ideš po sebe bez plnej pauzy. Pauzu odpočítavaj až po druhom cviku páru.</p></details>
-      <details><summary>Keď máš len 35 minút</summary><p>Nechaj hlavné pracovné cviky a skráť doplnkový objem. Rozcvičku a technicky náročný prvý cvik nevyhadzuj.</p></details>
-      <details><summary>Ako voliť váhu</summary><p>Vyber záťaž, s ktorou spravíš cieľový rozsah opakovaní čistou technikou bez bolestivej kompenzácie.</p></details>
-      <details><summary>Kedy pridať váhu</summary><p>Váhu zvyšuješ ty podľa RIR, techniky a výkonu. Ak ju počas tréningu zmeníš, aplikácia si zapamätá poslednú dokončenú pracovnú váhu a pri ďalšom tréningu ju použije ako východiskovú.</p></details>
-      <details><summary>Týždenný objem</summary><p>Tonáž a počet sérií sleduj ako trend. Nie sú samy osebe skóre kvality tréningu.</p></details>
-    </div>
-    <div class="app-info"><span>Tréning v${APP_VERSION} · editor plánu 3.6</span><p>Dáta sú uložené v Supabase. Úprava plánu nemení starú históriu tréningov.</p></div>`;
-  app.innerHTML=shell(content,'profile');
-  bindNav();
-  document.getElementById('logout').onclick=()=>supabase.auth.signOut();
-  document.getElementById('open-plan-editor').onclick=()=>renderPlanEditor('A');
 }
 
 function planTemplateByKey(key){return strengthTemplates()[key]||null;}
@@ -146,6 +121,9 @@ function renderPlanExerciseEditor(row,index,total){
     </div>
     <details class="plan-advanced">
       <summary>Ďalšie nastavenia</summary>
+      <label class="progression-enable"><input type="checkbox" data-plan-field="progressionEnabled" ${p.progressionEnabled===true?'checked':''}> Navrhovať zvýšenie váhy podľa výkonu</label>
+      <div class="plan-field full"><label>Krok zvýšenia (kg)<input data-plan-field="progressionStep" type="number" min="0.25" step="0.25" value="${h(p.progressionStep??1)}"></label></div>
+      <p class="preview-hint">Návrh sa ukáže až po splnení všetkých sérií na hornej hranici opakovaní so zaznamenanou rezervou RIR. Váhu zmeníš prijatím návrhu v náhľade.</p>
     <div class="plan-field full"><label>Slovenský názov<input data-plan-field="name" value="${h(p.name||'')}"></label></div>
     <div class="plan-field full"><label>Anglický názov<input data-plan-field="englishName" value="${h(p.englishName||'')}"></label></div>
       <div class="plan-field full"><label>Poznámka<textarea data-plan-field="note" rows="3">${h(p.note||'')}</textarea></label></div>
@@ -179,6 +157,8 @@ async function savePlanExerciseCard(card,showToast=false){
   next.progression=val('progression')?.value.trim()||'';
   next.alternative=val('alternative')?.value.trim()||'';
   next.autoProgress=false;
+  next.progressionEnabled=val('progressionEnabled')?.checked===true;
+  next.progressionStep=Math.max(0.25,n(val('progressionStep')?.value,n(old.progressionStep,1)));
 
   const r=await supabase.from('trainer_hub_workout_exercises').update({payload:next})
     .eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id)
@@ -277,31 +257,6 @@ async function addPlanExercise(workout,selected,box){
 }
 
 /* ===== v3.7 – full weekly plan editor (strength + running/mobility/routines) ===== */
-function renderProfile(){
-  const content=`<header class="page-title"><h1>Profil</h1></header>
-    <div class="profile-card"><div><span>Prihlásený účet</span><b>${h(state.user.email||'Dávid')}</b></div><button id="logout">Odhlásiť</button></div>
-
-    <div class="section-bar"><h2>TRÉNINGOVÝ PLÁN</h2></div>
-    <div class="plan-editor-entry full-plan-entry">
-      <div><b>Upraviť celý týždeň</b><span>Silové A/B/C, Zone 2, beh, mobilita, regenerácia aj hokej.</span></div>
-      <button id="open-full-plan-editor">Upraviť plán</button>
-    </div>
-
-    <div class="section-bar"><h2>AKO TRÉNOVAŤ</h2></div>
-    <div class="help-list">
-      <details><summary>Ako fungujú supersety</summary><p>Dva cviky ideš po sebe bez plnej pauzy. Pauzu odpočítavaj až po druhom cviku páru.</p></details>
-      <details><summary>Keď máš len 35 minút</summary><p>Nechaj hlavné pracovné cviky a skráť doplnkový objem. Rozcvičku a technicky náročný prvý cvik nevyhadzuj.</p></details>
-      <details><summary>Ako voliť váhu</summary><p>Vyber záťaž, s ktorou spravíš cieľový rozsah opakovaní čistou technikou bez bolestivej kompenzácie.</p></details>
-      <details><summary>Kedy pridať váhu</summary><p>Váhu zvyšuješ ty podľa RIR, techniky a výkonu. Ak ju počas tréningu zmeníš, aplikácia si zapamätá poslednú dokončenú pracovnú váhu a pri ďalšom tréningu ju použije ako východiskovú.</p></details>
-      <details><summary>Týždenný objem</summary><p>Tonáž a počet sérií sleduj ako trend. Nie sú samy osebe skóre kvality tréningu.</p></details>
-    </div>
-    <div class="app-info"><span>Tréning v${APP_VERSION} · editor celého týždňa</span><p>Dáta sú uložené v Supabase. Úprava plánu nemení starú históriu tréningov.</p></div>`;
-  app.innerHTML=shell(content,'profile');
-  bindNav();
-  document.getElementById('logout').onclick=()=>supabase.auth.signOut();
-  document.getElementById('open-full-plan-editor').onclick=renderFullPlanOverview;
-}
-
 function planDayLabel(day){
   return ({1:'Pondelok',2:'Utorok',3:'Streda',4:'Štvrtok',5:'Piatok',6:'Sobota',0:'Nedeľa'})[n(day,0)]||'Deň';
 }
@@ -312,77 +267,12 @@ function routinePlanRows(){
     return (order[ad]||99)-(order[bd]||99)||n(a.ordinal,0)-n(b.ordinal,0);
   });
 }
-function renderFullPlanOverview(){
-  const templates=strengthTemplates();
-  const routines=routinePlanRows();
-  const content=`
-    <div class="plan-editor-header">
-      <button class="back-button" id="full-plan-back">${icon('back')}</button>
-      <div><span>TRÉNINGOVÝ PLÁN</span><h1>Upraviť celý týždeň</h1></div>
-    </div>
-    ${state.activeSession?'<div class="plan-editor-notice">Máš otvorený tréning. Zmeny plánu sa použijú až pri ďalšom novom tréningu.</div>':''}
-    <div class="plan-editor-summary"><b>Všetko na jednom mieste</b><span>Silové tréningy upravuješ po cvikoch. Pri Zone 2, behoch, mobilite a ďalších aktivitách môžeš meniť názov, deň, trvanie, tep, inštrukcie aj checklist.</span></div>
-
-    <div class="section-bar plan-section-bar"><h2>SILOVÉ TRÉNINGY</h2></div>
-    <div class="full-plan-strength-grid">${['A','B','C'].map(k=>{
-      const w=templates[k],p=safeJson(w?.payload),count=planRowsForWorkout(w).length;
-      return `<button class="full-plan-tile strength" data-edit-strength="${k}" ${w?'':'disabled'}><span>TRÉNING ${k}</span><strong>${h(p.title||`Tréning ${k}`)}</strong><small>${count} cvikov · váhy, série, reps, pauzy</small><i>›</i></button>`;
-    }).join('')}</div>
-
-    <div class="section-bar plan-section-bar"><h2>KONDÍCIA, MOBILITA A OSTATNÉ</h2></div>
-    <div class="full-plan-routine-list">${routines.length?routines.map(renderRoutineOverviewCard).join(''):'<div class="empty-card">V pláne nie sú ďalšie tréningy.</div>'}</div>`;
-  app.innerHTML=shell(content,'profile');
-  bindNav();
-  document.getElementById('full-plan-back').onclick=renderProfile;
-  document.querySelectorAll('[data-edit-strength]').forEach(b=>b.onclick=()=>renderPlanEditor(b.dataset.editStrength));
-  document.querySelectorAll('[data-edit-routine]').forEach(b=>b.onclick=()=>renderRoutinePlanEditor(b.dataset.editRoutine));
-}
 function renderRoutineOverviewCard(w){
   const p=safeJson(w.payload),after=Array.isArray(p.after)?p.after:[];
   const meta=[p.type,p.durationRange,p.heartRateLow&&p.heartRateHigh?`${p.heartRateLow}–${p.heartRateHigh} bpm`:null,after.length?`${after.length} bodov`:null].filter(Boolean).join(' · ');
   return `<button class="full-plan-tile routine" data-edit-routine="${h(w.id)}"><span>${h(planDayLabel(p.day))}</span><strong>${h(p.title||p.type||'Tréning')}</strong><small>${h(meta||'Upraviť detaily')}</small><i>›</i></button>`;
 }
 
-function renderRoutinePlanEditor(workoutId){
-  const w=state.workouts.find(x=>x.id===workoutId);
-  if(!w)return renderFullPlanOverview();
-  const p=safeJson(w.payload),items=Array.isArray(p.after)?p.after:[];
-  const content=`
-    <div class="plan-editor-header">
-      <button class="back-button" id="routine-plan-back">${icon('back')}</button>
-      <div><span>${h(planDayLabel(p.day).toUpperCase())}</span><h1>${h(p.title||p.type||'Tréning')}</h1></div>
-    </div>
-    <div class="routine-plan-card" data-routine-plan-card data-workout-id="${h(w.id)}">
-      <div class="plan-grid routine-main-grid">
-        <div class="plan-field full-span"><label>Názov tréningu<input data-routine-field="title" value="${h(p.title||'')}"></label></div>
-        <div class="plan-field"><label>Deň<select data-routine-field="day">${[1,2,3,4,5,6,0].map(d=>`<option value="${d}" ${n(p.day,0)===d?'selected':''}>${planDayLabel(d)}</option>`).join('')}</select></label></div>
-        <div class="plan-field"><label>Typ<input data-routine-field="type" value="${h(p.type||'')}"></label></div>
-        <div class="plan-field full-span"><label>Trvanie<input data-routine-field="durationRange" placeholder="napr. 35–45 min" value="${h(p.durationRange||'')}"></label></div>
-        <div class="plan-field"><label>Tep od<input data-routine-field="heartRateLow" type="number" inputmode="numeric" placeholder="—" value="${h(p.heartRateLow??'')}"></label></div>
-        <div class="plan-field"><label>Tep do<input data-routine-field="heartRateHigh" type="number" inputmode="numeric" placeholder="—" value="${h(p.heartRateHigh??'')}"></label></div>
-        <div class="plan-field full-span"><label>Inštrukcie<textarea data-routine-field="instructions" rows="5" placeholder="Popis tréningu…">${h(p.instructions||'')}</textarea></label></div>
-      </div>
-
-      <div class="routine-editor-heading"><div><span>CHECKLIST / CVIKY</span><b>Jednotlivé body tréningu</b></div><button id="routine-add-item">+ Pridať</button></div>
-      <div class="routine-edit-items" id="routine-edit-items">${items.map((item,i)=>renderRoutineEditItem(item,i)).join('')}</div>
-      <button class="plan-save-all routine-save" id="routine-save-plan">ULOŽIŤ TRÉNING</button>
-    </div>`;
-  app.innerHTML=shell(content,'profile');
-  bindNav();
-  document.getElementById('routine-plan-back').onclick=renderFullPlanOverview;
-  document.getElementById('routine-add-item').onclick=()=>addRoutineEditItem();
-  document.getElementById('routine-save-plan').onclick=()=>saveRoutinePlan(w);
-  bindRoutineEditItemActions();
-}
-function renderRoutineEditItem(item={},index=0){
-  const how=Array.isArray(item.how)?item.how.join('\n'):String(item.how||'');
-  return `<article class="routine-edit-item" data-routine-item>
-    <div class="routine-item-head"><span>${index+1}</span><b>${h(item.name||'Nový bod')}</b><div><button type="button" data-routine-up>↑</button><button type="button" data-routine-down>↓</button><button type="button" data-routine-remove>×</button></div></div>
-    <div class="plan-field full"><label>Názov<input data-routine-item-field="name" value="${h(item.name||'')}"></label></div>
-    <div class="plan-field full"><label>Dávka / trvanie<input data-routine-item-field="dose" placeholder="napr. 2×6/strana" value="${h(item.dose||'')}"></label></div>
-    <div class="plan-field full"><label>Technika / poznámka<textarea data-routine-item-field="how" rows="3" placeholder="Voliteľné">${h(how)}</textarea></label></div>
-  </article>`;
-}
 function bindRoutineEditItemActions(){
   document.querySelectorAll('[data-routine-remove]').forEach(b=>b.onclick=()=>{b.closest('[data-routine-item]')?.remove();refreshRoutineItemNumbers();});
   document.querySelectorAll('[data-routine-up]').forEach(b=>b.onclick=()=>{const item=b.closest('[data-routine-item]'),prev=item?.previousElementSibling;if(item&&prev){item.parentNode.insertBefore(item,prev);refreshRoutineItemNumbers();}});
@@ -395,33 +285,6 @@ function addRoutineEditItem(){
   const host=document.getElementById('routine-edit-items');if(!host)return;
   const wrap=document.createElement('div');wrap.innerHTML=renderRoutineEditItem({},host.children.length);const item=wrap.firstElementChild;host.appendChild(item);bindRoutineEditItemActions();refreshRoutineItemNumbers();item.querySelector('[data-routine-item-field="name"]')?.focus();
 }
-async function saveRoutinePlan(w){
-  const card=document.querySelector('[data-routine-plan-card]');if(!card)return;
-  const get=name=>card.querySelector(`[data-routine-field="${name}"]`);
-  const old=safeJson(w.payload),next={...old};
-  next.title=get('title').value.trim()||old.title||old.type||'Tréning';
-  next.day=n(get('day').value,n(old.day,0));
-  next.type=get('type').value.trim()||old.type||'Tréning';
-  next.durationRange=get('durationRange').value.trim();
-  const low=get('heartRateLow').value.trim(),high=get('heartRateHigh').value.trim();
-  if(low)next.heartRateLow=Math.max(0,Math.round(n(low,0)));else delete next.heartRateLow;
-  if(high)next.heartRateHigh=Math.max(0,Math.round(n(high,0)));else delete next.heartRateHigh;
-  next.instructions=get('instructions').value.trim();
-  next.after=[...card.querySelectorAll('[data-routine-item]')].map(item=>{
-    const f=name=>item.querySelector(`[data-routine-item-field="${name}"]`);
-    const how=f('how').value.split(/\n+/).map(x=>x.trim()).filter(Boolean);
-    return {name:f('name').value.trim(),dose:f('dose').value.trim(),how,working:false};
-  }).filter(x=>x.name);
-  const btn=document.getElementById('routine-save-plan');btn.disabled=true;btn.textContent='UKLADÁM…';
-  const r=await supabase.from('trainer_hub_workouts').update({payload:next})
-    .eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).eq('id',w.id);
-  btn.disabled=false;btn.textContent='ULOŽIŤ TRÉNING';
-  if(r.error)return toast(`Tréning sa nepodarilo uložiť: ${r.error.message}`,'error',4500);
-  w.payload=next;toast('Tréningový plán uložený.');renderRoutinePlanEditor(w.id);
-}
-
-/* ===== v3.9 – standalone workout units, multi-day scheduling, editable RAMP ===== */
-
 function workoutDays(payload={}){
   const p=safeJson(payload),raw=Array.isArray(p.days)?p.days:(p.day===null||p.day===undefined||p.day===''?[]:[p.day]);
   return [...new Set(raw.map(x=>n(x,null)).filter(x=>x!==null&&x>=0&&x<=6))];
@@ -511,7 +374,7 @@ function renderStrengthUnitEditor(workoutId){
     <div class="routine-editor-heading ramp-heading"><div><span>ROZCVIČKA</span><b>RAMP – všetko je editovateľné</b></div><button id="ramp-add-group">+ Skupina</button></div>
     <div class="ramp-editor" id="ramp-editor">${ramp.map((g,i)=>renderRampEditGroup(g,i)).join('')}</div>
     <div class="section-bar plan-section-bar"><h2>PRACOVNÉ CVIKY</h2></div>
-    ${bulkPlanControls()}
+    ${quickEditHtml()}${bulkPlanControls()}
     <div class="plan-editor-list">${rows.length?rows.map((row,i)=>renderPlanExerciseEditor(row,i+1,rows.length)).join(''):'<div class="empty-card">Táto jednotka zatiaľ nemá pracovné cviky.</div>'}</div>
     <button class="plan-add-exercise" id="unit-add-exercise">+ PRIDAŤ CVIK</button>
     <button class="plan-save-all" id="strength-unit-save">ULOŽIŤ CELÚ JEDNOTKU</button>
@@ -521,7 +384,7 @@ function renderStrengthUnitEditor(workoutId){
   document.querySelectorAll('[data-plan-save]').forEach(b=>b.onclick=()=>savePlanExerciseCard(b.closest('[data-plan-card]'),true));
   document.querySelectorAll('[data-plan-move]').forEach(b=>b.onclick=()=>moveExerciseInWorkout(b.closest('[data-plan-card]'),b.dataset.planMove,w));
   document.querySelectorAll('[data-plan-delete]').forEach(b=>b.onclick=()=>deleteExerciseFromWorkout(b.closest('[data-plan-card]'),w));
-  bindBulkPlanControls();document.getElementById('unit-add-exercise').onclick=()=>showExerciseLibrary(w);
+  bindQuickEdit();bindBulkPlanControls();document.getElementById('unit-add-exercise').onclick=()=>showExerciseLibrary(w);
   document.getElementById('strength-unit-save').onclick=()=>saveStrengthUnit(w);
   document.getElementById('delete-workout-unit').onclick=()=>deleteWorkoutUnit(w);
 }

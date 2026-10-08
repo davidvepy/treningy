@@ -1,4 +1,15 @@
 :root{--touch-size:44px}
+.save-status{padding:9px 16px;font-size:12px;color:#168756;background:#edf9f3;border-bottom:1px solid #d8e3ee}
+.save-status.pending{color:#805714;background:#fff8e8}
+.effort-input{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:#60768e;padding:12px 16px}
+.effort-input input{width:100px;min-height:44px;border:1px solid #cfdded;border-radius:10px;padding:8px;background:#f5f8fb}
+.progression-enable{display:flex;gap:10px;align-items:center;font-size:14px;padding:12px 0}
+.progression-enable input{width:24px;height:24px;min-height:24px!important}
+.progression-proposal{background:#edf9f3;border-radius:12px;padding:12px;margin:12px 0;font-size:14px}
+.progression-proposal button{width:100%;min-height:44px;border:1px solid #ccebdc;background:white;border-radius:10px;color:#168756}
+.quick-edit-label{font-size:14px;display:block;color:#53677f}
+.quick-edit-label input{display:block;width:100%;min-height:44px;border:1px solid #cfdded;border-radius:10px;font-size:16px;padding:10px;margin-top:8px}
+.quick-edit-button{width:100%;min-height:44px;border:1px solid #cfdded;border-radius:10px;background:#fff;color:#245da9;margin-bottom:12px}
 button,input,select,textarea{touch-action:manipulation}
 button:focus-visible,summary:focus-visible{outline:3px solid #2872df;outline-offset:3px}
 .preview-page{padding-bottom:100px}
