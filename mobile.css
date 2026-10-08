@@ -1,0 +1,41 @@
+:root{--touch-size:44px}
+button,input,select,textarea{touch-action:manipulation}
+button:focus-visible,summary:focus-visible{outline:3px solid #2872df;outline-offset:3px}
+.preview-page{padding-bottom:100px}
+.preview-page h1{font-size:25px;line-height:1.2;overflow-wrap:anywhere}
+.preview-hint,.preview-page p{font-size:14px;line-height:1.55;color:#53677f}
+.preview-summary{display:flex;justify-content:space-between;padding:16px;background:#e7effb;border-radius:16px;margin:16px 0;color:#17385e}
+.preview-panel{background:#fff;border:1px solid #d8e3ee;border-radius:16px;padding:0 16px;margin:10px 0}
+.preview-panel summary{min-height:56px;display:flex;align-items:center;gap:12px;padding:14px 0;cursor:pointer;list-style:none;font-size:15px;font-weight:700}
+.preview-panel summary::-webkit-details-marker{display:none}
+.preview-panel summary:after{content:'⌄';margin-left:auto;color:#71849a}
+.preview-panel[open] summary:after{content:'⌃'}
+.preview-panel summary div{min-width:0;flex:1}
+.preview-panel summary b{display:block;line-height:1.35;overflow-wrap:anywhere}
+.preview-panel summary small{display:block;font-size:13px;font-weight:500;color:#60768e;line-height:1.5;margin-top:5px}
+.preview-index{display:grid;place-items:center;flex:0 0 30px;height:30px;background:#eef4fc;border-radius:10px;color:#245da9}
+.preview-tools{display:flex;gap:10px;margin:14px 0;flex-wrap:wrap}
+.preview-tools button{flex:1;min-height:44px;border:1px solid #cfdded;border-radius:12px;background:#fff;color:#245da9;font-size:14px;padding:10px}
+.preview-start{position:fixed;z-index:49;bottom:calc(74px + env(safe-area-inset-bottom));left:0;right:0;max-width:760px;margin:auto;padding:12px 16px;background:rgba(238,243,248,.96);backdrop-filter:blur(12px);border-top:1px solid #d8e3ee}
+.preview-start button{width:100%;min-height:50px;border-radius:14px;font-size:15px}
+.bulk-plan label,.exercise-library-search label{display:block;margin:10px 0;font-size:14px;color:#53677f}
+.bulk-plan input,.bulk-plan select,.exercise-library-search input{display:block;width:100%;min-height:44px;font-size:16px;border:1px solid #cfdded;border-radius:10px;padding:10px;margin-top:6px;background:#fff}
+#library-results{font-size:13px;color:#60768e;max-height:300px;overflow:auto;margin-bottom:14px}
+#library-results button{width:100%;min-height:52px;text-align:left;border:0;border-bottom:1px solid #e3eaf2;background:#fff;padding:10px;color:#17385e}
+#library-results b,#library-results small{display:block}
+.plan-edit-card .plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:760px){
+  input,select,textarea,.set-table input{font-size:16px!important}
+  .back-button,.set-done,.set-kind,.exercise-dots,.week-more,.plan-order-actions button{min-width:44px;min-height:44px}
+  .timer-bar{top:calc(66px + env(safe-area-inset-top));gap:8px;flex-wrap:wrap}
+  .timer-count{font-size:28px}
+  .timer-bar>div:first-child{min-width:0;flex:1}
+  .timer-exercise{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+  .timer-bar button{min-height:44px;font-size:12px}
+  .set-table th:nth-child(1){width:46px}.set-table th:nth-child(2){width:66px}.set-table th:nth-child(3),.set-table th:nth-child(4){width:auto}.set-table th:nth-child(5){width:52px}
+  .set-table input{min-height:44px}.previous-cell{font-size:11px}
+  .plan-field input,.plan-field select,.plan-card-actions button,.plan-advanced summary{min-height:44px}
+  .plan-field label{font-size:13px}.plan-edit-title strong{font-size:16px}
+  .week-workout span,.unit-library-card small{font-size:12px;line-height:1.45}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}

@@ -135,8 +135,6 @@ function renderPlanExerciseEditor(row,index,total){
         <button data-plan-move="down" ${index===total?'disabled':''}>↓</button>
       </div>
     </div>
-    <div class="plan-field full"><label>Slovenský názov<input data-plan-field="name" value="${h(p.name||'')}"></label></div>
-    <div class="plan-field full"><label>Anglický názov<input data-plan-field="englishName" value="${h(p.englishName||'')}"></label></div>
     <div class="plan-grid">
       <div class="plan-field"><label>Váha (kg)<input data-plan-field="weight" type="number" inputmode="decimal" step="0.25" value="${h(p.weight??0)}"></label></div>
       <div class="plan-field"><label>Série<input data-plan-field="sets" type="number" inputmode="numeric" min="1" step="1" value="${h(p.sets??3)}"></label></div>
@@ -148,6 +146,8 @@ function renderPlanExerciseEditor(row,index,total){
     </div>
     <details class="plan-advanced">
       <summary>Ďalšie nastavenia</summary>
+    <div class="plan-field full"><label>Slovenský názov<input data-plan-field="name" value="${h(p.name||'')}"></label></div>
+    <div class="plan-field full"><label>Anglický názov<input data-plan-field="englishName" value="${h(p.englishName||'')}"></label></div>
       <div class="plan-field full"><label>Poznámka<textarea data-plan-field="note" rows="3">${h(p.note||'')}</textarea></label></div>
       <div class="plan-field full"><label>Progres / cieľ<textarea data-plan-field="progression" rows="3">${h(p.progression||'')}</textarea></label></div>
       <div class="plan-field full"><label>Alternatíva<textarea data-plan-field="alternative" rows="3">${h(p.alternative||'')}</textarea></label></div>
@@ -511,6 +511,7 @@ function renderStrengthUnitEditor(workoutId){
     <div class="routine-editor-heading ramp-heading"><div><span>ROZCVIČKA</span><b>RAMP – všetko je editovateľné</b></div><button id="ramp-add-group">+ Skupina</button></div>
     <div class="ramp-editor" id="ramp-editor">${ramp.map((g,i)=>renderRampEditGroup(g,i)).join('')}</div>
     <div class="section-bar plan-section-bar"><h2>PRACOVNÉ CVIKY</h2></div>
+    ${bulkPlanControls()}
     <div class="plan-editor-list">${rows.length?rows.map((row,i)=>renderPlanExerciseEditor(row,i+1,rows.length)).join(''):'<div class="empty-card">Táto jednotka zatiaľ nemá pracovné cviky.</div>'}</div>
     <button class="plan-add-exercise" id="unit-add-exercise">+ PRIDAŤ CVIK</button>
     <button class="plan-save-all" id="strength-unit-save">ULOŽIŤ CELÚ JEDNOTKU</button>
@@ -520,7 +521,7 @@ function renderStrengthUnitEditor(workoutId){
   document.querySelectorAll('[data-plan-save]').forEach(b=>b.onclick=()=>savePlanExerciseCard(b.closest('[data-plan-card]'),true));
   document.querySelectorAll('[data-plan-move]').forEach(b=>b.onclick=()=>moveExerciseInWorkout(b.closest('[data-plan-card]'),b.dataset.planMove,w));
   document.querySelectorAll('[data-plan-delete]').forEach(b=>b.onclick=()=>deleteExerciseFromWorkout(b.closest('[data-plan-card]'),w));
-  document.getElementById('unit-add-exercise').onclick=()=>showAddExerciseFormV39(w);
+  bindBulkPlanControls();document.getElementById('unit-add-exercise').onclick=()=>showExerciseLibrary(w);
   document.getElementById('strength-unit-save').onclick=()=>saveStrengthUnit(w);
   document.getElementById('delete-workout-unit').onclick=()=>deleteWorkoutUnit(w);
 }
@@ -563,3 +564,4 @@ async function saveRoutinePlan(w){const card=document.querySelector('[data-routi
 async function deleteWorkoutUnit(w){if(!confirm(`Odstrániť celú jednotku „${safeJson(w.payload).title||'Tréning'}“? Historické tréningy zostanú zachované.`))return;const children=state.planExercises.filter(x=>x.workout_id===w.id);for(const row of children){const r=await supabase.from('trainer_hub_workout_exercises').delete().eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).eq('workout_id',w.id).eq('id',row.id);if(r.error)return toast(`Cviky sa nepodarilo odstrániť: ${r.error.message}`,'error',4500);}const r=await supabase.from('trainer_hub_workouts').delete().eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).eq('id',w.id);if(r.error)return toast(`Jednotka sa nepodarila odstrániť: ${r.error.message}`,'error',4500);state.planExercises=state.planExercises.filter(x=>x.workout_id!==w.id);state.workouts=state.workouts.filter(x=>x.id!==w.id);toast('Tréningová jednotka odstránená.');renderFullPlanOverview();}
 
 function nextPlannedWorkout(){if(!state.workouts.length)return null;const today=new Date().getDay(),order=[0,1,2,3,4,5,6];let best=null;for(const w of state.workouts){for(const d of workoutDays(w.payload)){const delta=(d-today+7)%7;if(!best||delta<best.delta||(delta===best.delta&&n(w.ordinal,0)<n(best.w.ordinal,0)))best={w,delta,day:d};}}return best;}
+
