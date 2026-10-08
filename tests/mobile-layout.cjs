@@ -15,7 +15,7 @@ const {chromium}=require('playwright');
  state.planExercises=['Low Incline Dumbbell Press','Cable Lateral Raise','Rope Triceps Pushdown'].map((name,i)=>({id:'e'+i,workout_id:'test',exercise_key:'e'+i,ordinal:i+1,payload:{name,englishName:name,sets:3,weight:20,repMin:8,repMax:12,restSeconds:90,rirMin:1,rirMax:2}}));
  });
  for(const width of [320,375,390,430]){
-  await page.setViewportSize({width,height:844});await page.evaluate(()=>renderWorkoutPreview('test'));
+  await page.setViewportSize({width,height:844});await page.evaluate(()=>{renderTraining();window.scrollTo(0,document.body.scrollHeight);renderWorkoutPreview('test');if(window.scrollY!==0)throw new Error('Preview retained previous scroll');});
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);if(overflow)throw new Error(`Preview overflows at ${width}`);
   if(width===390)await page.screenshot({path:'/tmp/trening-preview.png',fullPage:true});
   await page.evaluate(()=>renderStrengthUnitEditor('test'));
