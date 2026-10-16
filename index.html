@@ -11,9 +11,9 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icon.svg" type="image/svg+xml" />
   <title>Tréning</title>
-  <link rel="stylesheet" href="./styles.css?v=50" />
-  <link rel="stylesheet" href="./plan-editor.css?v=50" />
-  <link rel="stylesheet" href="./mobile.css?v=50" />
+  <link rel="stylesheet" href="./styles.css?v=53" />
+  <link rel="stylesheet" href="./plan-editor.css?v=53" />
+  <link rel="stylesheet" href="./mobile.css?v=53" />
 </head>
 <body>
   <div id="app"><div class="boot"><div class="boot-spinner"></div><div>Načítavam tréning…</div></div></div>
@@ -29,20 +29,21 @@
     if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister()}))}).catch(function(){});}
     if('caches' in window){caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k)}))}).catch(function(){});}
   </script>
-  <script src="./core.js?v=52"></script>
-  <script src="./sync.js?v=50"></script>
-  <script src="./training.js?v=52"></script>
-  <script src="./history.js?v=52"></script>
-  <script src="./progress.js?v=50"></script>
-  <script src="./measurement-fix.js?v=50"></script>
-  <script src="./profile.js?v=50"></script>
-  <script src="./plan-editor.js?v=50"></script>
-  <script src="./status-fix.js?v=50"></script>
-  <script src="./history-tonnage-fix.js?v=50"></script>
-  <script src="./quick-edit.js?v=50"></script>
-  <script src="./progression.js?v=50"></script>
-  <script src="./mobile.js?v=51"></script>
-  <script src="./bootstrap.js?v=50"></script>
+  <script src="./core.js?v=53"></script>
+  <script src="./sync.js?v=53"></script>
+  <script src="./training.js?v=53"></script>
+  <script src="./history.js?v=53"></script>
+  <script src="./volume.js?v=53"></script>
+  <script src="./progress.js?v=53"></script>
+  <script src="./measurement-fix.js?v=53"></script>
+  <script src="./profile.js?v=53"></script>
+  <script src="./plan-editor.js?v=53"></script>
+  <script src="./status-fix.js?v=53"></script>
+  <script src="./history-tonnage-fix.js?v=53"></script>
+  <script src="./quick-edit.js?v=53"></script>
+  <script src="./progression.js?v=53"></script>
+  <script src="./mobile.js?v=53"></script>
+  <script src="./bootstrap.js?v=53"></script>
 </body>
 </html>
 

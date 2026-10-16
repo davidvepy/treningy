@@ -1,4 +1,7 @@
 :root{--touch-size:44px}
+.subtabs{overflow-x:auto;grid-template-columns:none;display:flex}.subtabs button{flex:0 0 auto;min-height:44px;padding:10px 14px}
+.volume-periods{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}.volume-periods button{min-height:44px;border:1px solid #cfdded;border-radius:12px;background:white;color:#53677f;padding:10px;font-size:13px}.volume-periods button.active{background:#17385e;color:white;border-color:#17385e}
+.volume-list{display:grid;gap:10px}.volume-card{padding:16px;background:white;border:1px solid #d8e3ee;border-radius:16px}.volume-card>div:first-child{display:flex;justify-content:space-between;gap:12px;font-size:15px}.volume-card b{white-space:nowrap}.volume-track{height:8px;border-radius:6px;background:#edf2f8;overflow:hidden;margin:12px 0 8px}.volume-track span{display:block;height:100%;background:#367add;border-radius:6px}.volume-card small{font-size:12px;color:#60768e}
 .save-status{padding:9px 16px;font-size:12px;color:#168756;background:#edf9f3;border-bottom:1px solid #d8e3ee}
 .save-status.pending{color:#805714;background:#fff8e8}
 .effort-input{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:#60768e;padding:12px 16px}

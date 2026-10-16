@@ -57,7 +57,7 @@
     const order=[1,2,3,4,5,6,0],labels={1:'PO',2:'UT',3:'ST',4:'ŠT',5:'PI',6:'SO',0:'NE'};
     const weekRows=order.map(day=>{
       const ws=units.filter(w=>workoutDays(w.payload).includes(day));
-      return `<div class="week-row ${day===today?'today':''}"><div class="week-day"><b>${labels[day]}</b>${day===today?'<span>DNES</span>':''}</div><div class="week-items">${ws.length?ws.map(w=>renderWeekWorkout(w,day)).join(''):'<div class="week-empty">Bez naplánovanej jednotky</div>'}</div></div>`;
+      return `<div class="week-row ${day===today?'today':''}"><div class="week-day"><b>${labels[day]}</b>${day===today?'<span>DNES</span>':''}</div><div class="week-items">${ws.length?ws.map(w=>renderWeekWorkout(w,day)).join(''):`<div class="week-empty">${h(safeJson(state.plan?.payload).restDayNotes?.[day]||'Bez naplánovanej jednotky')}</div>`}</div></div>`;
     }).join('');
     const content=`<header class="home-header"><h1>Tréning</h1></header><button class="start-workout" id="main-start">${active?'POKRAČOVAŤ V TRÉNINGU':'VYBRAŤ TRÉNING'}</button>${next&&!active?`<div class="today-line"><span>Najbližšie</span><b>${h(safeJson(next.w.payload).title||'')}</b></div>`:''}<div class="section-bar"><h2>TÝŽDENNÝ PLÁN</h2></div><div class="week-plan">${weekRows}</div><div class="section-bar"><h2>TRÉNINGOVÉ JEDNOTKY</h2></div><div class="unit-library">${units.map(renderUnitLibraryCard).join('')}</div>`;
     app.innerHTML=shell(content,'training');bindNav();

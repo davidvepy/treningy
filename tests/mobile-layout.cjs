@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
  await page.goto('file:///tmp/trening-layout.html');
  await page.setContent('<div id="app"></div><div id="toast-root"></div>');
  for(const file of ['styles.css','plan-editor.css','mobile.css'])await page.addStyleTag({content:fs.readFileSync(file,'utf8')});
- for(const file of ['core.js','sync.js','training.js','history.js','progress.js','measurement-fix.js','profile.js','plan-editor.js','status-fix.js','history-tonnage-fix.js','quick-edit.js','progression.js','mobile.js'])await page.addScriptTag({content:fs.readFileSync(file,'utf8')});
+ for(const file of ['core.js','sync.js','training.js','history.js','volume.js','progress.js','measurement-fix.js','profile.js','plan-editor.js','status-fix.js','history-tonnage-fix.js','quick-edit.js','progression.js','mobile.js'])await page.addScriptTag({content:fs.readFileSync(file,'utf8')});
  await page.evaluate(()=>{
  localStorage.clear();
  state.user={id:'test',email:'test@example.com'};state.loading=false;state.plan={id:'test-plan'};
@@ -46,6 +46,10 @@ const {chromium}=require('playwright');
  for(const width of [320,375,390,430]){await page.setViewportSize({width,height:844});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw new Error(`Active workout overflows at ${width}`);}
  await page.evaluate(async()=>{window.testNetwork=false;const row=state.activeSets[0];await saveSetField(row.id,'weight','22');await currentSetQueue().flush();if(!currentSetQueue().items.length||row.weight!==22)throw new Error('Offline patch was lost');window.testNetwork=true;if(!(await flushWorkoutChanges()))throw new Error('Retry failed');if(currentSetQueue().items.length)throw new Error('Queue not drained');});
  await page.evaluate(async()=>{const ex=state.activeExercises[0],count=state.activeExercises.length,plan=JSON.stringify(state.planExercises);await setExerciseSkipped(ex,true);if(state.activeExercises.length!==count-1||state.activeSets.some(s=>s.exercise_id===ex.id))throw new Error('Skipped exercise still active');if(JSON.stringify(state.planExercises)!==plan)throw new Error('Skip changed plan');setActive(state.activeSession);if(state.activeExercises.some(e=>e.id===ex.id))throw new Error('Skip lost on reopen');await setExerciseSkipped(ex,false);if(state.activeExercises.length!==count)throw new Error('Restore failed');const last=state.activeSets.filter(s=>s.exercise_id===ex.id).at(-1);last.rir=0;if(!renderSessionExercise(ex,state.activeSession.id).includes('RIR poslednej série: 0'))throw new Error('Zero RIR missing from summary');});
- await page.evaluate(()=>{renderHistory();renderProgress();renderProfile();});
+ await page.evaluate(()=>{renderHistory();renderProgress();state.volumeData={owner:state.user.id,week:weekStart(bratislavaToday()),sessions:[],sessionExercises:[],sets:[]};state.progressTab='volume';renderProgress();});
+ for(const width of [320,375,390,430]){await page.setViewportSize({width,height:844});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw new Error(`Volume overflows at ${width}`);}
+ await page.locator('[data-volume-period="average"]').click();
+ await page.screenshot({path:'/tmp/trening-volume.png',fullPage:true});
+ await page.evaluate(()=>renderProfile());
  await browser.close();console.log('Preview and editor fit 320, 375, 390 and 430 px.');
 })().catch(e=>{console.error(e);process.exit(1)});
