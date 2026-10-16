@@ -1,10 +1,10 @@
 /* Tréning v3.7 – editable full weekly plan, manual load progression */
 
-function previousEntryForKey(key,excludeSessionId=null){
+function previousEntryForKey(key,excludeSessionId=null,workoutId=null){
   const normalized=[];
-  for(const ex of state.sessionExercises.filter(x=>x.exercise_key===key&&x.session_id!==excludeSessionId)){
+  for(const ex of state.sessionExercises.filter(x=>x.exercise_key===key&&x.session_id!==excludeSessionId&&!safeJson(x.payload).skippedInSession)){
     const session=state.sessions.find(s=>s.id===ex.session_id&&s.status==='completed');
-    if(!session)continue;
+    if(!session||(workoutId&&safeJson(session.payload).workoutId!==workoutId))continue;
     const sets=state.sets.filter(x=>x.session_id===session.id&&x.exercise_id===ex.id&&x.complete&&(x.set_type||'working')!=='warmup').sort((a,b)=>a.ordinal-b.ordinal);
     if(!sets.length)continue;
     const sp=safeJson(session.payload);
@@ -13,7 +13,7 @@ function previousEntryForKey(key,excludeSessionId=null){
   }
   normalized.sort((a,b)=>b.timestamp-a.timestamp);
 
-  const legacy=legacyRowsForExerciseKey(key).sort((a,b)=>String(b.performed_on).localeCompare(String(a.performed_on)))[0];
+  const legacy=(workoutId?[]:legacyRowsForExerciseKey(key)).sort((a,b)=>String(b.performed_on).localeCompare(String(a.performed_on)))[0];
   const legacyEntry=legacy?{
     date:legacy.performed_on,
     timestamp:new Date(`${legacy.performed_on}T12:00:00`).getTime(),
@@ -29,7 +29,7 @@ function previousEntryForKey(key,excludeSessionId=null){
 
 function suggestWorkoutWeight(exPayload,key){
   const planned=n(exPayload.weight,0);
-  const prev=previousEntryForKey(key);
+  const prev=previousEntryForKey(key,null,exPayload.workoutContextId||exPayload.templateWorkoutId||null);
   if(!prev?.sets?.length)return planned;
 
   // If the user manually changed the plan after the last workout, that manual value wins.
@@ -121,6 +121,8 @@ function renderPlanExerciseEditor(row,index,total){
     </div>
     <details class="plan-advanced">
       <summary>Ďalšie nastavenia</summary>
+      <div class="plan-field full"><label>Priama svalová partia<select data-plan-field="primary_muscle_group">${muscleOptions(primaryMuscleGroup(p,row.exercise_key))}</select></label></div>
+      <label class="progression-enable"><input type="checkbox" data-plan-field="progressionHold" ${p.progressionHold===true?'checked':''}> Pozastaviť návrhy záťaže</label>
       <label class="progression-enable"><input type="checkbox" data-plan-field="progressionEnabled" ${p.progressionEnabled===true?'checked':''}> Navrhovať zvýšenie váhy podľa výkonu</label>
       <div class="plan-field full"><label>Krok zvýšenia (kg)<input data-plan-field="progressionStep" type="number" min="0.25" step="0.25" value="${h(p.progressionStep??1)}"></label></div>
       <p class="preview-hint">Návrh sa ukáže až po splnení všetkých sérií na hornej hranici opakovaní so zaznamenanou rezervou RIR. Váhu zmeníš prijatím návrhu v náhľade.</p>
@@ -156,7 +158,9 @@ async function savePlanExerciseCard(card,showToast=false){
   next.note=val('note')?.value.trim()||'';
   next.progression=val('progression')?.value.trim()||'';
   next.alternative=val('alternative')?.value.trim()||'';
+  next.primary_muscle_group=val('primary_muscle_group')?.value||primaryMuscleGroup(old,row.exercise_key);
   next.autoProgress=false;
+  next.progressionHold=val('progressionHold')?.checked===true;
   next.progressionEnabled=val('progressionEnabled')?.checked===true;
   next.progressionStep=Math.max(0.25,n(val('progressionStep')?.value,n(old.progressionStep,1)));
 
@@ -244,6 +248,7 @@ async function addPlanExercise(workout,selected,box){
   const uuid=(crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`),id=`custom-${uuid}`;
   const rirMin=Math.max(0,Math.round(n(document.getElementById('plan-new-rir-min').value,1))),rirMax=Math.max(rirMin,Math.round(n(document.getElementById('plan-new-rir-max').value,rirMin)));
   const payload={name:name||english,englishName:english||name,exerciseKey:key,weight:Math.max(0,n(document.getElementById('plan-new-weight').value,0)),sets:Math.max(1,Math.round(n(document.getElementById('plan-new-sets').value,3))),repMin:Math.max(1,Math.round(n(document.getElementById('plan-new-min').value,8))),repMax:Math.max(1,Math.round(n(document.getElementById('plan-new-max').value,12))),rirMin,rirMax,restSeconds:Math.max(0,Math.round(n(document.getElementById('plan-new-rest').value,90))),autoProgress:false,weightUpdatedAt:new Date().toISOString(),loadCount:1,sides:1,pattern:'custom',repUnit:'reps'};
+  payload.primary_muscle_group=document.getElementById('plan-new-card')?.dataset.primaryMuscleGroup||primaryMuscleGroup(payload,key);
   payload.repMax=Math.max(payload.repMin,payload.repMax);payload.restMinSeconds=payload.restSeconds;
   const row={owner_id:state.user.id,client_id:CLIENT_ID,plan_id:state.plan.id,workout_id:workout.id,id,ordinal,exercise_key:key,payload};
   const btn=document.getElementById('plan-new-save');if(btn){btn.disabled=true;btn.textContent='UKLADÁM…';}
@@ -299,7 +304,7 @@ function schedulePickerHtml(payload={},prefix='unit-day'){
 }
 function readScheduleDays(root=document){return [...root.querySelectorAll('[data-schedule-day]:checked')].map(x=>n(x.value,null)).filter(x=>x!==null);}
 function applyDaysToPayload(payload,days){const next={...safeJson(payload),days:[...new Set(days)]};next.day=next.days.length===1?next.days[0]:null;return next;}
-function workoutTypeOptions(selected=''){const types=['Silový tréning','Zone 2','Beh','Mobilita','Regenerácia','Hokej','Iné'];return types.map(t=>`<option value="${h(t)}" ${t===selected?'selected':''}>${h(t)}</option>`).join('');}
+function workoutTypeOptions(selected=''){const types=['Core','Silový tréning','Zone 2','Beh','Mobilita','Regenerácia','Hokej','Iné'];return types.map(t=>`<option value="${h(t)}" ${t===selected?'selected':''}>${h(t)}</option>`).join('');}
 function strengthLabelForWorkout(w){const p=safeJson(w?.payload),m=String(p.title||'').match(/Tréning\s+([ABC])\b/i);return m?.[1]?.toUpperCase()||String(p.shortCode||'SILA');}
 
 function renderProfile(){
@@ -415,7 +420,7 @@ async function normalizeExerciseOrdinals(workoutId){const rows=state.planExercis
 async function moveExerciseInWorkout(card,direction,w){const row=getPlanRowFromCard(card);if(!row)return;const rows=planRowsForWorkout(w),i=rows.findIndex(x=>x.id===row.id),j=direction==='up'?i-1:i+1;if(i<0||j<0||j>=rows.length)return;const other=rows[j],a=row.ordinal,b=other.ordinal;let r=await supabase.from('trainer_hub_workout_exercises').update({ordinal:b}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).eq('workout_id',w.id).eq('id',row.id);if(r.error)return toast('Poradie sa nepodarilo zmeniť.','error');r=await supabase.from('trainer_hub_workout_exercises').update({ordinal:a}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).eq('workout_id',w.id).eq('id',other.id);if(r.error)return toast('Poradie sa nepodarilo zmeniť.','error');row.ordinal=b;other.ordinal=a;await normalizeExerciseOrdinals(w.id);renderStrengthUnitEditor(w.id);}
 async function deleteExerciseFromWorkout(card,w){const row=getPlanRowFromCard(card);if(!row)return;if(!confirm(`Odstrániť ${exerciseName(safeJson(row.payload),row.exercise_key)} z tejto jednotky? História zostane zachovaná.`))return;const r=await supabase.from('trainer_hub_workout_exercises').delete().eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).eq('workout_id',w.id).eq('id',row.id);if(r.error)return toast('Cvik sa nepodarilo odstrániť.','error');state.planExercises=state.planExercises.filter(x=>x!==row);await normalizeExerciseOrdinals(w.id);renderStrengthUnitEditor(w.id);}
 function showAddExerciseFormV39(w){const host=document.querySelector('.plan-editor-list');if(!host)return;if(document.getElementById('plan-new-card'))return;const number=planRowsForWorkout(w).length+1,box=document.createElement('article');box.className='plan-edit-card new';box.id='plan-new-card';box.innerHTML=`<div class="plan-edit-title"><div class="plan-number">${number}</div><div><strong>Nový cvik</strong><span>Po uložení zostane v tejto jednotke</span></div></div><div class="plan-field full"><label>Slovenský názov<input id="plan-new-name"></label></div><div class="plan-field full"><label>Anglický názov<input id="plan-new-english"></label></div><div class="plan-grid"><div class="plan-field"><label>Váha<input id="plan-new-weight" type="number" step="0.25" value="0"></label></div><div class="plan-field"><label>Série<input id="plan-new-sets" type="number" min="1" value="3"></label></div><div class="plan-field"><label>Reps od<input id="plan-new-min" type="number" min="1" value="8"></label></div><div class="plan-field"><label>Reps do<input id="plan-new-max" type="number" min="1" value="12"></label></div><div class="plan-field"><label>RIR od<input id="plan-new-rir-min" type="number" min="0" value="1"></label></div><div class="plan-field"><label>RIR do<input id="plan-new-rir-max" type="number" min="0" value="2"></label></div><div class="plan-field"><label>Pauza (s)<input id="plan-new-rest" type="number" min="0" value="90"></label></div></div><div class="plan-card-actions"><button class="plan-delete" id="plan-new-cancel">Zrušiť</button><button class="plan-save-one" id="plan-new-save">Pridať a uložiť</button></div>`;host.appendChild(box);document.getElementById('plan-new-cancel').onclick=()=>box.remove();document.getElementById('plan-new-save').onclick=()=>addExerciseToWorkoutV39(w);document.getElementById('plan-new-name').focus();}
-async function addExerciseToWorkoutV39(w){const name=document.getElementById('plan-new-name').value.trim(),english=document.getElementById('plan-new-english').value.trim();if(!name&&!english)return toast('Zadaj názov cviku.','error');const rows=planRowsForWorkout(w),ordinal=rows.length+1,key=slugify(english||name),id=`custom-${Date.now()}-${key.slice(0,28)}`,repMin=Math.max(1,Math.round(n(document.getElementById('plan-new-min').value,8))),repMax=Math.max(repMin,Math.round(n(document.getElementById('plan-new-max').value,12)));const payload={name:name||english,englishName:english||name,exerciseKey:key,weight:Math.max(0,n(document.getElementById('plan-new-weight').value,0)),sets:Math.max(1,Math.round(n(document.getElementById('plan-new-sets').value,3))),repMin,repMax,rirMin:Math.max(0,Math.round(n(document.getElementById('plan-new-rir-min').value,1))),rirMax:Math.max(0,Math.round(n(document.getElementById('plan-new-rir-max').value,2))),restSeconds:Math.max(0,Math.round(n(document.getElementById('plan-new-rest').value,90))),restMinSeconds:Math.max(0,Math.round(n(document.getElementById('plan-new-rest').value,90))),autoProgress:false,weightUpdatedAt:new Date().toISOString(),loadCount:1,sides:1};payload.rirMax=Math.max(payload.rirMin,payload.rirMax);const row={owner_id:state.user.id,client_id:CLIENT_ID,plan_id:state.plan.id,workout_id:w.id,id,ordinal,exercise_key:key,payload};let r=await supabase.from('trainer_hub_workout_exercises').insert(row);if(r.error)return toast(`Cvik sa nepodarilo pridať: ${r.error.message}`,'error',4500);const verify=await supabase.from('trainer_hub_workout_exercises').select('*').eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).eq('workout_id',w.id).eq('id',id).limit(1);if(verify.error||!verify.data?.length)return toast('Cvik bol odoslaný, ale databáza ho nepotvrdila.','error',4500);state.planExercises.push(verify.data[0]);await normalizeExerciseOrdinals(w.id);toast('Cvik je uložený v pláne.');renderStrengthUnitEditor(w.id);}
+async function addExerciseToWorkoutV39(w){const name=document.getElementById('plan-new-name').value.trim(),english=document.getElementById('plan-new-english').value.trim();if(!name&&!english)return toast('Zadaj názov cviku.','error');const rows=planRowsForWorkout(w),ordinal=rows.length+1,key=slugify(english||name),id=`custom-${Date.now()}-${key.slice(0,28)}`,repMin=Math.max(1,Math.round(n(document.getElementById('plan-new-min').value,8))),repMax=Math.max(repMin,Math.round(n(document.getElementById('plan-new-max').value,12)));const payload={name:name||english,englishName:english||name,exerciseKey:key,weight:Math.max(0,n(document.getElementById('plan-new-weight').value,0)),sets:Math.max(1,Math.round(n(document.getElementById('plan-new-sets').value,3))),repMin,repMax,rirMin:Math.max(0,Math.round(n(document.getElementById('plan-new-rir-min').value,1))),rirMax:Math.max(0,Math.round(n(document.getElementById('plan-new-rir-max').value,2))),restSeconds:Math.max(0,Math.round(n(document.getElementById('plan-new-rest').value,90))),restMinSeconds:Math.max(0,Math.round(n(document.getElementById('plan-new-rest').value,90))),autoProgress:false,weightUpdatedAt:new Date().toISOString(),loadCount:1,sides:1};payload.primary_muscle_group=document.getElementById('plan-new-card')?.dataset.primaryMuscleGroup||primaryMuscleGroup(payload,key);payload.rirMax=Math.max(payload.rirMin,payload.rirMax);const row={owner_id:state.user.id,client_id:CLIENT_ID,plan_id:state.plan.id,workout_id:w.id,id,ordinal,exercise_key:key,payload};let r=await supabase.from('trainer_hub_workout_exercises').insert(row);if(r.error)return toast(`Cvik sa nepodarilo pridať: ${r.error.message}`,'error',4500);const verify=await supabase.from('trainer_hub_workout_exercises').select('*').eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).eq('workout_id',w.id).eq('id',id).limit(1);if(verify.error||!verify.data?.length)return toast('Cvik bol odoslaný, ale databáza ho nepotvrdila.','error',4500);state.planExercises.push(verify.data[0]);await normalizeExerciseOrdinals(w.id);toast('Cvik je uložený v pláne.');renderStrengthUnitEditor(w.id);}
 
 function renderRoutinePlanEditor(workoutId){
   const w=state.workouts.find(x=>x.id===workoutId);if(!w)return renderFullPlanOverview();const p=safeJson(w.payload),items=Array.isArray(p.after)?p.after:[];

@@ -30,8 +30,8 @@ function exerciseHistoryPoints(key){
 function latestExerciseDef(key){const active=state.activeExercises.find(x=>x.exercise_key===key);if(active)return active;const plan=state.planExercises.find(x=>x.exercise_key===key);if(plan)return plan;return [...state.sessionExercises].reverse().find(x=>x.exercise_key===key)||null;}
 
 function renderProgress(){
-  const tabs=[['exercises','Cviky'],['tonnage','Tonáž'],['body','Telo']];
-  let body='';if(state.progressTab==='tonnage')body=renderTonnageProgress();else if(state.progressTab==='body')body=renderBodyProgress();else body=renderExerciseProgressList();
+  const tabs=[['exercises','Cviky'],['volume','Týždenný objem'],['tonnage','Tonáž'],['body','Telo']];
+  let body='';if(state.progressTab==='volume')body=renderWeeklyVolume();else if(state.progressTab==='tonnage')body=renderTonnageProgress();else if(state.progressTab==='body')body=renderBodyProgress();else body=renderExerciseProgressList();
   const content=`<header class="page-title"><h1>Progres</h1></header><div class="subtabs">${tabs.map(([k,l])=>`<button data-progress-tab="${k}" class="${state.progressTab===k?'active':''}">${l}</button>`).join('')}</div>${body}`;
   app.innerHTML=shell(content,'progress');bindNav();document.querySelectorAll('[data-progress-tab]').forEach(b=>b.onclick=()=>{state.progressTab=b.dataset.progressTab;renderProgress();});bindProgressBody();
 }
@@ -47,6 +47,7 @@ function workoutTonnageEntries(){
 function renderTonnageProgress(){const pts=workoutTonnageEntries();return `<div class="info-note">Tonáž = externá záťaž × opakovania. Warm-up a bodyweight sa nezapočítavajú. Je to objem práce, nie skóre kvality tréningu.</div><div class="chart-card light"><canvas id="tonnage-chart"></canvas></div><div class="tonnage-list">${[...pts].reverse().map(x=>`<div><span>${isoDate(x.date)}${x.partial?' · čiastočný záznam':''}</span><strong>${x.tonnage?`${fmtNumber(x.tonnage/1000,2)} t`:'—'}</strong><small>${x.sets} sérií</small></div>`).join('')||'<div class="empty-card">Zatiaľ bez tonáže.</div>'}</div>`;}
 function renderBodyProgress(){const rows=[...state.measurements].sort((a,b)=>String(b.measured_on).localeCompare(String(a.measured_on))),latest=rows[0];return `<div class="body-summary">${latest?`<div><span>Hmotnosť</span><b>${fmtNumber(latest.weight_kg)} kg</b></div><div><span>Pás</span><b>${fmtNumber(latest.waist_cm)} cm</b></div>`:'<div><span>Merania</span><b>—</b></div>'}</div><form class="measurement-form" id="measurement-form"><input id="m-date" type="date" value="${todayIso()}" required><input id="m-weight" type="number" step="0.1" inputmode="decimal" placeholder="Hmotnosť kg" required><input id="m-waist" type="number" step="0.1" inputmode="decimal" placeholder="Pás cm" required><button type="submit">ULOŽIŤ MERANIE</button></form><div class="measurement-list">${rows.map(m=>`<div><span>${isoDate(m.measured_on)}</span><b>${fmtNumber(m.weight_kg)} kg</b><b>${fmtNumber(m.waist_cm)} cm</b></div>`).join('')}</div>`;}
 function bindProgressBody(){
+  if(state.progressTab==='volume')bindWeeklyVolume();
   const search=document.getElementById('exercise-search');if(search)search.oninput=e=>{state.progressSearch=e.target.value;renderProgress();setTimeout(()=>{const x=document.getElementById('exercise-search');x?.focus();x?.setSelectionRange(x.value.length,x.value.length);},0);};
   document.querySelectorAll('[data-progress-key]').forEach(b=>b.onclick=()=>updateUrl(`#/exercise/${encodeURIComponent(b.dataset.progressKey)}`));
   if(state.progressTab==='tonnage')drawTonnageChart(workoutTonnageEntries());
@@ -81,6 +82,7 @@ function renderExerciseProgressList(){
   return `<div class="search-wrap modern-search"><span>⌕</span><input id="exercise-search" placeholder="Hľadať cvik" value="${h(state.progressSearch)}"></div><div class="progress-exercises" id="progress-exercise-list">${all.map(x=>{const pts=exerciseHistoryPoints(x.key),last=pts.at(-1),best=Math.max(0,...pts.map(p=>p.maxWeight||0)),search=`${x.name} ${x.sk}`.toLowerCase(),hidden=q&&!search.includes(q);return `<button data-progress-key="${h(x.key)}" data-search-text="${h(search)}" style="${hidden?'display:none':''}"><div><strong>${h(x.name)}</strong>${x.sk&&x.sk!==x.name?`<span>${h(x.sk)}</span>`:''}</div><div><b>${best?`${fmtNumber(best)} kg`:'—'}</b><span>${last?`${pts.length} záznamov`:'bez histórie'}</span></div></button>`}).join('')}</div>`;
 }
 function bindProgressBody(){
+  if(state.progressTab==='volume')bindWeeklyVolume();
   const search=document.getElementById('exercise-search');if(search)search.oninput=e=>{state.progressSearch=e.target.value;const q=state.progressSearch.toLowerCase();document.querySelectorAll('#progress-exercise-list [data-search-text]').forEach(b=>{b.style.display=!q||b.dataset.searchText.includes(q)?'':'none';});};
   document.querySelectorAll('[data-progress-key]').forEach(b=>b.onclick=()=>updateUrl(`#/exercise/${encodeURIComponent(b.dataset.progressKey)}`));
   if(state.progressTab==='tonnage')drawTonnageChart(workoutTonnageEntries());
@@ -131,3 +133,4 @@ async function reconcileActiveSetCount(ex,target){
   while(rows.length<target){const last=rows.at(-1),row={owner_id:state.user.id,client_id:CLIENT_ID,session_id:ex.session_id,exercise_id:ex.id,id:`set-${rows.length+1}-${crypto.randomUUID().slice(0,8)}`,ordinal:rows.length+1,weight:n(last?.weight,n(safeJson(ex.payload).weight,0)),reps:n(last?.reps,n(safeJson(ex.payload).repMin,8)),rir:null,complete:false,set_type:'working',completed_at:null};const r=await supabase.from('trainer_hub_workout_sets').insert(row);if(r.error)break;state.sets.push(row);state.activeSets.push(row);rows.push(row);}
   while(rows.length>target){const row=rows.at(-1);if(row.complete)break;const r=await supabase.from('trainer_hub_workout_sets').delete().eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('session_id',row.session_id).eq('exercise_id',row.exercise_id).eq('id',row.id);if(r.error)break;state.sets=state.sets.filter(x=>x.id!==row.id);state.activeSets=state.activeSets.filter(x=>x.id!==row.id);rows.pop();}
 }
+

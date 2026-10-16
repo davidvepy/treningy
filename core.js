@@ -48,8 +48,9 @@ function createSupabaseLite(baseUrl,apiKey){
     const current=await ensureSession();
     const params=new URLSearchParams();
     if(q.selectCols)params.set('select',q.selectCols);
-    for(const [col,val] of q.filters)params.append(col,`eq.${val}`);
-    if(q.orderBy)params.set('order',`${q.orderBy.column}.${q.orderBy.ascending?'asc':'desc'}`);
+    for(const [col,val,op='eq'] of q.filters)params.append(col,`${op}.${val}`);
+    if(q.orderBy.length)params.set('order',q.orderBy.map(x=>`${x.column}.${x.ascending?'asc':'desc'}`).join(','));
+    if(q.offsetValue)params.set('offset',String(q.offsetValue));
     if(q.limitValue!=null)params.set('limit',String(q.limitValue));
     const headers={'apikey':apiKey,'Authorization':`Bearer ${current?.access_token||apiKey}`,'Content-Type':'application/json','Accept':'application/json'};
     if(q.method!=='GET')headers.Prefer=q.selectCols?'return=representation':'return=minimal';
@@ -59,13 +60,17 @@ function createSupabaseLite(baseUrl,apiKey){
     return{data,error:null};
   }
   class Query{
-    constructor(table){this.table=table;this.method='GET';this.body=null;this.selectCols='*';this.filters=[];this.orderBy=null;this.limitValue=null;}
+    constructor(table){this.table=table;this.method='GET';this.body=null;this.selectCols='*';this.filters=[];this.orderBy=[];this.limitValue=null;this.offsetValue=0;}
     select(cols='*'){this.selectCols=cols;return this;}
     insert(body){this.method='POST';this.body=body;this.selectCols=null;return this;}
     update(body){this.method='PATCH';this.body=body;this.selectCols=null;return this;}
     delete(){this.method='DELETE';this.selectCols=null;return this;}
     eq(c,v){this.filters.push([c,String(v)]);return this;}
-    order(c,o={}){this.orderBy={column:c,ascending:o.ascending!==false};return this;}
+    order(c,o={}){this.orderBy.push({column:c,ascending:o.ascending!==false});return this;}
+    gte(c,v){this.filters.push([c,String(v),'gte']);return this;}
+    lt(c,v){this.filters.push([c,String(v),'lt']);return this;}
+    in(c,values){this.filters.push([c,'('+values.map(v=>JSON.stringify(String(v))).join(',')+')','in']);return this;}
+    range(from,to){this.offsetValue=from;this.limitValue=to-from+1;return this;}
     limit(v){this.limitValue=v;return this;}
     then(resolve,reject){return restFetch(this.table,this).then(resolve,reject);}
   }
@@ -174,7 +179,7 @@ async function loadCore(showLoading=true){
     ]);
     for(const r of [plansR,sessionsR,sessionExR,setsR,logsR,measureR])if(r.error)throw new Error(r.error.message);
     state.plan=(plansR.data||[]).filter(p=>safeJson(p.payload).status==='active').sort((a,b)=>String(safeJson(b.payload).createdAt||'').localeCompare(String(safeJson(a.payload).createdAt||'')))[0]||null;
-    state.sessions=sessionsR.data||[];state.sessionExercises=(sessionExR.data||[]).filter(x=>validExerciseName(exerciseName(safeJson(x.payload),x.exercise_key)));state.sets=setsR.data||[];state.legacyLogs=(logsR.data||[]).filter(x=>validExerciseName(x.exercise_name));state.measurements=measureR.data||[];
+    state.volumeData=null;state.sessions=sessionsR.data||[];state.sessionExercises=(sessionExR.data||[]).filter(x=>validExerciseName(exerciseName(safeJson(x.payload),x.exercise_key)));state.sets=setsR.data||[];state.legacyLogs=(logsR.data||[]).filter(x=>validExerciseName(x.exercise_name));state.measurements=measureR.data||[];
     if(state.plan){const [wR,eR]=await Promise.all([supabase.from('trainer_hub_workouts').select('*').eq('owner_id',uid).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).order('ordinal'),supabase.from('trainer_hub_workout_exercises').select('*').eq('owner_id',uid).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).order('ordinal')]);if(wR.error)throw new Error(wR.error.message);if(eR.error)throw new Error(eR.error.message);state.workouts=wR.data||[];state.planExercises=(eR.data||[]).filter(x=>validExerciseName(exerciseName(safeJson(x.payload),x.exercise_key)));}else{state.workouts=[];state.planExercises=[];}
     restoreQueuedSets();const active=state.sessions.find(s=>s.status==='active');setActive(active||null);state.loading=false;renderRoute();
   }catch(e){console.error(e);state.loading=false;window.__showBootError(e.message||String(e));}
