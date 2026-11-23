@@ -29,7 +29,7 @@
     if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister()}))}).catch(function(){});}
     if('caches' in window){caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k)}))}).catch(function(){});}
   </script>
-  <script src="./core.js?v=54"></script>
+  <script src="./core.js?v=55"></script>
   <script src="./sync.js?v=54"></script>
   <script src="./supersets.js?v=54"></script>
   <script src="./training.js?v=54"></script>
@@ -38,7 +38,7 @@
   <script src="./progress.js?v=54"></script>
   <script src="./measurement-fix.js?v=54"></script>
   <script src="./profile.js?v=54"></script>
-  <script src="./plan-editor.js?v=54"></script>
+  <script src="./plan-editor.js?v=55"></script>
   <script src="./status-fix.js?v=54"></script>
   <script src="./history-tonnage-fix.js?v=54"></script>
   <script src="./quick-edit.js?v=54"></script>

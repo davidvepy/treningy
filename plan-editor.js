@@ -43,7 +43,7 @@ function suggestWorkoutWeight(exPayload,key){
 
 function planTemplateByKey(key){return strengthTemplates()[key]||null;}
 function planRowsForWorkout(workout){
-  return workout?state.planExercises.filter(x=>x.workout_id===workout.id).filter(x=>validExerciseName(exerciseName(safeJson(x.payload),x.exercise_key))).sort((a,b)=>n(a.ordinal,999)-n(b.ordinal,999)||String(a.id).localeCompare(String(b.id))):[];
+  return workout?state.planExercises.filter(x=>x.workout_id===workout.id&&!safeJson(x.payload).templateArchived).filter(x=>validExerciseName(exerciseName(safeJson(x.payload),x.exercise_key))).sort((a,b)=>n(a.ordinal,999)-n(b.ordinal,999)||String(a.id).localeCompare(String(b.id))):[];
 }
 
 async function persistPlanOrder(workoutId,orderedRows){
