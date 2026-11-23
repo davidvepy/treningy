@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
  await page.goto('file:///tmp/trening-layout.html');
  await page.setContent('<div id="app"></div><div id="toast-root"></div>');
  for(const file of ['styles.css','plan-editor.css','mobile.css'])await page.addStyleTag({content:fs.readFileSync(file,'utf8')});
- for(const file of ['core.js','sync.js','training.js','history.js','volume.js','progress.js','measurement-fix.js','profile.js','plan-editor.js','status-fix.js','history-tonnage-fix.js','quick-edit.js','progression.js','mobile.js'])await page.addScriptTag({content:fs.readFileSync(file,'utf8')});
+ for(const file of ['core.js','sync.js','supersets.js','training.js','history.js','volume.js','progress.js','measurement-fix.js','profile.js','plan-editor.js','status-fix.js','history-tonnage-fix.js','quick-edit.js','progression.js','mobile.js'])await page.addScriptTag({content:fs.readFileSync(file,'utf8')});
  await page.evaluate(()=>{
  localStorage.clear();
  state.user={id:'test',email:'test@example.com'};state.loading=false;state.plan={id:'test-plan'};
@@ -46,6 +46,31 @@ const {chromium}=require('playwright');
  for(const width of [320,375,390,430]){await page.setViewportSize({width,height:844});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw new Error(`Active workout overflows at ${width}`);}
  await page.evaluate(async()=>{window.testNetwork=false;const row=state.activeSets[0];await saveSetField(row.id,'weight','22');await currentSetQueue().flush();if(!currentSetQueue().items.length||row.weight!==22)throw new Error('Offline patch was lost');window.testNetwork=true;if(!(await flushWorkoutChanges()))throw new Error('Retry failed');if(currentSetQueue().items.length)throw new Error('Queue not drained');});
  await page.evaluate(async()=>{const ex=state.activeExercises[0],count=state.activeExercises.length,plan=JSON.stringify(state.planExercises);await setExerciseSkipped(ex,true);if(state.activeExercises.length!==count-1||state.activeSets.some(s=>s.exercise_id===ex.id))throw new Error('Skipped exercise still active');if(JSON.stringify(state.planExercises)!==plan)throw new Error('Skip changed plan');setActive(state.activeSession);if(state.activeExercises.some(e=>e.id===ex.id))throw new Error('Skip lost on reopen');await setExerciseSkipped(ex,false);if(state.activeExercises.length!==count)throw new Error('Restore failed');const last=state.activeSets.filter(s=>s.exercise_id===ex.id).at(-1);last.rir=0;if(!renderSessionExercise(ex,state.activeSession.id).includes('RIR poslednej série: 0'))throw new Error('Zero RIR missing from summary');});
+ await page.evaluate(async()=>{
+  state.activeExercises.slice(0,2).forEach((ex,i)=>Object.assign(ex.payload,{superset:'SS1',roundRestSeconds:120,restSeconds:120,supersetOrder:i+1}));
+  const b=state.activeSets.find(s=>s.exercise_id===state.activeExercises[1].id);await saveSetField(b.id,'weight','');renderActive();
+ });
+ const ids=await page.evaluate(()=>({a:state.activeSets.find(s=>s.exercise_id===state.activeExercises[0].id).id,b:state.activeSets.find(s=>s.exercise_id===state.activeExercises[1].id).id}));
+ await page.locator(`[data-complete="${ids.a}"]`).click();
+ if(await page.evaluate(()=>state.timer!==null))throw new Error('Rest started between paired exercises');
+ if(await page.evaluate(()=>nextIncompleteSet().set_id)!==ids.b)throw new Error('Superset did not advance to second exercise');
+ await page.locator(`[data-complete="${ids.b}"]`).click();
+ if(await page.evaluate(id=>state.activeSets.find(s=>s.id===id).complete,ids.b))throw new Error('Unknown weight was silently accepted');
+ await page.locator(`[data-set-row="${ids.b}"] [data-set-field="weight"]`).fill('15');
+ await page.locator(`[data-set-row="${ids.b}"] [data-set-field="rir"]`).fill('2');
+ await page.locator(`[data-complete="${ids.b}"]`).click();
+ if(!(await page.evaluate(()=>timerRemaining()>=118&&timerRemaining()<=120)))throw new Error('Shared round rest is wrong');
+ await page.evaluate(async()=>{if(!(await flushWorkoutChanges()))throw new Error('Set sync failed');});
+ if(await page.evaluate(id=>window.testDatabase.trainer_hub_workout_sets.find(s=>s.id===id).rir,ids.b)!==2)throw new Error('Per-set RIR was not persisted');
+ await page.evaluate(async()=>{
+  const before=sessionStats(state.activeSession.id).workingSets;await addSet(state.activeExercises[0],'warmup');const warm=state.activeSets.find(s=>s.set_type==='warmup');if(warm.weight!==null)throw new Error('Warmup weight invented');
+  queueSetPatch(warm,{weight:5,reps:10,complete:true});if(sessionStats(state.activeSession.id).workingSets!==before)throw new Error('Warmup counted as work');
+  state.activeSession.payload.startedAt=new Date(Date.now()-3060000).toISOString();renderActive();
+ });
+ if(!(await page.locator('#workout-elapsed').innerText()).startsWith('51:'))throw new Error('Whole workout clock did not survive elapsed time');
+ for(const width of [320,375,390,430]){await page.setViewportSize({width,height:844});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw new Error(`Superset table overflows at ${width}`);}
+ await page.evaluate(()=>window.scrollTo(0,0));
+ await page.screenshot({path:'/tmp/trening-superset.png',fullPage:true});
  await page.evaluate(()=>{renderHistory();renderProgress();state.volumeData={owner:state.user.id,week:weekStart(bratislavaToday()),sessions:[],sessionExercises:[],sets:[]};state.progressTab='volume';renderProgress();});
  for(const width of [320,375,390,430]){await page.setViewportSize({width,height:844});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw new Error(`Volume overflows at ${width}`);}
  await page.locator('[data-volume-period="average"]').click();

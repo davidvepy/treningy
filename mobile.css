@@ -1,4 +1,9 @@
 :root{--touch-size:44px}
+.training-block{margin:18px 0;border-radius:16px}.training-block>header{padding:12px 14px;background:#e8f0fc;border:1px solid #cbdcf4;border-radius:14px;color:#17385e}.training-block>header>b{font-size:14px;letter-spacing:.06em}.training-block>header>p{font-size:12px;line-height:1.5;margin:6px 0 0;color:#53677f}.training-block.core>header{background:#edf9f3;border-color:#ccebdc}.training-block.single>header{background:#f5f8fb}
+.workout-clock{display:flex;gap:12px;align-items:center;padding:10px 16px;background:#fff}.workout-clock>strong{font-size:25px;color:#17385e;font-variant-numeric:tabular-nums}.workout-clock>span{font-size:12px;color:#53677f}.next-execution{padding:10px 16px;background:#edf4ff;border-block:1px solid #d8e3ee;font-size:13px}.next-execution>b,.next-execution>span{display:block}.next-execution>span{margin-top:4px;color:#53677f;font-size:12px}
+.tolerance-note{padding:12px;margin:8px 12px;background:#fff8e8;border:1px solid #eadbb5;border-radius:10px;color:#765314;font-size:13px;line-height:1.5}.exercise-side-note{font-size:12px;color:#53677f;padding:0 14px}.set-section-label{font-size:12px;padding:10px 14px;color:#53677f;background:#f5f8fb;margin:0}
+.set-table th:nth-child(1){width:42px}.set-table th:nth-child(2){width:70px}.set-table th:nth-child(3),.set-table th:nth-child(4){width:auto}.set-table th:nth-child(5){width:52px}.set-table th:nth-child(6){width:52px}.set-table input{min-height:44px}
+@media(max-width:420px){.set-table th:nth-child(2),.set-table td:nth-child(2){display:none}.set-table th:nth-child(1){width:40px}.set-table th:nth-child(5){width:48px}.set-table th:nth-child(6){width:48px}.set-table td{padding:4px 2px}.set-table th{font-size:9px}}
 .subtabs{overflow-x:auto;grid-template-columns:none;display:flex}.subtabs button{flex:0 0 auto;min-height:44px;padding:10px 14px}
 .volume-periods{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}.volume-periods button{min-height:44px;border:1px solid #cfdded;border-radius:12px;background:white;color:#53677f;padding:10px;font-size:13px}.volume-periods button.active{background:#17385e;color:white;border-color:#17385e}
 .volume-list{display:grid;gap:10px}.volume-card{padding:16px;background:white;border:1px solid #d8e3ee;border-radius:16px}.volume-card>div:first-child{display:flex;justify-content:space-between;gap:12px;font-size:15px}.volume-card b{white-space:nowrap}.volume-track{height:8px;border-radius:6px;background:#edf2f8;overflow:hidden;margin:12px 0 8px}.volume-track span{display:block;height:100%;background:#367add;border-radius:6px}.volume-card small{font-size:12px;color:#60768e}
@@ -53,3 +58,5 @@ button:focus-visible,summary:focus-visible{outline:3px solid #2872df;outline-off
   .week-workout span,.unit-library-card small{font-size:12px;line-height:1.45}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+.exercise-target{flex-wrap:wrap;gap:6px}
