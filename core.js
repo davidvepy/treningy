@@ -1,7 +1,7 @@
 const SUPABASE_URL='https://nragtrsgbvrnmbwlowoi.supabase.co';
 const SUPABASE_KEY='sb_publishable_Y9GtqKdB0pD-KQItwiu4Mw_ANXeA1Da';
 const CLIENT_ID='david';
-const APP_VERSION='4.1.0';
+const APP_VERSION='4.2.0';
 const AUTH_STORAGE_KEY='sb-nragtrsgbvrnmbwlowoi-auth-token';
 
 function parseStoredSession(raw){
@@ -140,10 +140,10 @@ function renderTimerOnly(){const bar=document.getElementById('timer-bar');if(!ba
 
 function estimate1RM(weight,reps){const w=n(weight,0),r=n(reps,0);if(w<=0||r<=0||r>15)return null;return w*(1+r/30);}
 function loadFactorFromPayload(p){return Math.max(1,n(p?.loadCount,1))*Math.max(1,n(p?.sides,1));}
-function setTonnage(set,exercise){if((set.set_type||'working')==='warmup'||!set.complete)return 0;const w=n(set.weight,0),r=n(set.reps,0);if(w<=0||r<=0)return 0;return w*r*loadFactorFromPayload(safeJson(exercise?.payload));}
+function setTonnage(set,exercise){if(safeJson(exercise?.payload).repUnit==='seconds')return 0;if((set.set_type||'working')==='warmup'||!set.complete)return 0;const w=n(set.weight,0),r=n(set.reps,0);if(w<=0||r<=0)return 0;return w*r*loadFactorFromPayload(safeJson(exercise?.payload));}
 function legacyFactor(row){const text=`${row.exercise_name||''} ${row.raw_entry||''}`.toLowerCase();return /jednoruč|dumbbell|\/ruč|na ruku|\/strana|na stranu/.test(text)?2:1;}
 function legacyTonnage(row){const w=n(row.weight_kg,0),reps=Array.isArray(row.reps)?row.reps.map(x=>n(x,0)).filter(Boolean):[];if(w<=0||!reps.length)return 0;return w*reps.reduce((a,b)=>a+b,0)*legacyFactor(row);}
-function sessionStats(sessionId){const exs=state.sessionExercises.filter(e=>e.session_id===sessionId);let tonnage=0,workingSets=0,reps=0;for(const ex of exs){for(const s of state.sets.filter(x=>x.session_id===sessionId&&x.exercise_id===ex.id)){if(s.complete&&(s.set_type||'working')!=='warmup'){workingSets++;reps+=n(s.reps,0);tonnage+=setTonnage(s,ex);}}}return{tonnage,workingSets,reps};}
+function sessionStats(sessionId){const exs=state.sessionExercises.filter(e=>e.session_id===sessionId);let tonnage=0,workingSets=0,reps=0;for(const ex of exs){for(const s of state.sets.filter(x=>x.session_id===sessionId&&x.exercise_id===ex.id)){if(s.complete&&(s.set_type||'working')!=='warmup'){workingSets++;reps+=safeJson(ex.payload).repUnit==='seconds'?0:n(s.reps,0);tonnage+=setTonnage(s,ex);}}}return{tonnage,workingSets,reps};}
 function legacyDayStats(rows){return{tonnage:rows.reduce((a,r)=>a+legacyTonnage(r),0),workingSets:rows.reduce((a,r)=>a+(Array.isArray(r.reps)?r.reps.length:0),0),reps:rows.reduce((a,r)=>a+(Array.isArray(r.reps)?r.reps.reduce((x,y)=>x+n(y,0),0):0),0)};}
 function isPartialSession(s){const p=safeJson(s.payload);return p.partial===true||p.dataQuality==='partial';}
 function legacyGroups(){const g={};for(const row of state.legacyLogs){if(!row.performed_on)continue;(g[row.performed_on]??=[]).push(row);}return g;}
