@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
  await page.goto('file:///tmp/trening-layout.html');
  await page.setContent('<div id="app"></div><div id="toast-root"></div>');
  for(const file of ['styles.css','plan-editor.css','mobile.css'])await page.addStyleTag({content:fs.readFileSync(file,'utf8')});
- for(const file of ['core.js','sync.js','supersets.js','training.js','history.js','volume.js','progress.js','measurement-fix.js','profile.js','plan-editor.js','status-fix.js','history-tonnage-fix.js','quick-edit.js','progression.js','mobile.js'])await page.addScriptTag({content:fs.readFileSync(file,'utf8')});
+ for(const file of ['core.js','sync.js','supersets.js','program-review.js','training.js','history.js','volume.js','progress.js','measurement-fix.js','profile.js','plan-editor.js','status-fix.js','history-tonnage-fix.js','quick-edit.js','progression.js','mobile.js'])await page.addScriptTag({content:fs.readFileSync(file,'utf8')});
  await page.evaluate(()=>{
  localStorage.clear();
  state.user={id:'test',email:'test@example.com'};state.loading=false;state.plan={id:'test-plan'};
@@ -75,6 +75,20 @@ const {chromium}=require('playwright');
  for(const width of [320,375,390,430]){await page.setViewportSize({width,height:844});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw new Error(`Volume overflows at ${width}`);}
  await page.locator('[data-volume-period="average"]').click();
  await page.screenshot({path:'/tmp/trening-volume.png',fullPage:true});
+ await page.evaluate(()=>{
+  state.plan.payload=state.plan.payload||{};state.plan.payload.trainingBlock={reviewFrom:'2027-01-05',reviewBy:'2027-01-19'};
+  const id=state.activeSession.payload.workoutId;
+  state.sessions.push(...[1,2].map(i=>({id:'overrun'+i,status:'completed',recorded_date:'2026-11-2'+i,payload:{workoutId:id,durationSeconds:3100}})));
+  renderActive();state.finishOpen=true;renderActive();
+ });
+ await page.locator('[data-review-feedback="fatigue"]').selectOption('4');
+ await page.locator('[data-review-feedback="recovery"]').selectOption('2');
+ await page.evaluate(()=>renderActive());
+ if(await page.locator('[data-review-feedback="fatigue"]').inputValue()!=='4')throw new Error('Feedback lost on render');
+ for(const width of [320,375,390,430]){await page.setViewportSize({width,height:844});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw new Error('Feedback overflows');}
+ if(!await page.evaluate(()=>renderProgramReview().includes('presiahli 50 minút')))throw new Error('Repeated overrun notice missing');
+ await page.evaluate(async()=>{await finishWorkoutV33();});
+ if(!await page.evaluate(()=>state.sessions.some(s=>s.payload.feedback?.fatigue===4&&s.payload.feedback?.recovery===2)))throw new Error('Feedback not persisted in session');
  await page.evaluate(()=>renderProfile());
  await browser.close();console.log('Preview and editor fit 320, 375, 390 and 430 px.');
 })().catch(e=>{console.error(e);process.exit(1)});

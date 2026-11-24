@@ -7,7 +7,7 @@ function fixture(){
   const document={querySelectorAll:()=>[],getElementById(id){if(!elements.has(id))elements.set(id,{isConnected:true,disabled:false});return elements.get(id);}};
   const w={id:'strength',payload:{title:'Tréning A',type:'Silový tréning'}};
   const context={window:{scrollTo(){}},renderTrainingBlocks:(rows,render)=>rows.map(render).join(''),document,state:{workouts:[w],activeSession:null},safeJson:x=>x||{},templateExercises:()=>[],h:String,icon:()=>'',workoutDaysLabel:()=>'',shell:x=>x,app:{},bindNav(){},updateUrl(hash){context.hash=hash;},openWorkoutUnitEditor(){},strengthLabelForWorkout:()=> 'A',async startWorkout(){context.starts++;},starts:0};
-  vm.createContext(context);vm.runInContext(fs.readFileSync('mobile.js','utf8'),context);
+  context.state.plan=null;vm.createContext(context);vm.runInContext(fs.readFileSync('program-review.js','utf8'),context);vm.runInContext(fs.readFileSync('mobile.js','utf8'),context);
   return {context,elements,w};
 }
 test('preview never starts a workout; explicit start creates it once',async()=>{
