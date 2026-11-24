@@ -66,7 +66,8 @@ function renderRamp(p){
 function renderExerciseCard(ex,isNext,nextSetId){
   const ep=safeJson(ex.payload),sets=state.activeSets.filter(s=>s.exercise_id===ex.id).sort((a,b)=>a.ordinal-b.ordinal),prev=previousEntryForKey(ex.exercise_key,ex.session_id,ep.templateWorkoutId);
   return `<article data-exercise-card="${h(ex.id)}" class="exercise-card ${isNext?'next-exercise':''}"><div class="exercise-card-head"><button class="exercise-title" data-detail="${h(ex.id)}"><strong>${h(exerciseName(ep,ex.exercise_key))}</strong>${exerciseSkName(ep)&&exerciseSkName(ep)!==exerciseName(ep,ex.exercise_key)?`<span>${h(exerciseSkName(ep))}</span>`:''}</button><button class="exercise-dots" data-menu="${h(ex.id)}">${icon('dots')}</button></div>
-  <div class="exercise-target"><span>Cieľ <b>${sets.filter(x=>(x.set_type||'working')!=='warmup').length}×${h(ep.repMin??'?')}${ep.repMax&&ep.repMax!==ep.repMin?`–${h(ep.repMax)}`:''}</b></span><span>Východisková <b>${h(weightLabel(ep,ep.weight))}</b></span>${ep.rirMin!=null?`<span>RIR <b>${h(ep.rirMin)}–${h(ep.rirMax??ep.rirMin)}</b></span>`:''}</div>
+  <div class="exercise-target"><span>Cieľ <b>${sets.filter(x=>(x.set_type||'working')!=='warmup').length}×${h(ep.repMin??'?')}${ep.repMax&&ep.repMax!==ep.repMin?`–${h(ep.repMax)}`:''}</b></span><span>Východisková <b>${h(weightLabel(ep,ep.weight))}</b></span>${ep.rirMin!=null?`<span>RIR <b>${h(ep.rirMin)}${ep.rirMax!=null&&ep.rirMax!==ep.rirMin?`–${h(ep.rirMax)}`:''}</b></span>`:''}</div>
+  ${ep.tempoNote?`<p class="exercise-side-hint">${h(ep.tempoNote)}</p>`:''}
   ${ep.toleranceNote?`<p class="tolerance-note">${h(ep.toleranceNote)}</p>`:''}
   ${ep.sides>1?'<p class="exercise-side-note">Dokonči obe strany a až potom označ sériu ako hotovú.</p>':''}
   <div class="exercise-menu" data-menu-panel="${h(ex.id)}"><button data-action="replace" data-ex="${h(ex.id)}">Nahradiť cvik</button><button data-action="warmup" data-ex="${h(ex.id)}">Pridať rozcvičovaciu sériu</button><button data-action="add" data-ex="${h(ex.id)}">Pridať sériu</button><button data-action="remove" data-ex="${h(ex.id)}">Odobrať sériu</button><button data-action="skip-exercise" data-ex="${h(ex.id)}">Vynechať cvik iba dnes</button><button data-action="detail" data-ex="${h(ex.id)}">Detail cviku</button></div><div class="replace-panel" data-replace-panel="${h(ex.id)}"></div>
@@ -105,7 +106,7 @@ function parseAlternatives(text){if(!text)return[];return String(text).split(/\s
 function showReplacementPanel(ex){const alts=parseAlternatives(safeJson(ex.payload).alternative||''),panel=document.querySelector(`[data-replace-panel="${CSS.escape(ex.id)}"]`);if(!panel)return;if(!alts.length){panel.innerHTML='<div class="replace-empty">Pre tento cvik nie je priradená alternatíva.</div>';panel.classList.add('open');return;}panel.innerHTML=alts.map((a,i)=>`<div class="replace-item"><b>${h(a.name)}</b><small>${h(a.detail)}</small><div><button data-replace-today="${i}">Iba dnes</button><button data-replace-plan="${i}">Natrvalo</button></div></div>`).join('');panel.classList.add('open');panel.querySelectorAll('[data-replace-today]').forEach(b=>b.onclick=()=>applyReplacement(ex,alts[n(b.dataset.replaceToday,0)],false));panel.querySelectorAll('[data-replace-plan]').forEach(b=>b.onclick=()=>applyReplacement(ex,alts[n(b.dataset.replacePlan,0)],true));}
 async function applyReplacement(ex,alt,permanent){const oldKey=ex.exercise_key,old={...safeJson(ex.payload)},newKey=slugify(alt.english||alt.sk||alt.name),payload={...old,name:alt.sk||alt.name,englishName:alt.english||alt.name,exerciseKey:newKey,weight:alt.weight??old.weight,replacedFrom:oldKey,primary_muscle_group:primaryMuscleGroup({},newKey)};let r=await supabase.from('trainer_hub_session_exercises').update({exercise_key:newKey,payload}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('session_id',ex.session_id).eq('id',ex.id);if(r.error)return toast('Nahradenie sa nepodarilo.','error');if(permanent){const planRow=state.planExercises.find(x=>x.workout_id===old.templateWorkoutId&&x.id===old.templateExerciseId)||state.planExercises.find(x=>x.workout_id===old.templateWorkoutId&&x.exercise_key===oldKey);if(planRow){const pp={...safeJson(planRow.payload),name:payload.name,englishName:payload.englishName,exerciseKey:newKey,weight:payload.weight,primary_muscle_group:payload.primary_muscle_group};r=await supabase.from('trainer_hub_workout_exercises').update({exercise_key:newKey,payload:pp}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('plan_id',state.plan.id).eq('workout_id',planRow.workout_id).eq('id',planRow.id);if(!r.error){planRow.exercise_key=newKey;planRow.payload=pp;}}}ex.exercise_key=newKey;ex.payload=payload;toast(permanent?'Cvik zmenený aj v pláne.':'Cvik nahradený iba dnes.');renderActive();}
 
-async function finishWorkout(){const s=state.activeSession;if(!s)return;const incomplete=state.activeSets.some(x=>!x.complete&&(x.set_type||'working')!=='warmup'),p={...safeJson(s.payload),status:'completed',finishedAt:new Date().toISOString(),durationSeconds:workoutElapsedSeconds(s),partial:incomplete,dataQuality:incomplete?'partial':'complete'};const r=await supabase.from('trainer_hub_workout_sessions').update({status:'completed',payload:p}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('id',s.id);if(r.error)return toast('Tréning sa nepodarilo ukončiť.','error');s.status='completed';s.payload=p;state.finishOpen=false;setActive(null);skipRest();await loadCore(false);updateUrl('#/history');}
+async function finishWorkout(){const s=state.activeSession;if(!s)return;const incomplete=state.activeSets.some(x=>!x.complete&&(x.set_type||'working')!=='warmup'),p={...safeJson(s.payload),status:'completed',finishedAt:new Date().toISOString(),durationSeconds:workoutElapsedSeconds(s),feedback:reviewFeedback(s),partial:incomplete,dataQuality:incomplete?'partial':'complete'};const r=await supabase.from('trainer_hub_workout_sessions').update({status:'completed',payload:p}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('id',s.id);if(r.error)return toast('Tréning sa nepodarilo ukončiť.','error');s.status='completed';s.payload=p;state.finishOpen=false;setActive(null);skipRest();await loadCore(false);updateUrl('#/history');}
 
 /* ===== v3.3 UX overrides ===== */
 function routineIcon(type=''){
@@ -132,6 +133,7 @@ function renderActive(){
     <div class="action-sheet-title"><b>Čo chceš urobiť?</b><span>Hotové série sa ukladajú priebežne.</span></div>
     <button id="finish-cancel"><b>Pokračovať v tréningu</b><span>Vrátiť sa k sériám</span></button>
     <button id="save-exit"><b>Uložiť a zavrieť</b><span>Tréning zostane rozpracovaný</span></button>
+    ${renderReviewFeedback(s)}
     <button id="finish-confirm" class="action-primary"><b>Dokončiť a uložiť</b><span>Zapísať do histórie ako hotový/čiastočný</span></button>
     <button id="discard-workout" class="action-danger"><b>Ukončiť bez uloženia</b><span>Vymaže túto rozpracovanú session</span></button>
   </div>
@@ -140,6 +142,7 @@ function renderActive(){
   bindActive();renderTimerOnly();renderWorkoutClock();renderSaveStatus();ensureTimerTick();
 }
 function bindActive(){
+  document.querySelectorAll('[data-review-feedback]').forEach(x=>x.onchange=()=>saveReviewFeedback(x.dataset.reviewFeedback,x.value));
   document.querySelectorAll('[data-restore-exercise]').forEach(b=>b.onclick=()=>setExerciseSkipped(state.sessionExercises.find(x=>x.session_id===state.activeSession.id&&x.id===b.dataset.restoreExercise),false));
   document.getElementById('finish-toggle').onclick=()=>{state.finishOpen=!state.finishOpen;document.getElementById('finish-panel').classList.toggle('open',state.finishOpen);};
   document.getElementById('finish-cancel').onclick=()=>{state.finishOpen=false;document.getElementById('finish-panel').classList.remove('open');};
@@ -156,7 +159,7 @@ function bindActive(){
 }
 async function saveWorkoutAndExit(){
   const s=state.activeSession;if(!s)return;if(!(await flushWorkoutChanges())){state.finishOpen=false;return updateUrl('#/training');}
-  const p={...safeJson(s.payload),savedAt:new Date().toISOString(),status:'active'};
+  const p={...safeJson(s.payload),savedAt:new Date().toISOString(),feedback:reviewFeedback(s),status:'active'};
   const r=await supabase.from('trainer_hub_workout_sessions').update({payload:p}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('id',s.id);
   if(r.error)return toast('Tréning sa nepodarilo uložiť.','error');
   s.payload=p;state.finishOpen=false;skipRest();toast('Tréning uložený. Môžeš sa k nemu vrátiť.');updateUrl('#/training');
@@ -164,7 +167,7 @@ async function saveWorkoutAndExit(){
 async function finishWorkoutV33(){
   const s=state.activeSession;if(!s)return;if(!(await flushWorkoutChanges()))return;
   const incomplete=state.activeSets.some(x=>!x.complete&&(x.set_type||'working')!=='warmup');
-  const p={...safeJson(s.payload),status:'completed',finishedAt:new Date().toISOString(),durationSeconds:workoutElapsedSeconds(s),partial:incomplete,dataQuality:incomplete?'partial':'complete'};
+  const p={...safeJson(s.payload),status:'completed',finishedAt:new Date().toISOString(),durationSeconds:workoutElapsedSeconds(s),feedback:reviewFeedback(s),partial:incomplete,dataQuality:incomplete?'partial':'complete'};
   const r=await supabase.from('trainer_hub_workout_sessions').update({status:'completed',payload:p}).eq('owner_id',state.user.id).eq('client_id',CLIENT_ID).eq('id',s.id);
   if(r.error)return toast('Tréning sa nepodarilo dokončiť.','error');
   s.status='completed';s.payload=p;state.finishOpen=false;setActive(null);skipRest();await loadCore(false);toast('Tréning uložený. Ďalší štart bude čistý.');updateUrl('#/training');
