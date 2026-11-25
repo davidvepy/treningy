@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
  await page.goto('file:///tmp/trening-layout.html');
  await page.setContent('<div id="app"></div><div id="toast-root"></div>');
  for(const file of ['styles.css','plan-editor.css','mobile.css'])await page.addStyleTag({content:fs.readFileSync(file,'utf8')});
- for(const file of ['core.js','sync.js','supersets.js','program-review.js','training.js','history.js','volume.js','progress.js','measurement-fix.js','profile.js','plan-editor.js','status-fix.js','history-tonnage-fix.js','quick-edit.js','progression.js','mobile.js'])await page.addScriptTag({content:fs.readFileSync(file,'utf8')});
+ for(const file of ['core.js','sync.js','supersets.js','program-review.js','attendance.js','session-meta.js','training.js','history.js','volume.js','progress.js','measurement-fix.js','profile.js','plan-editor.js','status-fix.js','history-tonnage-fix.js','quick-edit.js','progression.js','mobile.js'])await page.addScriptTag({content:fs.readFileSync(file,'utf8')});
  await page.evaluate(()=>{
  localStorage.clear();
  state.user={id:'test',email:'test@example.com'};state.loading=false;state.plan={id:'test-plan'};

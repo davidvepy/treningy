@@ -31,7 +31,7 @@ function queueSetPatch(row,patch){
   catch(e){toast(`Zmena sa neuložila do zariadenia: ${e.message}`,'error',5000);return false;}
 }
 async function flushWorkoutChanges(){
-  try{const q=currentSetQueue();if(!q)return false;const ok=await q.flush();if(!ok)toast('Série čakajú na synchronizáciu. Pripoj sa na internet a skús znova.','error',4500);return ok;}catch(e){toast(e.message,'error');return false;}
+  try{const q=currentSetQueue();if(!q)return false;const setsOk=await q.flush();const rampOk=typeof flushRampChecks==='function'?await flushRampChecks():true;const ok=setsOk&&rampOk;if(!ok)toast('Série čakajú na synchronizáciu. Pripoj sa na internet a skús znova.','error',4500);return ok;}catch(e){toast(e.message,'error');return false;}
 }
 function restoreQueuedSets(){
   const q=currentSetQueue();if(!q)return;for(const item of q.items){const row=state.sets.find(s=>s.id===item.id&&s.session_id===item.session_id&&s.exercise_id===item.exercise_id);if(row)Object.assign(row,item.patch);}void q.flush();

@@ -2,7 +2,7 @@
 
 function previousEntryForKey(key,excludeSessionId=null,workoutId=null){
   const normalized=[];
-  for(const ex of state.sessionExercises.filter(x=>x.exercise_key===key&&x.session_id!==excludeSessionId&&!safeJson(x.payload).skippedInSession)){
+  for(const ex of state.sessionExercises.filter(x=>(typeof trainingHistoryKey==='function'?trainingHistoryKey(x):x.exercise_key)===key&&x.session_id!==excludeSessionId&&!safeJson(x.payload).skippedInSession)){
     const session=state.sessions.find(s=>s.id===ex.session_id&&s.status==='completed');
     if(!session||(workoutId&&safeJson(session.payload).workoutId!==workoutId))continue;
     const sets=state.sets.filter(x=>x.session_id===session.id&&x.exercise_id===ex.id&&x.complete&&(x.set_type||'working')!=='warmup').sort((a,b)=>a.ordinal-b.ordinal);

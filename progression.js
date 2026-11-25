@@ -2,6 +2,7 @@
 function evaluateProgression(payload,previous){
   const step=Number(payload.progressionStep),expected=Number(payload.sets),max=Number(payload.repMax),targetRir=Number(payload.rirMin);
   if(payload.progressionEnabled!==true||payload.progressionHold===true||!(step>0)||!(expected>0)||!(max>0)||payload.rirMin==null||!Number.isFinite(targetRir)||!previous||previous.source!=='normalized')return null;
+  if(previous.exercise?.payload?.pain||previous.exercise?.payload?.techniqueIssue)return null;
   const sp=previous.session?.payload||{};if(sp.partial||sp.dataQuality==='partial')return null;
   const sets=previous.sets.filter(s=>(s.set_type||'working')==='working'&&s.complete);
   if(sets.length!==expected||sets.some(s=>!Number.isFinite(Number(s.reps))||Number(s.reps)<max))return null;

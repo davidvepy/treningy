@@ -3,7 +3,7 @@ function allExerciseCatalog(){
   const map=new Map();
   const add=(key,p,source)=>{const name=exerciseName(p,key);if(!validExerciseName(name))return;if(!map.has(key))map.set(key,{key,name,sk:exerciseSkName(p),payload:p,source});else if(source==='plan'){const x=map.get(key);x.name=name;x.sk=exerciseSkName(p);x.payload=p;x.source=source;}};
   for(const ex of state.planExercises)add(ex.exercise_key,safeJson(ex.payload),'plan');
-  for(const ex of state.sessionExercises)add(ex.exercise_key,safeJson(ex.payload),'session');
+  for(const ex of state.sessionExercises)add(trainingHistoryKey(ex),safeJson(ex.payload),'session');
   const reverse=reverseAliasMap();
   for(const row of state.legacyLogs){if(!validExerciseName(row.exercise_name))continue;const canonical=reverse[row.exercise_id];if(canonical){if(!map.has(canonical))map.set(canonical,{key:canonical,name:row.exercise_name,sk:'',payload:{},source:'legacy'});}else{const key=`legacy:${row.exercise_id}`;if(!map.has(key))map.set(key,{key,name:row.exercise_name,sk:'',payload:{},source:'legacy'});}}
   return [...map.values()].sort((a,b)=>a.name.localeCompare(b.name,'sk'));
@@ -11,7 +11,7 @@ function allExerciseCatalog(){
 function legacyIdsForKey(key){if(key.startsWith('legacy:'))return[key.slice(7)];return LEGACY_ALIASES[key]||[];}
 function exerciseHistoryPoints(key){
   const byDate=new Map();
-  for(const ex of state.sessionExercises.filter(x=>x.exercise_key===key)){
+  for(const ex of state.sessionExercises.filter(x=>trainingHistoryKey(x)===key)){
     const s=state.sessions.find(x=>x.id===ex.session_id&&x.status==='completed');if(!s)continue;
     const sets=state.sets.filter(st=>st.session_id===s.id&&st.exercise_id===ex.id&&st.complete&&(st.set_type||'working')!=='warmup');if(!sets.length)continue;
     const point={date:s.recorded_date,source:'normalized',sets,maxWeight:Math.max(0,...sets.map(x=>n(x.weight,0))),est1RM:Math.max(0,...sets.map(x=>estimate1RM(x.weight,x.reps)||0)),tonnage:sets.reduce((a,x)=>a+setTonnage(x,ex),0),reps:sets.reduce((a,x)=>a+n(x.reps,0),0),partial:isPartialSession(s)};
@@ -27,11 +27,11 @@ function exerciseHistoryPoints(key){
   }
   return [...byDate.values()].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
 }
-function latestExerciseDef(key){const active=state.activeExercises.find(x=>x.exercise_key===key);if(active)return active;const plan=state.planExercises.find(x=>x.exercise_key===key);if(plan)return plan;return [...state.sessionExercises].reverse().find(x=>x.exercise_key===key)||null;}
+function latestExerciseDef(key){const active=state.activeExercises.find(x=>trainingHistoryKey(x)===key);if(active)return active;const plan=state.planExercises.find(x=>trainingHistoryKey(x)===key);if(plan)return plan;return [...state.sessionExercises].reverse().find(x=>trainingHistoryKey(x)===key)||null;}
 
 function renderProgress(){
-  const tabs=[['exercises','Cviky'],['volume','Týždenný objem'],['tonnage','Tonáž'],['body','Telo']];
-  let body='';if(state.progressTab==='volume')body=renderWeeklyVolume();else if(state.progressTab==='tonnage')body=renderTonnageProgress();else if(state.progressTab==='body')body=renderBodyProgress();else body=renderExerciseProgressList();
+  const tabs=[['review','Vyhodnotenie'],['exercises','Cviky'],['volume','Týždenný objem'],['tonnage','Tonáž'],['body','Telo']];
+  let body='';if(state.progressTab==='review')body=renderProgramReview();else if(state.progressTab==='volume')body=renderWeeklyVolume();else if(state.progressTab==='tonnage')body=renderTonnageProgress();else if(state.progressTab==='body')body=renderBodyProgress();else body=renderExerciseProgressList();
   const content=`<header class="page-title"><h1>Progres</h1></header><div class="subtabs">${tabs.map(([k,l])=>`<button data-progress-tab="${k}" class="${state.progressTab===k?'active':''}">${l}</button>`).join('')}</div>${body}`;
   app.innerHTML=shell(content,'progress');bindNav();document.querySelectorAll('[data-progress-tab]').forEach(b=>b.onclick=()=>{state.progressTab=b.dataset.progressTab;renderProgress();});bindProgressBody();
 }
@@ -109,7 +109,7 @@ function renderExerciseDetail(idOrKey){
     <div class="stats-row"><div><span>Najvyššia váha</span><b>${bestWeight?`${fmtNumber(bestWeight)} kg`:'—'}</b></div><div><span>Odhad 1RM</span><b>${best1rm?`${fmtNumber(best1rm)} kg`:'—'}</b></div><div><span>Záznamy</span><b>${pts.length}</b></div></div>
     <div class="metric-tabs"><button data-metric="maxWeight" class="${state.chartMetric==='maxWeight'?'active':''}">Pracovná váha</button><button data-metric="est1RM" class="${state.chartMetric==='est1RM'?'active':''}">Odhad 1RM</button></div>
     <div class="chart-card light"><canvas id="exercise-chart"></canvas><p>1RM je orientačný odhad podľa Epleyho vzorca. Pri sériách nad 15 opakovaní ho nepočítame.</p></div>
-    ${editor}${technique}
+    ${editor}${p.toleranceNote?`<p class="tolerance-note">${h(p.toleranceNote)}</p>`:''}${p.tempoNote?`<p>${h(p.tempoNote)}</p>`:''}${p.note?`<p>${h(p.note)}</p>`:''}${technique}
     ${alts.length?`<div class="detail-section"><h2>Alternatívy</h2><div class="alternative-list">${alts.map(a=>`<div><b>${h(a.name)}</b><span>${h(a.detail)}</span></div>`).join('')}</div></div>`:''}
     <div class="detail-section"><h2>História</h2><div class="exercise-history-list">${[...pts].reverse().map(x=>`<div><span>${isoDate(x.date)}${x.partial?' · historický/čiastočný':''}</span><b>${x.maxWeight?`${fmtNumber(x.maxWeight)} kg`:'—'}</b><small>${x.est1RM?`1RM ≈ ${fmtNumber(x.est1RM)} kg`:'1RM bez odhadu'}</small></div>`).join('')||'<div class="empty-card">Zatiaľ bez výkonu.</div>'}</div></div>`;
   app.innerHTML=shell(content,activeEx?'training':'progress');bindNav();document.getElementById('back').onclick=()=>history.back();

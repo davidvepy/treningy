@@ -31,13 +31,14 @@ function restAfterCompletion(exercises,sets,id){
   if(entry.warmup)return {seconds:entry.restSeconds,label:'Pauza po rozcvičovacej sérii'};
   const round=sequence.filter(x=>!x.warmup&&x.block===entry.block&&x.round===entry.round),byId=new Map(sets.map(s=>[s.id,s]));
   if(!round.every(x=>byId.get(x.set_id)?.complete))return {seconds:0,label:'Presun na ďalší cvik · 15–30 s'};
+  if(entry.round===entry.rounds-1)return {seconds:0,label:'Blok dokončený'};
   return {seconds:round.at(-1).restSeconds,label:entry.paired?`${entry.block} · pauza po kole ${entry.round+1}`:'Pauza po sérii'};
 }
 function renderTrainingBlocks(exercises,renderExercise){
   return trainingBlocks(exercises).map(block=>{
     const p=block.exercises[0]?.payload||{},title=block.kind==='superset'?block.key:block.kind==='core'?'CORE FINISHER':'SAMOSTATNÝ CVIK';
     const hint=block.kind==='superset'?`Striedaj cviky po sérii · presun 15–30 s · spoločná pauza ${p.roundRestSeconds??p.restSeconds??90} s. Zostávajúca nepárna séria sa dokončí samostatne.`:block.kind==='core'?'Záverečný blok · obe strany dokonči pred pauzou.':'';
-    return `<section class="training-block ${block.kind}" data-training-block="${h(block.key)}"><header><b>${h(title)}</b>${hint?`<p>${h(hint)}</p>`:''}</header>${block.exercises.map((ex,i)=>renderExercise(ex,i)).join('')}</section>`;
+    return `<section class="training-block ${block.kind}" data-training-block="${h(block.key)}"><header><b>${h(title)}</b>${hint&&!state.activeSession?`<p>${h(hint)}</p>`:''}</header>${block.exercises.map((ex,i)=>renderExercise(ex,i)).join('')}</section>`;
   }).join('');
 }
 function weightLabel(p,weight){if(weight==null||weight==='')return 'Váhu nastavíš ty';return `${fmtNumber(weight)} kg${p.loadMode==='bodyweight'?' prídavná záťaž':''}`;}

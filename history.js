@@ -111,7 +111,7 @@ function renderSessionDetail(id){
 
 /* ===== v4.0 – missed workout history ===== */
 function historyEntries(){
-  const normalized=state.sessions.filter(s=>['completed','skipped'].includes(s.status));
+  const normalized=state.sessions.filter(s=>['completed','skipped'].includes(s.status)&&!safeJson(s.payload).attendanceCancelled);
   const completedDates=new Set(normalized.filter(s=>s.status==='completed').map(s=>s.recorded_date));
   const legacy=Object.entries(legacyGroups()).filter(([date])=>!completedDates.has(date)).map(([date,rows])=>({legacy:true,id:`legacy:${date}`,recorded_date:date,rows,payload:{title:'Tréning · historický záznam'}}));
   return [...normalized,...legacy].sort((a,b)=>String(b.recorded_date).localeCompare(String(a.recorded_date))||String(safeJson(b.payload).finishedAt||safeJson(b.payload).createdAt||'').localeCompare(String(safeJson(a.payload).finishedAt||safeJson(a.payload).createdAt||'')));

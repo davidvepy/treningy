@@ -114,7 +114,7 @@
     const content=`<div class="detail-header"><button class="back-button" id="back">${icon('back')}</button><div><span>${isoDate(s.recorded_date)}</span><h1>${h(p.title||'Tréning')}</h1>${partial?'<em>čiastočný záznam</em>':''}</div></div>
       <div class="stats-row"><div><span>Tonáž</span><b>${stats.tonnage?`${fmtNumber(stats.tonnage/1000,2)} t`:'—'}</b></div><div><span>Série</span><b>${stats.workingSets}</b></div><div><span>Opakovania</span><b>${stats.reps}</b></div></div>
       <div class="history-session-actions"><button class="history-edit-session" id="history-edit-session">UPRAVIŤ TRÉNING</button><button class="history-delete-session" id="history-delete-session">ZMAZAŤ TRÉNING</button></div>
-      ${sessionTimeSummary(s)}${renderSessionFeedback(s)}${renderProgramReview(p.workoutId)}<div class="session-card">${exs.map(ex=>renderSessionExercise(ex,id)).join('')}</div>`;
+      ${sessionTimeSummary(s)}${renderSessionFeedback(s)}<div class="session-card">${exs.map(ex=>renderSessionExercise(ex,id)).join('')}</div>`;
     app.innerHTML=shell(content,'history');bindNav();document.getElementById('back').onclick=()=>history.back();
     document.getElementById('history-edit-session').onclick=()=>renderHistoryEditor(id);
     document.getElementById('history-delete-session').onclick=()=>deleteCompletedSession(id);
