@@ -1,0 +1,1117 @@
+[
+  {
+    "id": "A",
+    "payload": {
+      "title": "Tréning A",
+      "type": "Silový tréning",
+      "days": [
+        1
+      ],
+      "ramp": [
+        {
+          "code": "R",
+          "name": "Raise",
+          "items": [
+            {
+              "name": "Bicykel",
+              "dose": "2 min",
+              "exerciseKey": "bike",
+              "weight": null,
+              "sets": 1,
+              "reps": null,
+              "seconds": 120,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            }
+          ]
+        },
+        {
+          "code": "A",
+          "name": "Activate",
+          "items": [
+            {
+              "name": "Glute Bridge",
+              "dose": "Vlastná váha · 1×12",
+              "exerciseKey": "glute-bridge",
+              "weight": 0,
+              "sets": 1,
+              "reps": 12,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            },
+            {
+              "name": "Scapular Push-Up",
+              "dose": "Vlastná váha · 1×10",
+              "exerciseKey": "scapular-push-up",
+              "weight": 0,
+              "sets": 1,
+              "reps": 10,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            }
+          ]
+        },
+        {
+          "code": "M",
+          "name": "Mobilize",
+          "items": [
+            {
+              "name": "Rotácie hrudníka na štyroch",
+              "dose": "Vlastná váha · 1×5/strana",
+              "exerciseKey": "quadruped-thoracic-rotation",
+              "weight": 0,
+              "sets": 1,
+              "reps": 5,
+              "seconds": null,
+              "sides": 2,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            },
+            {
+              "name": "90/90 rotácie bedier",
+              "dose": "Vlastná váha · 1×6/strana",
+              "exerciseKey": "90-90-hip-rotation",
+              "weight": 0,
+              "sets": 1,
+              "reps": 6,
+              "seconds": null,
+              "sides": 2,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            }
+          ]
+        },
+        {
+          "code": "P",
+          "name": "Potentiate",
+          "items": [
+            {
+              "name": "Tlaky DB na šikmej lavičke",
+              "dose": "10 kg · 1×10",
+              "exerciseKey": "low-incline-dumbbell-press",
+              "weight": 10,
+              "sets": 1,
+              "reps": 10,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            },
+            {
+              "name": "Tlaky DB na šikmej lavičke",
+              "dose": "10 kg · 1×5",
+              "exerciseKey": "low-incline-dumbbell-press",
+              "weight": 10,
+              "sets": 1,
+              "reps": 5,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            },
+            {
+              "name": "Sťahovanie hornej kladky",
+              "dose": "10 kg · 1×8",
+              "exerciseKey": "lat-pulldown",
+              "weight": 10,
+              "sets": 1,
+              "reps": 8,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            }
+          ]
+        }
+      ],
+      "warmupDurationSeconds": 480,
+      "targetDurationSeconds": 3000
+    },
+    "exercises": [
+      {
+        "id": "press",
+        "exercise_key": "low-incline-dumbbell-press",
+        "ordinal": 1,
+        "payload": {
+          "name": "Tlaky DB na šikmej lavičke, 30°",
+          "sets": 4,
+          "sides": 1,
+          "repMax": 10,
+          "repMin": 8,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS1",
+          "loadCount": 2,
+          "restSeconds": 120,
+          "supersetOrder": 1,
+          "trainingBlock": "strength",
+          "progressionStep": 2.5,
+          "soloRestSeconds": 120,
+          "requireAllSetRir": true,
+          "roundRestSeconds": 120,
+          "progressionEnabled": true,
+          "primary_muscle_group": "chest"
+        }
+      },
+      {
+        "id": "neutral-grip-pull-up",
+        "exercise_key": "neutral-grip-pull-up",
+        "ordinal": 2,
+        "payload": {
+          "name": "Zhyby neutrálnym úchopom",
+          "sets": 4,
+          "sides": 1,
+          "repMax": 10,
+          "repMin": 6,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 0,
+          "repUnit": "reps",
+          "loadMode": "bodyweight",
+          "superset": "SS1",
+          "loadCount": 1,
+          "restSeconds": 120,
+          "supersetOrder": 2,
+          "trainingBlock": "strength",
+          "progressionStep": null,
+          "soloRestSeconds": 120,
+          "requireAllSetRir": true,
+          "roundRestSeconds": 120,
+          "progressionEnabled": true,
+          "primary_muscle_group": "back"
+        }
+      },
+      {
+        "id": "dumbbell-reverse-lunge",
+        "exercise_key": "dumbbell-reverse-lunge",
+        "ordinal": 3,
+        "payload": {
+          "name": "Výpady dozadu s DB",
+          "sets": 3,
+          "sides": 2,
+          "repMax": 8,
+          "repMin": 8,
+          "rirMax": 2,
+          "rirMin": 2,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS2",
+          "loadCount": 2,
+          "restSeconds": 90,
+          "supersetOrder": 1,
+          "trainingBlock": "strength",
+          "progressionStep": null,
+          "soloRestSeconds": 90,
+          "requireAllSetRir": true,
+          "roundRestSeconds": 90,
+          "progressionEnabled": true,
+          "primary_muscle_group": "quads"
+        }
+      },
+      {
+        "id": "seated-dumbbell-lateral-raise",
+        "exercise_key": "seated-dumbbell-lateral-raise",
+        "ordinal": 4,
+        "payload": {
+          "name": "Upažovanie v sede",
+          "sets": 3,
+          "sides": 1,
+          "repMax": 18,
+          "repMin": 12,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS2",
+          "loadCount": 2,
+          "restSeconds": 90,
+          "supersetOrder": 2,
+          "trainingBlock": "strength",
+          "progressionStep": null,
+          "soloRestSeconds": 90,
+          "sourceLibraryId": "Seated_Side_Lateral_Raise",
+          "requireAllSetRir": true,
+          "roundRestSeconds": 90,
+          "progressionEnabled": true,
+          "primary_muscle_group": "side_delts"
+        }
+      },
+      {
+        "id": "cable-curl",
+        "exercise_key": "cable-curl",
+        "ordinal": 5,
+        "payload": {
+          "name": "Biceps na kladke",
+          "sets": 3,
+          "sides": 1,
+          "repMax": 12,
+          "repMin": 8,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS3",
+          "loadCount": 1,
+          "restSeconds": 75,
+          "supersetOrder": 1,
+          "trainingBlock": "strength",
+          "progressionStep": 2.5,
+          "soloRestSeconds": 75,
+          "requireAllSetRir": true,
+          "roundRestSeconds": 75,
+          "progressionEnabled": true,
+          "primary_muscle_group": "biceps"
+        }
+      },
+      {
+        "id": "triceps",
+        "exercise_key": "rope-triceps-pushdown",
+        "ordinal": 6,
+        "payload": {
+          "name": "Triceps s lanom",
+          "sets": 3,
+          "sides": 1,
+          "repMax": 15,
+          "repMin": 10,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS3",
+          "loadCount": 1,
+          "restSeconds": 75,
+          "supersetOrder": 2,
+          "trainingBlock": "strength",
+          "progressionStep": 2.5,
+          "soloRestSeconds": 75,
+          "sourceLibraryId": "Triceps_Pushdown_-_Rope_Attachment",
+          "requireAllSetRir": true,
+          "roundRestSeconds": 75,
+          "progressionEnabled": true,
+          "primary_muscle_group": "triceps"
+        }
+      },
+      {
+        "id": "dead-bug",
+        "exercise_key": "dead-bug",
+        "ordinal": 7,
+        "payload": {
+          "name": "Dead Bug",
+          "sets": 2,
+          "sides": 2,
+          "repMax": 8,
+          "repMin": 8,
+          "rirMax": null,
+          "rirMin": null,
+          "weight": 0,
+          "repUnit": "reps",
+          "loadMode": "bodyweight",
+          "superset": null,
+          "loadCount": 1,
+          "restSeconds": 30,
+          "supersetOrder": 0,
+          "trainingBlock": "core",
+          "progressionStep": null,
+          "soloRestSeconds": 30,
+          "sourceLibraryId": "Dead_Bug",
+          "requireAllSetRir": true,
+          "roundRestSeconds": 30,
+          "progressionEnabled": false,
+          "primary_muscle_group": "core"
+        }
+      }
+    ],
+    "fixtureOnly": true
+  },
+  {
+    "id": "B",
+    "payload": {
+      "title": "Tréning B",
+      "type": "Silový tréning",
+      "days": [
+        3
+      ],
+      "ramp": [
+        {
+          "code": "R",
+          "name": "Raise",
+          "items": [
+            {
+              "name": "Svižná chôdza",
+              "dose": "2 min",
+              "exerciseKey": "walking",
+              "weight": null,
+              "sets": 1,
+              "reps": null,
+              "seconds": 120,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            }
+          ]
+        },
+        {
+          "code": "A",
+          "name": "Activate",
+          "items": [
+            {
+              "name": "Glute Bridge",
+              "dose": "Vlastná váha · 1×12",
+              "exerciseKey": "glute-bridge",
+              "weight": 0,
+              "sets": 1,
+              "reps": 12,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            },
+            {
+              "name": "Bird Dog",
+              "dose": "Vlastná váha · 1×6/strana",
+              "exerciseKey": "bird-dog",
+              "weight": 0,
+              "sets": 1,
+              "reps": 6,
+              "seconds": null,
+              "sides": 2,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            }
+          ]
+        },
+        {
+          "code": "M",
+          "name": "Mobilize",
+          "items": [
+            {
+              "name": "Cat-Cow",
+              "dose": "Vlastná váha · 1×6",
+              "exerciseKey": "cat-cow",
+              "weight": 0,
+              "sets": 1,
+              "reps": 6,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            },
+            {
+              "name": "90/90 rotácie bedier",
+              "dose": "Vlastná váha · 1×6/strana",
+              "exerciseKey": "90-90-hip-rotation",
+              "weight": 0,
+              "sets": 1,
+              "reps": 6,
+              "seconds": null,
+              "sides": 2,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            }
+          ]
+        },
+        {
+          "code": "P",
+          "name": "Potentiate",
+          "items": [
+            {
+              "name": "Hip Hinge Drill",
+              "dose": "Vlastná váha · 1×8",
+              "exerciseKey": "hip-hinge-drill",
+              "weight": 0,
+              "sets": 1,
+              "reps": 8,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            },
+            {
+              "name": "RDL s činkou",
+              "dose": "10 kg · 1×8",
+              "exerciseKey": "romanian-deadlift",
+              "weight": 10,
+              "sets": 1,
+              "reps": 8,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            },
+            {
+              "name": "RDL s činkou",
+              "dose": "10 kg · 1×5",
+              "exerciseKey": "romanian-deadlift",
+              "weight": 10,
+              "sets": 1,
+              "reps": 5,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            }
+          ]
+        }
+      ],
+      "warmupDurationSeconds": 540,
+      "targetDurationSeconds": 3000
+    },
+    "exercises": [
+      {
+        "id": "rdl",
+        "exercise_key": "romanian-deadlift",
+        "ordinal": 1,
+        "payload": {
+          "name": "Rumunský mŕtvy ťah",
+          "sets": 3,
+          "sides": 1,
+          "repMax": 10,
+          "repMin": 8,
+          "rirMax": 3,
+          "rirMin": 2,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": null,
+          "loadCount": 1,
+          "restSeconds": 150,
+          "supersetOrder": 0,
+          "toleranceNote": "Cvič iba v tolerovanom rozsahu, bez zhoršovania bolesti.",
+          "trainingBlock": "strength",
+          "progressionStep": 5,
+          "soloRestSeconds": 150,
+          "requireAllSetRir": true,
+          "roundRestSeconds": 150,
+          "progressionEnabled": true,
+          "primary_muscle_group": "hamstrings"
+        }
+      },
+      {
+        "id": "chest-supported-t-bar-row",
+        "exercise_key": "chest-supported-t-bar-row",
+        "ordinal": 2,
+        "payload": {
+          "name": "Lever Row · T-bar s oporou hrudníka",
+          "sets": 4,
+          "sides": 1,
+          "repMax": 12,
+          "repMin": 8,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS1",
+          "loadCount": 1,
+          "restSeconds": 120,
+          "supersetOrder": 1,
+          "trainingBlock": "strength",
+          "progressionStep": null,
+          "soloRestSeconds": 120,
+          "sourceLibraryId": "Lying_T-Bar_Row",
+          "requireAllSetRir": true,
+          "roundRestSeconds": 120,
+          "progressionEnabled": true,
+          "primary_muscle_group": "back",
+          "equipment": "machine"
+        }
+      },
+      {
+        "id": "dumbbell-bench-press-neutral-grip",
+        "exercise_key": "dumbbell-bench-press-neutral-grip",
+        "ordinal": 3,
+        "payload": {
+          "name": "Tlaky DB na rovnej lavičke, neutrálny úchop",
+          "sets": 4,
+          "sides": 1,
+          "repMax": 12,
+          "repMin": 8,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS1",
+          "loadCount": 2,
+          "restSeconds": 120,
+          "supersetOrder": 2,
+          "toleranceNote": "Cvič iba v tolerovanom rozsahu, bez zhoršovania bolesti.",
+          "trainingBlock": "strength",
+          "progressionStep": null,
+          "soloRestSeconds": 120,
+          "sourceLibraryId": "Dumbbell_Bench_Press_with_Neutral_Grip",
+          "requireAllSetRir": true,
+          "roundRestSeconds": 120,
+          "progressionEnabled": true,
+          "primary_muscle_group": "chest"
+        }
+      },
+      {
+        "id": "barbell-hip-thrust",
+        "exercise_key": "machine-hip-thrust",
+        "ordinal": 4,
+        "payload": {
+          "name": "Hip Thrust na stroji",
+          "sets": 2,
+          "sides": 1,
+          "repMax": 12,
+          "repMin": 8,
+          "rirMax": 2,
+          "rirMin": 2,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS2",
+          "loadCount": 1,
+          "restSeconds": 90,
+          "supersetOrder": 1,
+          "trainingBlock": "strength",
+          "progressionStep": null,
+          "soloRestSeconds": 90,
+          "sourceLibraryId": "machine-hip-thrust",
+          "requireAllSetRir": true,
+          "roundRestSeconds": 90,
+          "progressionEnabled": true,
+          "primary_muscle_group": "glutes",
+          "equipment": "machine"
+        }
+      },
+      {
+        "id": "db-lateral",
+        "exercise_key": "dumbbell-lateral-raise",
+        "ordinal": 5,
+        "payload": {
+          "name": "Upažovanie v stoji",
+          "sets": 3,
+          "sides": 1,
+          "repMax": 18,
+          "repMin": 12,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS2",
+          "loadCount": 2,
+          "restSeconds": 90,
+          "supersetOrder": 2,
+          "trainingBlock": "strength",
+          "progressionStep": 2.5,
+          "soloRestSeconds": 60,
+          "requireAllSetRir": true,
+          "roundRestSeconds": 90,
+          "progressionEnabled": true,
+          "primary_muscle_group": "side_delts"
+        }
+      },
+      {
+        "id": "hammer",
+        "exercise_key": "hammer-curl",
+        "ordinal": 6,
+        "payload": {
+          "name": "Kladivový biceps",
+          "sets": 3,
+          "sides": 1,
+          "repMax": 12,
+          "repMin": 8,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS3",
+          "loadCount": 2,
+          "restSeconds": 75,
+          "supersetOrder": 1,
+          "trainingBlock": "strength",
+          "progressionStep": 2.5,
+          "soloRestSeconds": 75,
+          "requireAllSetRir": true,
+          "roundRestSeconds": 75,
+          "progressionEnabled": true,
+          "primary_muscle_group": "biceps"
+        }
+      },
+      {
+        "id": "straight-bar-triceps-pushdown",
+        "exercise_key": "straight-bar-triceps-pushdown",
+        "ordinal": 7,
+        "payload": {
+          "name": "Sťahovanie rovnej tyče na triceps",
+          "sets": 3,
+          "sides": 1,
+          "repMax": 15,
+          "repMin": 10,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS3",
+          "loadCount": 1,
+          "restSeconds": 75,
+          "supersetOrder": 2,
+          "trainingBlock": "strength",
+          "progressionStep": null,
+          "soloRestSeconds": 75,
+          "sourceLibraryId": "Triceps_Pushdown",
+          "requireAllSetRir": true,
+          "roundRestSeconds": 75,
+          "progressionEnabled": true,
+          "primary_muscle_group": "triceps"
+        }
+      },
+      {
+        "id": "side-plank",
+        "exercise_key": "side-plank",
+        "ordinal": 8,
+        "payload": {
+          "name": "Bočný plank",
+          "sets": 2,
+          "sides": 2,
+          "repMax": 45,
+          "repMin": 45,
+          "rirMax": null,
+          "rirMin": null,
+          "weight": 0,
+          "repUnit": "seconds",
+          "loadMode": "bodyweight",
+          "superset": null,
+          "loadCount": 1,
+          "restSeconds": 30,
+          "supersetOrder": 0,
+          "trainingBlock": "core",
+          "progressionStep": null,
+          "soloRestSeconds": 30,
+          "requireAllSetRir": true,
+          "roundRestSeconds": 30,
+          "progressionEnabled": false,
+          "primary_muscle_group": "core"
+        }
+      }
+    ],
+    "fixtureOnly": true
+  },
+  {
+    "id": "C",
+    "payload": {
+      "title": "Tréning C",
+      "type": "Silový tréning",
+      "days": [
+        5
+      ],
+      "ramp": [
+        {
+          "code": "R",
+          "name": "Raise",
+          "items": [
+            {
+              "name": "Bicykel",
+              "dose": "2 min",
+              "exerciseKey": "bike",
+              "weight": null,
+              "sets": 1,
+              "reps": null,
+              "seconds": 120,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            }
+          ]
+        },
+        {
+          "code": "A",
+          "name": "Activate",
+          "items": [
+            {
+              "name": "Face Pull",
+              "dose": "10 kg · 1×15",
+              "exerciseKey": "rope-face-pull",
+              "weight": 10,
+              "sets": 1,
+              "reps": 15,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            },
+            {
+              "name": "Glute Bridge",
+              "dose": "Vlastná váha · 1×10",
+              "exerciseKey": "glute-bridge",
+              "weight": 0,
+              "sets": 1,
+              "reps": 10,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            }
+          ]
+        },
+        {
+          "code": "M",
+          "name": "Mobilize",
+          "items": [
+            {
+              "name": "90/90 rotácie bedier",
+              "dose": "Vlastná váha · 1×6/strana",
+              "exerciseKey": "90-90-hip-rotation",
+              "weight": 0,
+              "sets": 1,
+              "reps": 6,
+              "seconds": null,
+              "sides": 2,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            },
+            {
+              "name": "Rotácie hrudníka",
+              "dose": "Vlastná váha · 1×5/strana",
+              "exerciseKey": "quadruped-thoracic-rotation",
+              "weight": 0,
+              "sets": 1,
+              "reps": 5,
+              "seconds": null,
+              "sides": 2,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            }
+          ]
+        },
+        {
+          "code": "P",
+          "name": "Potentiate",
+          "items": [
+            {
+              "name": "Tlaky DB na mierne šikmej lavičke",
+              "dose": "10 kg · 1×10",
+              "exerciseKey": "low-incline-dumbbell-press",
+              "weight": 10,
+              "sets": 1,
+              "reps": 10,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            },
+            {
+              "name": "Tlaky DB na mierne šikmej lavičke",
+              "dose": "10 kg · 1×5",
+              "exerciseKey": "low-incline-dumbbell-press",
+              "weight": 10,
+              "sets": 1,
+              "reps": 5,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            },
+            {
+              "name": "Sťahovanie hornej kladky",
+              "dose": "10 kg · 1×8",
+              "exerciseKey": "lat-pulldown",
+              "weight": 10,
+              "sets": 1,
+              "reps": 8,
+              "sides": 1,
+              "setType": "warmup",
+              "countsTowardVolume": false
+            }
+          ]
+        }
+      ],
+      "warmupDurationSeconds": 480,
+      "targetDurationSeconds": 3000
+    },
+    "exercises": [
+      {
+        "id": "press",
+        "exercise_key": "low-incline-dumbbell-press",
+        "ordinal": 1,
+        "payload": {
+          "name": "Tlaky DB na šikmej lavičke, 15°",
+          "sets": 3,
+          "sides": 1,
+          "repMax": 12,
+          "repMin": 8,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadCount": 2,
+          "restSeconds": 120,
+          "progressionStep": 2.5,
+          "progressionEnabled": true,
+          "primary_muscle_group": "chest",
+          "superset": "SS1",
+          "supersetOrder": 1,
+          "roundRestSeconds": 120,
+          "soloRestSeconds": 120,
+          "trainingBlock": "strength",
+          "loadMode": "external",
+          "requireAllSetRir": true
+        }
+      },
+      {
+        "id": "underhand-cable-pulldown",
+        "exercise_key": "underhand-cable-pulldown",
+        "ordinal": 2,
+        "payload": {
+          "name": "Sťahovanie hornej kladky podhmatom",
+          "sets": 3,
+          "sides": 1,
+          "repMax": 12,
+          "repMin": 8,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS1",
+          "loadCount": 1,
+          "restSeconds": 120,
+          "supersetOrder": 2,
+          "trainingBlock": "strength",
+          "progressionStep": null,
+          "soloRestSeconds": 120,
+          "sourceLibraryId": "Underhand_Cable_Pulldowns",
+          "requireAllSetRir": true,
+          "roundRestSeconds": 120,
+          "progressionEnabled": true,
+          "primary_muscle_group": "back"
+        }
+      },
+      {
+        "id": "incline-dumbbell-fly",
+        "exercise_key": "incline-dumbbell-fly",
+        "ordinal": 3,
+        "payload": {
+          "name": "Rozpažovanie DB na mierne šikmej lavičke",
+          "weight": 20,
+          "sets": 2,
+          "repMin": 10,
+          "repMax": 15,
+          "rirMin": 1,
+          "rirMax": 2,
+          "superset": "SS2",
+          "supersetOrder": 1,
+          "restSeconds": 90,
+          "roundRestSeconds": 90,
+          "soloRestSeconds": 90,
+          "primary_muscle_group": "chest",
+          "trainingBlock": "strength",
+          "loadCount": 2,
+          "sides": 1,
+          "loadMode": "external",
+          "repUnit": "reps",
+          "requireAllSetRir": true,
+          "progressionEnabled": true,
+          "progressionStep": null,
+          "sourceLibraryId": "Incline_Dumbbell_Flyes",
+          "toleranceNote": "Kontrolovaný, pohodlný rozsah bez bolesti ramena."
+        }
+      },
+      {
+        "id": "chest-row",
+        "exercise_key": "chest-supported-dumbbell-row",
+        "ordinal": 4,
+        "payload": {
+          "name": "Príťahy DB s oporou hrudníka",
+          "sets": 2,
+          "sides": 1,
+          "repMax": 12,
+          "repMin": 10,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadCount": 2,
+          "restSeconds": 90,
+          "progressionStep": 2.5,
+          "progressionEnabled": true,
+          "primary_muscle_group": "back",
+          "superset": "SS2",
+          "supersetOrder": 2,
+          "roundRestSeconds": 90,
+          "soloRestSeconds": 90,
+          "trainingBlock": "strength",
+          "loadMode": "external",
+          "requireAllSetRir": true
+        }
+      },
+      {
+        "id": "45-degree-back-extension",
+        "exercise_key": "45-degree-back-extension",
+        "ordinal": 5,
+        "payload": {
+          "name": "Hyperextenzie na 45° lavičke",
+          "sets": 2,
+          "sides": 1,
+          "repMax": 15,
+          "repMin": 10,
+          "rirMax": 3,
+          "rirMin": 2,
+          "weight": 0,
+          "repUnit": "reps",
+          "loadMode": "bodyweight",
+          "superset": "SS3",
+          "loadCount": 1,
+          "restSeconds": 75,
+          "supersetOrder": 1,
+          "toleranceNote": "Cvič iba v tolerovanom rozsahu, bez zhoršovania bolesti.",
+          "trainingBlock": "strength",
+          "progressionStep": null,
+          "soloRestSeconds": 75,
+          "sourceLibraryId": "Hyperextensions_Back_Extensions",
+          "requireAllSetRir": true,
+          "roundRestSeconds": 75,
+          "progressionEnabled": true,
+          "primary_muscle_group": "hamstrings"
+        }
+      },
+      {
+        "id": "rope-face-pull",
+        "exercise_key": "rope-face-pull",
+        "ordinal": 6,
+        "payload": {
+          "name": "Face Pull",
+          "sets": 2,
+          "sides": 1,
+          "repMax": 20,
+          "repMin": 12,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS3",
+          "loadCount": 1,
+          "restSeconds": 75,
+          "supersetOrder": 2,
+          "trainingBlock": "strength",
+          "progressionStep": null,
+          "soloRestSeconds": 75,
+          "sourceLibraryId": "Face_Pull",
+          "requireAllSetRir": true,
+          "roundRestSeconds": 75,
+          "progressionEnabled": true,
+          "primary_muscle_group": "rear_delts"
+        }
+      },
+      {
+        "id": "db-lateral",
+        "exercise_key": "dumbbell-lateral-raise",
+        "ordinal": 7,
+        "payload": {
+          "name": "Upažovanie v stoji",
+          "sets": 3,
+          "sides": 1,
+          "repMax": 18,
+          "repMin": 12,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS4",
+          "loadCount": 2,
+          "restSeconds": 90,
+          "supersetOrder": 1,
+          "trainingBlock": "strength",
+          "progressionStep": 2.5,
+          "soloRestSeconds": 90,
+          "requireAllSetRir": true,
+          "roundRestSeconds": 90,
+          "progressionEnabled": true,
+          "primary_muscle_group": "side_delts"
+        }
+      },
+      {
+        "id": "incline-curl",
+        "exercise_key": "incline-dumbbell-curl",
+        "ordinal": 8,
+        "payload": {
+          "name": "Biceps na šikmej lavičke",
+          "sets": 3,
+          "sides": 1,
+          "repMax": 12,
+          "repMin": 10,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS4",
+          "loadCount": 2,
+          "restSeconds": 90,
+          "supersetOrder": 2,
+          "trainingBlock": "strength",
+          "progressionStep": 2.5,
+          "soloRestSeconds": 90,
+          "requireAllSetRir": true,
+          "roundRestSeconds": 90,
+          "progressionEnabled": true,
+          "primary_muscle_group": "biceps"
+        }
+      },
+      {
+        "id": "overhead-triceps",
+        "exercise_key": "overhead-triceps-extension",
+        "ordinal": 9,
+        "payload": {
+          "name": "Tricepsová extenzia DB nad hlavou",
+          "sets": 3,
+          "sides": 1,
+          "repMax": 12,
+          "repMin": 10,
+          "rirMax": 2,
+          "rirMin": 1,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": "SS4",
+          "loadCount": 1,
+          "restSeconds": 90,
+          "supersetOrder": 3,
+          "trainingBlock": "strength",
+          "progressionStep": 2.5,
+          "soloRestSeconds": 90,
+          "sourceLibraryId": "overhead-triceps-extension",
+          "requireAllSetRir": true,
+          "roundRestSeconds": 90,
+          "progressionEnabled": true,
+          "primary_muscle_group": "triceps"
+        }
+      },
+      {
+        "id": "pallof-press",
+        "exercise_key": "pallof-press",
+        "ordinal": 10,
+        "payload": {
+          "name": "Pallof Press",
+          "sets": 2,
+          "sides": 2,
+          "repMax": 10,
+          "repMin": 10,
+          "rirMax": null,
+          "rirMin": null,
+          "weight": 20,
+          "repUnit": "reps",
+          "loadMode": "external",
+          "superset": null,
+          "loadCount": 1,
+          "restSeconds": 30,
+          "supersetOrder": 0,
+          "trainingBlock": "core",
+          "progressionStep": null,
+          "soloRestSeconds": 30,
+          "sourceLibraryId": "Pallof_Press",
+          "requireAllSetRir": true,
+          "roundRestSeconds": 30,
+          "progressionEnabled": false,
+          "primary_muscle_group": "core"
+        }
+      }
+    ],
+    "fixtureOnly": true
+  }
+]

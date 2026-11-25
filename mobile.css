@@ -62,3 +62,5 @@ button:focus-visible,summary:focus-visible{outline:3px solid #2872df;outline-off
 .exercise-target{flex-wrap:wrap;gap:6px}
 
 .review-feedback{padding:14px;background:#f2f6fa;border-radius:14px}.review-feedback>b{display:block;margin-bottom:10px}.review-feedback label{display:grid;grid-template-columns:1fr 80px;gap:6px;align-items:center;margin:10px 0}.review-feedback small{font-size:12px;font-weight:400;color:#60758b}.review-feedback label small{grid-column:1/-1}.review-feedback select{min-height:44px;width:80px;border:1px solid #cbd7e3;border-radius:8px;background:white;padding:8px}.program-review{margin:12px 0}.workout-actions{max-height:85dvh;overflow-y:auto}
+
+.active-page .previous-cell,.active-page .set-table th:nth-child(2){display:none}.week-status[data-attendance]{cursor:pointer;font:inherit;font-size:10px;min-height:44px;background:#fff;border:1px solid #d7e0e9;color:#60758b}.week-status.done[data-attendance]{background:#edf9f3;color:#168756}.week-status[data-attendance]:disabled{opacity:.5}

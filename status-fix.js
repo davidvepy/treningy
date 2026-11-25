@@ -23,12 +23,6 @@
     target.setDate(monday.getDate()+(day===0?6:day-1));
     return localIsoDate(target);
   }
-  function attendanceFor(workoutId,date){
-    return state.sessions
-      .filter(s=>s.recorded_date===date&&safeJson(s.payload).workoutId===workoutId&&['completed','skipped'].includes(s.status))
-      .sort((a,b)=>String(safeJson(b.payload).finishedAt||safeJson(b.payload).createdAt||'').localeCompare(String(safeJson(a.payload).finishedAt||safeJson(a.payload).createdAt||'')))[0]||null;
-  }
-
   window.showMissedWorkoutDialog=function(w,defaultDate){
     if(!w)return;
     closeMissedWorkoutDialog();
@@ -44,9 +38,10 @@
   };
 
   window.renderWeekWorkout=function(w,scheduledDay){
-    const p=safeJson(w.payload),type=p.type||'Tréning',date=dateForWeekDay(scheduledDay),attendance=attendanceFor(w.id,date);
+    const p=safeJson(w.payload),type=p.type||'Tréning',date=dateForWeekDay(scheduledDay),attendance=activityAttendance(w.id,date);
     let right='';
-    if(attendance?.status==='completed') right='<span class="week-status done">✓ Absolvoval</span>';
+    if(p.type!=='Silový tréning') right=`<button class="week-status ${attendance?.status==='completed'?'done':''}" data-attendance="${h(w.id)}" data-attendance-date="${date}" aria-pressed="${attendance?.status==='completed'}">${attendance?.status==='completed'?'✓ Absolvoval':'Absolvoval'}</button>`;
+    else if(attendance?.status==='completed') right='<span class="week-status done">✓ Absolvoval</span>';
     else if(attendance?.status==='skipped') right='<span class="week-status skipped">Neabsolvoval</span>';
     else right=`<button class="week-more" type="button" data-week-more="${h(w.id)}" data-week-date="${h(date)}" aria-label="Možnosti tréningu">•••</button>`;
     return `<div class="week-workout-wrap"><button class="week-workout" data-week-workout="${h(w.id)}"><div><strong>${h(String(p.title||type).replace(/^(Pondelok|Utorok|Streda|Štvrtok|Piatok|Sobota|Nedeľa)\s*·\s*/i,''))}</strong><span>${h(p.durationRange||p.objective||p.instructions||type)}</span></div><em>${p.type==='Silový tréning'?'SILA':h(type)}</em><i>›</i></button>${right}</div>`;
@@ -59,7 +54,7 @@
       const ws=units.filter(w=>workoutDays(w.payload).includes(day));
       return `<div class="week-row ${day===today?'today':''}"><div class="week-day"><b>${labels[day]}</b>${day===today?'<span>DNES</span>':''}</div><div class="week-items">${ws.length?ws.map(w=>renderWeekWorkout(w,day)).join(''):`<div class="week-empty">${h(safeJson(state.plan?.payload).restDayNotes?.[day]||'Bez naplánovanej jednotky')}</div>`}</div></div>`;
     }).join('');
-    const content=`<header class="home-header"><h1>Tréning</h1></header><button class="start-workout" id="main-start">${active?'POKRAČOVAŤ V TRÉNINGU':'VYBRAŤ TRÉNING'}</button>${next&&!active?`<div class="today-line"><span>Najbližšie</span><b>${h(safeJson(next.w.payload).title||'')}</b></div>`:''}${renderProgramReview()}<div class="section-bar"><h2>TÝŽDENNÝ PLÁN</h2></div><div class="week-plan">${weekRows}</div><div class="section-bar"><h2>TRÉNINGOVÉ JEDNOTKY</h2></div><div class="unit-library">${units.map(renderUnitLibraryCard).join('')}</div>`;
+    const content=`<header class="home-header"><h1>Tréning</h1></header><button class="start-workout" id="main-start">${active?'POKRAČOVAŤ V TRÉNINGU':'VYBRAŤ TRÉNING'}</button>${next&&!active?`<div class="today-line"><span>Najbližšie</span><b>${h(safeJson(next.w.payload).title||'')}</b></div>`:''}<div class="section-bar"><h2>TÝŽDENNÝ PLÁN</h2></div><div class="week-plan">${weekRows}</div><div class="section-bar"><h2>TRÉNINGOVÉ JEDNOTKY</h2></div><div class="unit-library">${units.map(renderUnitLibraryCard).join('')}</div>`;
     app.innerHTML=shell(content,'training');bindNav();
 
     document.getElementById('main-start').onclick=()=>{
@@ -69,6 +64,7 @@
       if(todays.length>1)return document.querySelector('.week-row.today')?.scrollIntoView({behavior:'smooth',block:'center'});
       document.querySelector('.unit-library')?.scrollIntoView({behavior:'smooth',block:'start'});
     };
+    document.querySelectorAll('[data-attendance]').forEach(b=>b.onclick=async()=>{b.disabled=true;await toggleActivityAttendance(state.workouts.find(w=>w.id===b.dataset.attendance),b.dataset.attendanceDate);if(b.isConnected)b.disabled=false;});
     document.querySelectorAll('[data-week-workout]').forEach(b=>b.onclick=()=>launchWorkoutUnit(state.workouts.find(x=>x.id===b.dataset.weekWorkout)));
     document.querySelectorAll('[data-week-more]').forEach(b=>b.onclick=e=>{
       e.stopPropagation();
